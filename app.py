@@ -1,12 +1,26 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
+
+socket_connections = {"codeninja", None}
+messages = []
 
 @app.route("/")
 def index():
     return "<h1>Hello World!</h1>"
 
-@app.route("/check-username/<username>")
-def check_username(username):
-    print("username to check: ", username)
-    return "<h1>Username {} will be checked</h1>".format(username)
+@app.route("/check-username/", methods=["GET"])
+def check_username():
+    username = request.args.get("username", None)
+    print(f"Checking username: {username}")
+
+    response = {}
+    if username is None:
+        response["ERROR"] = "Missing username necessary for username check."
+        return jsonify(response)        
+    username_is_available = username.lower() not in socket_connections
+    response["isAvailable"] = username_is_available
+    return jsonify(response)
+
+
+
