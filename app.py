@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+load_dotenv()
+import os
+
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO
 
@@ -24,7 +28,9 @@ def check_username():
     response["isAvailable"] = username_is_available
     return jsonify(response)
 
-# if __name__ == "__main__":
-#     socketio.run(app)
+
+if __name__ == "__main__" and os.getenv("LOCAL") == "True":
+    print("Running on http://localhost:5000/")
+    socketio.run(app)
 
 
