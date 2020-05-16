@@ -1,8 +1,5 @@
 from flask_socketio import emit
-from __main__ import socketio
-
-def set_socketio(socketio):
-    socketio = socketio
+from .. import socketio
 
 @socketio.on("connect")
 def on_connect():
