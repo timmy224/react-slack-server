@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 
-from app import create_app, socketio
+from application import create_app, socketio
 
 app = create_app()
 
