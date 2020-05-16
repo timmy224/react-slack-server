@@ -1,6 +1,6 @@
 from flask import request, jsonify
 from . import main
-from . import data
+from . import client_service
 
 @main.route("/")
 def index():
@@ -15,6 +15,6 @@ def check_username():
     if username is None:
         response["ERROR"] = "Missing username necessary for username check."
         return jsonify(response)        
-    username_is_available = username.lower() not in data.socket_connections
+    username_is_available = username.lower() not in client_service.clients
     response["isAvailable"] = username_is_available
     return jsonify(response)

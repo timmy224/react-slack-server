@@ -1,17 +1,32 @@
+import json
+from flask import request
 from flask_socketio import emit
 from .. import socketio
+from . import client_service
+from . import message_service
 
 @socketio.on("connect")
 def on_connect():
-    print("Client connected!")
-    emit("connect-response", {"data": "connected"})
+    username = request.args.get("username")
+    print(f"Client connected! username: {username}")
+    # All clients are assigned a personal room by Flask SocketIO when they connect, named with the session ID of the connection. We want to store this so that we can relay messages to individual clients in the future using send/emit(..., room=room)
+    room = request.sid
+    client_service.on_client_connected(username, room)
+    recent_messages = message_service.get_recent_messages()
+    data = {"messages": recent_messages}
+    emit("message-catchup", json.dumps(data))
+    # Broadcast to all other clients that a new client connected
+    emit("user-joined-chat", {"username": username}, broadcast=True, include_self=False)
 
-@socketio.on("message")
-def on_message(message):
+@socketio.on("send-message")
+def on_send_message(clientMessage):
     print("Client sent message")
-    print(message)
-    emit("message-received", {"data": "received message"})
+    print(clientMessage)
+    message_service.on_send_message(clientMessage)
+    emit("message-received", clientMessage, broadcast=True, include_self=False)
 
 @socketio.on("disconnect")
 def on_disconnect():
-    print("Client disconnected!")
+    print("Client disconnected:")
+    room = request.sid
+    client_service.remove_client_by_room(room)
