@@ -1,8 +1,8 @@
 from flask_socketio import emit
 from __main__ import socketio
 
-socket_connections = {"codeninja", None}
-messages = []
+def set_socketio(socketio):
+    socketio = socketio
 
 @socketio.on("connect")
 def on_connect():

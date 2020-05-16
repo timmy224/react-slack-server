@@ -5,10 +5,12 @@ import os
 from flask import Flask, request, jsonify
 from flask_socketio import SocketIO
 
-app = Flask(__name__)
-socketio = SocketIO(app)
+from routes import routes
 
-import routes
+app = Flask(__name__)
+app.register_blueprint(routes)
+
+socketio = SocketIO(app)
 import socket_service
 
 if __name__ == "__main__" and os.getenv("LOCAL") == "True":
