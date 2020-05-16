@@ -1,12 +1,12 @@
-from __main__ import app as application
+from __main__ import app
 from flask import request, jsonify
 import socket_service
 
-@application.route("/")
+@app.route("/")
 def index():
     return "<h1>Hello World!</h1>"
 
-@application.route("/check-username/", methods=["GET"])
+@app.route("/check-username/", methods=["GET"])
 def check_username():
     username = request.args.get("username", None)
     print(f"Checking username: {username}")
