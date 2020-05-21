@@ -6,6 +6,7 @@ Important: make sure you have Python installed locally on your machine
 2. Create virtual environment named env: `$ py -m venv env`
 3. Activate virtual environment: `$ env\Scripts\activate`
 4. Install dependencies: `$ pip install -r requirements.txt`
+5. Create a file named `.env` in the project root and add `LOCAL=True` to it
 
 ## Running the server:
 1. Make sure you're in the root project folder `$ cd react-slack-server`
