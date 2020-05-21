@@ -13,8 +13,8 @@ def on_connect():
     room = request.sid
     client_service.on_client_connected(username, room)
     recent_messages = message_service.get_recent_messages()
-    data = {"messages": recent_messages}
-    emit("message-catchup", json.dumps(data))
+    recent_messages = json.dumps([message.__dict__ for message in recent_messages])
+    emit("message-catchup", recent_messages)
     # Broadcast to all other clients that a new client connected
     emit("user-joined-chat", {"username": username}, broadcast=True, include_self=False)
 

@@ -1,6 +1,11 @@
-from collections import namedtuple
 from datetime import datetime
-Message = namedtuple("Message", ["sender", "time_sent", "content"]) 
+
+class Message():
+    def __init__(self, sender, time_sent, content):
+        self.sender = sender
+        self.time_sent = time_sent
+        self.content = content
+
 messages = []
 
 def add_dummy_messages():
