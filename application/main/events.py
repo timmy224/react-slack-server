@@ -24,7 +24,6 @@ def on_send_message(clientMessage):
     print("Client sent message")
     print(clientMessage)
     message_service.on_send_message(clientMessage)
-    emit("message-received", "hey", broadcast=True, include_self=False)
     emit("message-received", clientMessage, broadcast=True, include_self=True)
     print("After send")
 
