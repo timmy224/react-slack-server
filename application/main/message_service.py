@@ -23,14 +23,16 @@ def on_send_message(clientMessage):
 def get_recent_messages():
     return messages[-25:]
 
-def on_send_special(specialMessage): # challenge 3
+# Week 1 Challenge
+def on_send_special(specialMessage): 
     specialMessageObj = {
-        "sender": "Special sender",
-        "time_sent": "anytime you want =)",
-        "content": specialMessage
+        "person": "Special sender",
+        "time": "anytime you want =)",
+        "message_content": specialMessage
     }
 
-    message = Message(specialMessageObj['sender'], specialMessageObj['time_sent'], specialMessageObj['content'])
+    # adds special message with special sender and time_sent to messages list 
+    message = Message(specialMessageObj['person'], specialMessageObj['time'], specialMessageObj['message_content'])
     messages.append(message)
 
 add_dummy_messages()

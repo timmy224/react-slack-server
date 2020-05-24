@@ -19,6 +19,7 @@ def check_username():
     response["isAvailable"] = username_is_available
     return jsonify(response)
 
+# Week 1 challenge
 @main.route("/echo")
 def returnEcho():
     message = request.args.get("message", None)

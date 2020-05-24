@@ -33,8 +33,9 @@ def on_disconnect():
     room = request.sid
     client_service.remove_client_by_room(room)
 
+# Week 1 Challenge
 @socketio.on("my-special-event") # challenge 2 and 3 
 def on_special_event(specialMessage):
     print(specialMessage)
     message_service.on_send_special(specialMessage)
-    emit("special-message-received", specialMessage, broadcast=True, include_self=True)
+    emit("special-message-received", specialMessage, broadcast=True, include_self=True) # sends to all clients
