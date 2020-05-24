@@ -22,6 +22,7 @@ def check_username():
 @main.route("/echo")
 def returnEcho():
     message = request.args.get("message", None)
+    print(message)
     return {
         "echo": message
     }
