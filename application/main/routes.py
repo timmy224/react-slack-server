@@ -18,3 +18,10 @@ def check_username():
     username_is_available = username.lower() not in client_service.clients
     response["isAvailable"] = username_is_available
     return jsonify(response)
+
+@main.route("/echo")
+def returnEcho():
+    message = request.args.get("message", None)
+    return {
+        "echo": message
+    }
