@@ -32,3 +32,13 @@ def on_disconnect():
     print("Client disconnected:")
     room = request.sid
     client_service.remove_client_by_room(room)
+
+    #oh neat i can type comments 
+    #Week 1 challenge with definte help from timmys code
+    # this a function that takes in specialMessage and prints it to the console.
+    #additionally the function sends(emits) the specialMessage to all people connected to the socket
+    @socketio.on("special-event")
+    def on_special_event(specialMessage):
+    print(specialMessage)
+    message_service.on_send_message(specialMessage)
+    emit("special-message-recieved", specialMessage, broadcast=True, include_self=True)

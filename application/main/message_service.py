@@ -24,3 +24,14 @@ def get_recent_messages():
     return messages[-25:]
 
 add_dummy_messages()
+
+#basically defining the form for the special message and its contents/available information
+def on_send_special_message(specialMessage):
+    specialMessageObj = {
+        "sender":"Special sender",
+        "time": "now",
+        "message_content": specialMessage
+    }
+message=Message(specialMessageObj['sender'], specialMessageObj['time'], specialmessageObj['message_content'])
+#this adds this special message to the list of messages
+messages.append(message)
