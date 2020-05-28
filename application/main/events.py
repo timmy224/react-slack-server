@@ -2,8 +2,8 @@ import json
 from flask import request
 from flask_socketio import emit
 from .. import socketio
-from . import client_service
-from . import message_service
+from .services import client_service
+from .services import message_service
 import json
 
 @socketio.on("connect")

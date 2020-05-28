@@ -1,6 +1,8 @@
 from flask import request, jsonify
+import json
 from . import main
-from . import client_service
+from .services import client_service
+from .services import channel_service
 
 @main.route("/")
 def index():
@@ -18,3 +20,11 @@ def check_username():
     username_is_available = username.lower() not in client_service.clients
     response["isAvailable"] = username_is_available
     return jsonify(response)
+
+@main.route("/channels/", methods=["GET"])
+def get_channels():
+    channels = channel_service.get_channels()
+    channels = json.dumps([channel.__dict__ for channel in channels])
+    response = {}
+    response["channels"] = channels
+    return response
