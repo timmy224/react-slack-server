@@ -7,8 +7,10 @@ load_dotenv()
 import os
 
 socketio = SocketIO(cors_allowed_origins="*")
+db = None
 
 def create_app():
+    global db
     app = Flask(__name__)
     # Database and Migrate
     from .models import configure_db, configure_migrate

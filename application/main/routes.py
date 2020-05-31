@@ -1,8 +1,13 @@
-from flask import request, jsonify
+from datetime import datetime
 import json
+from flask import request, jsonify
 from . import main
+from .. import db
 from .services import client_service
 from .services import channel_service
+from ..models.User import User
+from ..models.Channel import Channel
+from ..models.Message import Message
 
 @main.route("/")
 def index():
@@ -28,3 +33,78 @@ def get_channels():
     response = {}
     response["channels"] = channels
     return response
+
+### DATABASE TESTS
+
+# Get / Insert User
+@main.route("/user", methods=["GET","POST"])
+def insert_user():
+    if flask.request.method == "GET":
+        pass
+    elif flask.request.method == "POST":
+        data = request.json
+        user = User(data["username"])
+        db.session.add(user)
+        db.session.commit()
+        response = {}
+        response["successful"] = True
+        return jsonify(response)
+
+@main.route("/channel", methods=["POST"])
+def insert_channel():
+    data = request.json
+    channel = Channel(data["name"])
+    db.session.add(channel)
+    db.session.commit()
+    response = {}
+    response["successful"] = True
+    return jsonify(response)
+
+@main.route("/channel-subscription", methods=["POST"])
+def insert_channel_subscription():
+    data = request.json
+    user_id = data["user_id"]
+    channel_id = data["channel_id"]
+    user = User.query.filter_by(user_id=user_id).first()
+    channel = Channel.query.filter_by(channel_id=channel_id).first()
+
+    channel.users.append(user)
+    db.session.commit()
+
+    response = {}
+    response["successful"] = True
+    return jsonify(response)
+    
+@main.route("/private-message", methods=["POST"])
+def insert_private_message():
+    data = request.json
+    sender_id, content = data["sender_id"], data["content"]
+    sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M%p")
+    message = Message(sender_id, sent_dt, content)
+    receiver = User.query.filter_by(user_id=data["receiver_id"]).first()
+
+    message.receiver = receiver
+    db.session.add(message)
+    db.session.commit()
+
+    response = {}
+    response["successful"] = True
+    return jsonify(response)
+
+@main.route("/channel-message", methods=["POST"])
+def insert_channel_message():
+    data = request.json
+    sender_id, content = data["sender_id"], data["content"]
+    sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M%p")
+    message = Message(sender_id, sent_dt, content)
+    channel = Channel.query.filter_by(channel_id=data["channel_id"]).first()
+
+    message.channel = channel
+    db.session.add(message)
+    db.session.commit()
+
+    response = {}
+    response["successful"] = True
+    return jsonify(response)
+
+
