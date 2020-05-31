@@ -31,8 +31,16 @@ def on_send_message(clientMessage):
     #messages.append(message)
                                                                                          
 def get_recent_messages(channel_id):
+    print(channel_id)
     from .channel_service import get_ind_channel
-    curr_channel = get_ind_channel(channel_id)
+    curr_channel = get_ind_channel(channel_id) 
+    # returns single channel object 
+    # Current Channel: {'id': 1, 'name': 'Channel #1', 'messages': [
+    # print("Current Channel:", curr_channel.__dict__)
+    
+    # for messages in curr_channel.messages:
+    #     print(messages.__dict__)
+    
     print(curr_channel.messages[-25:])
     return curr_channel.messages[-25:]
 

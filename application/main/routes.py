@@ -29,7 +29,10 @@ def get_channels():
     response = {}
     response["channels"] = channels_json 
     print(response)
-    """
+    return response
+    
+"""
+def get_channel_dict(): # route to messages
     channels_dict = channel_service.get_channel_dict()
     channels_list_objs = json.dumps([channels_dict[channel].__dict__ for channel in channels_dict])
     response["channels"] = channels_list_objs
@@ -50,17 +53,19 @@ def get_channels():
 
                 ]
         }
-    """
-    return response
+"""
 
 @main.route("/messages/", methods=["GET"])
 def get_channel_messages():
     sel_channel = request.args.get("channelId", None)
     print(f'Received Selected Channel: {sel_channel}')
+    sel_channel_messages = message_service.get_recent_messages(int(sel_channel))
+    print()
+    print()
 
-    sel_channel_messages = message_service.get_recent_messages(sel_channel)
     recent_messages = json.dumps([message.__dict__ for message in sel_channel_messages])
     response = {}
     response['messages'] = recent_messages
+    print(response)
     return response
     
