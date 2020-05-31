@@ -3,6 +3,7 @@ import json
 from . import main
 from .services import client_service
 from .services import channel_service
+from .services import message_service
 
 @main.route("/")
 def index():
@@ -51,3 +52,15 @@ def get_channels():
         }
     """
     return response
+
+@main.route("/messages/", methods=["GET"])
+def get_channel_messages():
+    sel_channel = request.args.get("channelId", None)
+    print(f'Received Selected Channel: {sel_channel}')
+
+    sel_channel_messages = message_service.get_recent_messages(sel_channel)
+    recent_messages = json.dumps([message.__dict__ for message in sel_channel_messages])
+    response = {}
+    response['messages'] = recent_messages
+    return response
+    
