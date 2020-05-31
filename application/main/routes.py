@@ -24,7 +24,30 @@ def check_username():
 @main.route("/channels/", methods=["GET"])
 def get_channels():
     channels = channel_service.get_channels()
-    channels = json.dumps([channel.__dict__ for channel in channels])
+    channels_json = json.dumps(channels) # creates JSON string
     response = {}
-    response["channels"] = channels
+    response["channels"] = channels_json 
+    print(response)
+    """
+    channels_dict = channel_service.get_channel_dict()
+    channels_list_objs = json.dumps([channels_dict[channel].__dict__ for channel in channels_dict])
+    response["channels"] = channels_list_objs
+    response  = 
+        {
+            channels: [
+                {
+                    id: 1,
+                    name: "Channel #1",
+                    messages: [blah blah blah]
+                }, {
+                    id: 2,
+                    name: "Channel #2",
+                    messages: [blah blah blah]
+                }, 
+
+                ...
+
+                ]
+        }
+    """
     return response
