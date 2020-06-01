@@ -2,19 +2,21 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
+from .models import configure_db, configure_marshmallow, configure_migrate
 
 load_dotenv()
 import os
 
 socketio = SocketIO(cors_allowed_origins="*")
 db = None
+ma = None
 
 def create_app():
-    global db
+    global db, ma
     app = Flask(__name__)
     # Database and Migrate
-    from .models import configure_db, configure_migrate
     db = configure_db(app)
+    ma = configure_marshmallow(app)
     migrate = configure_migrate(app, db)
     # CORS
     CORS(app)

@@ -1,4 +1,4 @@
-from .. import db
+from .. import db, ma
 
 class User(db.Model):
     __tablename__ = "users"
@@ -10,4 +10,9 @@ class User(db.Model):
     
     def __repr__(self):
         return f"<User user_id={self.user_id} username={self.username}>"
+    
+class UserSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = User
 
+user_schema = UserSchema()
