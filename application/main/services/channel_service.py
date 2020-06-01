@@ -1,4 +1,4 @@
-from .message_service import Message
+from .message_class import Message
 
 class Channel():
     def __init__(self, id, name, messages):
@@ -13,19 +13,24 @@ def add_dummy_channels():
         channel = Channel(i, f"Channel #{i}", [])
         channels[i] = channel
 
-def get_channels(): # returns list of available channel ids
-    channel_list = [channel for channel in channels]
-    return channel_list
+def get_channel_ids(): # returns list of available channel ids
+    return [*channels]
+    
 
 """
-def add_channel(createChannel): # have not created socket listener yet
-    next_channel = [channel for channel in channels][-1] + 1 # gets most recent channel id + 1
-    new_channel = Channel(next_channel, createChannel['name'], []) # create new channel with received name and new id
-    channels[next_channel] = new_channel # add new channel instance to channels 
+def create_channel(channel_name):
+    most_recent_channel_id = [*channels.keys()][-1]
+    new_channel_id = most_recent_channel_id + 1
 
-def del_channel(deleteChannel): # have not created socket listener yet
-    remove = deleteChannel['id'] # gets id of desired channel to remove
-    del channels[remove]
+    new_channel = Channel(new_channel_id, channel_name, []) 
+    return new_channel
+
+def add_channel(channel): # have not created socket listener yet
+    channels[channel["id"]] = channel 
+
+def del_channel(channel_info): # have not created socket listener yet
+    remove_id = channel_info['id'] # gets id of desired channel to remove
+    del channels[remove_id]
 
 def get_channel_dict(): # just putting it here for possible use later?
     return channels 
