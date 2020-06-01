@@ -7,6 +7,7 @@ Important: make sure you have Python installed locally on your machine
 3. Activate virtual environment: `$ env\Scripts\activate`
 4. Install dependencies: `$ pip install -r requirements.txt`
 5. Create a file named `.env` in the project root and add `LOCAL=True` to it
+6. Also add `DATABASE_URL=` and set it to the Heroku database url 
 
 ## Running the server:
 1. Make sure you're in the root project folder `$ cd react-slack-server`
