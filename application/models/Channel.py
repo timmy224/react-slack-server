@@ -13,7 +13,6 @@ class Channel(db.Model):
         return f"<Channel channel_id={self.channel_id} name={self.name}>"
 
 class ChannelSchema(ma.SQLAlchemyAutoSchema):
-    # Use the "exclude" argument because we don't need to see each channel member's list of subscribed channels
     users = ma.Nested("UserSchema", exclude=("channels",), many=True)
 
     class Meta:

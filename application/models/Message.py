@@ -1,4 +1,4 @@
-from .. import db
+from .. import db, ma
 
 class Message(db.Model):
     __tablename__ = "messages"
@@ -17,3 +17,13 @@ class Message(db.Model):
     
     def __repr__(self):
         return f"<Message message_id={self.message_id} user_id={self.user_id} content={self.content}>"
+
+class MessageSchema(ma.SQLAlchemyAutoSchema):
+    sender = ma.Nested("UserSchema", exclude=("channels",))
+    receiver = ma.Nested("UserSchema", exclude=("channels",))
+    channel = ma.Nested("ChannelSchema", exclude=("users",))
+
+    class Meta:
+        model = Message
+
+message_schema = MessageSchema()

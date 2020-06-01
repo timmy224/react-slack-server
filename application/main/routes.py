@@ -6,7 +6,7 @@ from .. import db
 from .services import client_service, channel_service, message_service
 from ..models.User import User, user_schema
 from ..models.Channel import Channel, channel_schema
-from ..models.Message import Message
+from ..models.Message import Message, message_schema
 
 @main.route("/")
 def index():
@@ -74,7 +74,7 @@ def get_channel_messages():
 
 # Get / Insert User
 @main.route("/user/", methods=["GET", "POST"])
-def insert_user():
+def user():
     if request.method == "GET":
         user_id = request.args.get("user_id", None)
         response = {}
@@ -99,7 +99,7 @@ def insert_user():
         return jsonify(response)
 
 @main.route("/channel/", methods=["GET", "POST"])
-def insert_channel():
+def channel():
     if request.method == "GET":
         channel_id = request.args.get("channel_id", None)
         response = {}
@@ -123,7 +123,7 @@ def insert_channel():
         return jsonify(response)
 
 @main.route("/channel-subscription/", methods=["GET", "POST"])
-def insert_channel_subscription():
+def channel_subscription():
     # Get user's channels (include user_id arg) OR Get channel's users (include channel_id arg)
     if request.method == "GET":
         # Only include one of the following in request url, not both
@@ -156,9 +156,22 @@ def insert_channel_subscription():
         response = {}
         response["successful"] = True
         return jsonify(response)
+
+@main.route("/message/", methods=["GET"])
+def get_message():
+    message_id = request.args.get("message_id", None)
+    response = {}
+    if message_id is None:
+        response["ERROR"] = "Missing message_id in route"
+        return jsonify(response)
+    message = Message.query.filter_by(message_id=message_id).one()
+    message_json = message_schema.dump(message)
+    response["message"] = message_json
+    return response
+
     
 @main.route("/private-message/", methods=["GET", "POST"])
-def insert_private_message():
+def private_message():
     if request.method == "GET":
         pass
     elif request.method == "POST":
@@ -178,7 +191,7 @@ def insert_private_message():
         return jsonify(response)
 
 @main.route("/channel-message/", methods=["GET", "POST"])
-def insert_channel_message():
+def channel_message():
     if request.method == "GET":
         pass
     elif request.method == "POST":

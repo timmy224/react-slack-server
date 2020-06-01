@@ -17,7 +17,7 @@ def configure_migrate(app, db):
     # import tables
     from . import ChannelSubscriptions, PrivateMessages, ChannelMessages
     # import models
-    from . import User, Message, Channel
+    from . import User, Channel, Message
     migrate = Migrate(app, db)
     return migrate
     
