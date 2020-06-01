@@ -13,8 +13,9 @@ def on_connect():
     # All clients are assigned a personal room by Flask SocketIO when they connect, named with the session ID of the connection. We want to store this so that we can relay messages to individual clients in the future using send/emit(..., room=room)
     room = request.sid
     client_service.on_client_connected(username, room)
-    recent_messages = message_service.get_recent_messages()
+    #recent_messages = message_service.get_recent_messages() # set default channel here, but removed client socket listener for message-catchup
     recent_messages = json.dumps([message.__dict__ for message in recent_messages])
+    print(recent_messages)
     emit("message-catchup", recent_messages)
     # Broadcast to all other clients that a new client connected
     emit("user-joined-chat", {"username": username}, broadcast=True, include_self=False)
