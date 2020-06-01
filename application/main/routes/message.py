@@ -11,6 +11,11 @@ from ...models.Channel import Channel, channel_schema
 
 @main.route("/messages/", methods=["GET"])
 def get_channel_messages():
+    """
+    [GET] - Returns a list of the 25 most recent server-side stored messages and returns them as a JSON response
+    Path: /messages/?channelId={channel_id}
+    Response Body: "messages"
+    """
     sel_channel = request.args.get("channelId", None)
     print(f'Received Selected Channel: {sel_channel}')
     sel_channel_messages = message_service.get_recent_messages(int(sel_channel))
@@ -18,13 +23,19 @@ def get_channel_messages():
     recent_messages = json.dumps([message.__dict__ for message in sel_channel_messages])
     response = {}
     response['messages'] = recent_messages
-    print(response)
     return response
 
 ### DATABASE ROUTES ###
 
 @main.route("/message/", methods=["GET"])
 def get_message():
+    """
+    [GET] - Grabs the message from the DB and returns it as a JSON response
+    Path: /message/?message_id={message_id}
+    Response Body: "message"
+    
+    DB tables: "messages", "private_messages", "channel_messages", "users"
+    """
     message_id = request.args.get("message_id", None)
     response = {}
     if message_id is None:
@@ -37,6 +48,14 @@ def get_message():
 
 @main.route("/private-message/", methods=["POST"])
 def insert_private_message():
+    """
+    [POST] - Inserts a private message into the DB using JSON passed in as request body
+    Path: /private-message
+    Request Body: "sender_id", "receiver_id", "content", "sent_dt" (ex: 05/02/2020 1:23PM)
+    Response Body: "successful"
+
+    DB tables: "messages", "private_messages", "users"
+    """
     data = request.json
     sender_id, content = data["sender_id"], data["content"]
     sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M%p")
@@ -54,6 +73,14 @@ def insert_private_message():
 
 @main.route("/channel-message/", methods=["POST"])
 def insert_channel_message():
+    """
+    [POST] - Inserts a channel message into the DB using JSON passed in as request body
+    Path: /channel-message
+    Request Body: "sender_id", "channel_id", "content", "sent_dt" (ex: 05/02/2020 1:23PM)
+    Response Body: "successful"
+
+    DB tables: "messages", "channel_messages", "channels"
+    """
     data = request.json
     sender_id, content = data["sender_id"], data["content"]
     sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M%p")

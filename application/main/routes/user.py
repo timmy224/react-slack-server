@@ -7,6 +7,12 @@ from ...models.User import User, user_schema
 
 @main.route("/check-username/", methods=["GET"])
 def check_username():
+    """
+    [GET] - Checks passed in username against server-side stored active socket connetions and returns
+    whether the username is available 
+    Path: /check-username/
+    Response Body: "isAvailable"
+    """
     username = request.args.get("username", None)
     print(f"Checking username: {username}")
 
@@ -18,11 +24,22 @@ def check_username():
     response["isAvailable"] = username_is_available
     return jsonify(response)
 
-### DATABASE ROUTES
+### DATABASE ROUTES ###
 
-# Get / Insert User
 @main.route("/user/", methods=["GET", "POST"])
 def user():
+    """
+    [GET] - Grabs the user from the DB and returns it as a JSON response
+    Path: /user/?user_id={user_id}
+    Response Body: "user"
+    
+    [POST] - Inserts a user into the DB using JSON passed in as request body
+    Path: /user
+    Request Body: "username"
+    Response Body: "successful"
+
+    DB tables: "users"
+    """
     if request.method == "GET":
         user_id = request.args.get("user_id", None)
         response = {}

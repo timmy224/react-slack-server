@@ -6,10 +6,16 @@ from ..services import channel_service
 from ...models.User import User, user_schema
 from ...models.Channel import Channel, channel_schema
 
+
 @main.route("/channels/", methods=["GET"])
 def get_channels():
-    channels = channel_service.get_channel_ids()
-    channels_json = json.dumps(channels) # creates JSON string
+    """
+    [GET] - Returns a list of server-side stored channel ids as a JSON response
+    Path: /channels/
+    Response Body: "channels"
+    """
+    channel_ids = channel_service.get_channel_ids()
+    channels_json = json.dumps(channel_ids) 
     response = {}
     response["channels"] = channels_json 
     return response
@@ -18,6 +24,18 @@ def get_channels():
 
 @main.route("/channel/", methods=["GET", "POST"])
 def channel():
+    """
+    [GET] - Grabs the channel from the DB and returns it as a JSON response
+    Path: /channel/?channel_id={channel_id}
+    Response Body: "channel"
+    
+    [POST] - Inserts a channel into the DB using JSON passed in as request body
+    Path: /channel
+    Request Body: "name"
+    Response Body: "successful"
+
+    DB tables: "channels"
+    """
     if request.method == "GET":
         channel_id = request.args.get("channel_id", None)
         response = {}
@@ -42,6 +60,22 @@ def channel():
 
 @main.route("/channel-subscription/", methods=["GET", "POST"])
 def channel_subscription():
+    """
+    IMPORTANT: for GET, only include ONE of the following parameters in the url: "user_id", "channel_id"
+
+    [GET] - If "user_id" route parameter present, grabs the user's channels from the DB and returns it as a JSON response
+    If "channel_id" route parameter present, grabs the channel's users from the DB and returns it as a JSON response
+    Path: /channel-subscription/?user_id={user_id} OR 
+    /channel-subscription/?channel_id={channel_id}
+    Response Body: "channels" or "users"
+    
+    [POST] - Inserts a channel subscription into the DB using JSON passed in as body
+    Path: /channel-subscription
+    Request Body: "user_id", "channel_id"
+    Response Body: "successful"
+
+    DB tables: "users", "channels", "channel-subscriptions"
+    """
     # Get user's channels (include user_id arg) OR Get channel's users (include channel_id arg)
     if request.method == "GET":
         # Only include one of the following in request url, not both
@@ -59,7 +93,6 @@ def channel_subscription():
         else:
             response["ERROR"] = "Missing user_id OR channel_id in route (only include one of them)"
         return response
-
     elif request.method == "POST":
         data = request.json
         user_id = data["user_id"]
