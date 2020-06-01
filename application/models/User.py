@@ -12,6 +12,9 @@ class User(db.Model):
         return f"<User user_id={self.user_id} username={self.username}>"
     
 class UserSchema(ma.SQLAlchemyAutoSchema):
+    # Uses the "exclude" argument to avoid infinite recursion 
+    channels = ma.Nested("ChannelSchema", exclude=("users",), many=True)
+
     class Meta:
         model = User
 

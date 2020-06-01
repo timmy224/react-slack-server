@@ -5,7 +5,7 @@ from . import main
 from .. import db
 from .services import client_service, channel_service, message_service
 from ..models.User import User, user_schema
-from ..models.Channel import Channel
+from ..models.Channel import Channel, channel_schema
 from ..models.Message import Message
 
 @main.route("/")
@@ -83,8 +83,8 @@ def insert_user():
             return jsonify(response)
         user = User.query.filter_by(user_id=user_id).first()
 
-        user = user_schema.dump(user)
-        response["user"] = user
+        user_json = user_schema.dump(user)
+        response["user"] = user_json
         return response
     elif request.method == "POST":
         data = request.json
@@ -98,10 +98,18 @@ def insert_user():
         response["successful"] = True
         return jsonify(response)
 
-@main.route("/channel", methods=["GET", "POST"])
+@main.route("/channel/", methods=["GET", "POST"])
 def insert_channel():
     if request.method == "GET":
-        pass
+        channel_id = request.args.get("channel_id", None)
+        response = {}
+        if channel_id is None:
+            response["ERROR"] = "Missing channel_id in route"
+            return jsonify(response)
+        channel = Channel.query.filter_by(channel_id=channel_id).first()
+        channel_json = channel_schema.dump(channel)
+        response["channel"] = channel_json
+        return response        
     elif request.method == "POST":
         data = request.json
         channel = Channel(data["name"])
@@ -114,10 +122,26 @@ def insert_channel():
         response["successful"] = True
         return jsonify(response)
 
-@main.route("/channel-subscription", methods=["GET", "POST"])
+@main.route("/channel-subscription/", methods=["GET", "POST"])
 def insert_channel_subscription():
+    # Get user's channels (include user_id arg) OR Get channel's users (include channel_id arg)
     if request.method == "GET":
-        pass
+        # Only include one of the following in request url, not both
+        user_id = request.args.get("user_id", None)
+        channel_id = request.args.get("channel_id", None)
+        response = {}
+        if user_id is not None: # Going to return this user's channels
+            user = User.query.filter_by(user_id=user_id).first()
+            channels_json = channel_schema.dump(user.channels, many=True)
+            response["channels"] = channels_json
+        elif channel_id is not None: # Going to return this channel's users
+            channel = Channel.query.filter_by(channel_id=channel_id).first()
+            users_json = user_schema.dump(channel.users, many=True)
+            response["users"] = users_json
+        else:
+            response["ERROR"] = "Missing user_id OR channel_id in route (only include one of them)"
+        return response
+
     elif request.method == "POST":
         data = request.json
         user_id = data["user_id"]
@@ -133,7 +157,7 @@ def insert_channel_subscription():
         response["successful"] = True
         return jsonify(response)
     
-@main.route("/private-message", methods=["GET", "POST"])
+@main.route("/private-message/", methods=["GET", "POST"])
 def insert_private_message():
     if request.method == "GET":
         pass
@@ -153,7 +177,7 @@ def insert_private_message():
         response["successful"] = True
         return jsonify(response)
 
-@main.route("/channel-message", methods=["GET", "POST"])
+@main.route("/channel-message/", methods=["GET", "POST"])
 def insert_channel_message():
     if request.method == "GET":
         pass
