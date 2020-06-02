@@ -1,4 +1,4 @@
-from .. import db
+from .. import db, ma
 
 class Channel(db.Model):
     __tablename__ = "channels"
@@ -11,3 +11,11 @@ class Channel(db.Model):
     
     def __repr__(self):
         return f"<Channel channel_id={self.channel_id} name={self.name}>"
+
+class ChannelSchema(ma.SQLAlchemyAutoSchema):
+    users = ma.Nested("UserSchema", exclude=("channels",), many=True)
+
+    class Meta:
+        model = Channel
+
+channel_schema = ChannelSchema()
