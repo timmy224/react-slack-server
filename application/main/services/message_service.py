@@ -26,7 +26,7 @@ def on_send_message(clientMessage):
                       clientMessage["content"],
                       clientMessage["channel_id"]
                       )
-    add_message_channel(message, clientMessage["channel_id"])
+    add_message_channel(message, int(clientMessage["channel_id"]))
     #messages.append(message)
                                                                                          
 def get_recent_messages(channel_id):
