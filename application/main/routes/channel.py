@@ -22,6 +22,8 @@ def get_channels():
 
 ### DATABASE ROUTES ###
 
+### EXAMPLES ###
+
 @main.route("/channel/", methods=["GET", "POST"])
 def channel():
     """
@@ -42,7 +44,7 @@ def channel():
         if channel_id is None:
             response["ERROR"] = "Missing channel_id in route"
             return jsonify(response)
-        channel = Channel.query.filter_by(channel_id=channel_id).first()
+        channel = Channel.query.filter_by(channel_id=channel_id).one()
         channel_json = channel_schema.dump(channel)
         response["channel"] = channel_json
         return response        
@@ -83,11 +85,11 @@ def channel_subscription():
         channel_id = request.args.get("channel_id", None)
         response = {}
         if user_id is not None: # Going to return this user's channels
-            user = User.query.filter_by(user_id=user_id).first()
+            user = User.query.filter_by(user_id=user_id).one()
             channels_json = channel_schema.dump(user.channels, many=True)
             response["channels"] = channels_json
         elif channel_id is not None: # Going to return this channel's users
-            channel = Channel.query.filter_by(channel_id=channel_id).first()
+            channel = Channel.query.filter_by(channel_id=channel_id).one()
             users_json = user_schema.dump(channel.users, many=True)
             response["users"] = users_json
         else:
@@ -97,8 +99,8 @@ def channel_subscription():
         data = request.json
         user_id = data["user_id"]
         channel_id = data["channel_id"]
-        user = User.query.filter_by(user_id=user_id).first()
-        channel = Channel.query.filter_by(channel_id=channel_id).first()
+        user = User.query.filter_by(user_id=user_id).one()
+        channel = Channel.query.filter_by(channel_id=channel_id).one()
 
         channel.users.append(user)
         db.session.commit()

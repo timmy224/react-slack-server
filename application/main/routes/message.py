@@ -27,6 +27,8 @@ def get_channel_messages():
 
 ### DATABASE ROUTES ###
 
+### EXAMPLES ###
+
 @main.route("/message/", methods=["GET"])
 def get_message():
     """
@@ -60,7 +62,7 @@ def insert_private_message():
     sender_id, content = data["sender_id"], data["content"]
     sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M%p")
     message = Message(sender_id, sent_dt, content)
-    receiver = User.query.filter_by(user_id=data["receiver_id"]).first()
+    receiver = User.query.filter_by(user_id=data["receiver_id"]).one()
 
     message.receiver = receiver
     db.session.add(message)
@@ -85,7 +87,7 @@ def insert_channel_message():
     sender_id, content = data["sender_id"], data["content"]
     sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M%p")
     message = Message(sender_id, sent_dt, content)
-    channel = Channel.query.filter_by(channel_id=data["channel_id"]).first()
+    channel = Channel.query.filter_by(channel_id=data["channel_id"]).one()
 
     message.channel = channel
     db.session.add(message)
