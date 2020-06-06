@@ -5,7 +5,7 @@ from ... import db
 from ..services import channel_service
 from ...models.User import User, user_schema
 from ...models.Channel import Channel, channel_schema
-
+from sqlalchemy.sql import exists
 
 @main.route("/channels/", methods=["GET"])
 def get_channels():
@@ -108,6 +108,20 @@ def channel_subscription():
         response["successful"] = True
         return jsonify(response)
 
+@main.route("/check-channel-name/", methods=['GET'])
+def check_channel_name():
+    channel_name = request.args.get("channel_name", None)
+    print(f"Checking channel name: {channel_name}")
+
+    response = {}
+    if channel_name is None:
+        response["ERROR"] = "Missing channel name in route"
+        return jsonify(response)
+
+    exists = Channel.query(Channel.name).filter_by(name=channel_name).scalar() is not None
+    channel_name_is_available =  exists
+    response['isAvailable'] = channel_name_is_available
+    return jsonify(response)
 
 """
 def get_channel_dict(): # route to messages
