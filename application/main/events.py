@@ -1,6 +1,6 @@
 import json
 from flask import request
-from flask_socketio import emit
+from flask_socketio import emit, join_room, leave_room # didn't add leave_room anywhere yet
 from .. import socketio
 from .services import client_service
 from .services import message_service
@@ -24,8 +24,16 @@ def on_connect():
 def on_send_message(clientMessage):
     print("Client sent message")
     print(clientMessage)
-    message_service.on_send_message(clientMessage)
-    emit("message-received", clientMessage, broadcast=True, include_self=True)
+
+    # message_service.on_send_message(clientMessage) - old method
+    if clientMessage['type'] == "channel":
+        message_service.store_channel_message(clientMessage)
+        channel_room = clientMessage['channel_id']
+        emit("message-received", clientMessage, room=channel_room, broadcast=True, include_self=True)
+    else:
+        # insert private message logic here
+        pass
+
     print("After send")
 
 @socketio.on("disconnect")
