@@ -27,6 +27,25 @@ def get_channel_messages():
 
 ### DATABASE ROUTES ###
 
+@main.route("/private-messages/", methods=["GET"])
+def get_private_messages():
+    """
+    [GET] - Grabs the private from the DB sent between two users and returns it as a JSON response
+    Path: /private-messages/?user1_id={user1_id}&user2_id={user2_id}
+    Response Body: "messages"
+
+    DB Tables: "messages", "private_messages"
+    """
+    user1_id, user2_id = request.args.get("user1_id", None), request.args.get("user2_id", None)
+    response = {}
+    if user1_id is None or user2_id is None:
+        response["ERROR"] = "Two user ids are required in this route"
+        return jsonify(response)
+    # TODO - Sleyter Database Query goes here
+    messages = []
+    response["messages"] = json.dumps(messages)
+    return response
+
 ### EXAMPLES ###
 
 @main.route("/message/", methods=["GET"])

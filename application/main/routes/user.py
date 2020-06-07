@@ -39,7 +39,7 @@ def get_users():
     results = db.session.query(User.username).all()
     usernames = [result[0] for result in results]
     usernames_json = json.dumps(usernames)
-    response["users"] = usernames_json
+    response["usernames"] = usernames_json
     return response
 
 ### EXAMPLES ###
