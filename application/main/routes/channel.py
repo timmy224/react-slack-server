@@ -15,10 +15,10 @@ def get_channels():
     Path: /channels/
     Response Body: "channels"
     """
-    channel_ids = channel_service.get_channel_ids()
-    channels_json = json.dumps(channel_ids) 
+    channels = [r.channel_id for r in db.session.query(Channel.channel_id)]
     response = {}
-    response["channels"] = channels_json 
+    response["channels"] = f'{channels}'
+    print(response)
     return response
 
 ### DATABASE ROUTES ###
