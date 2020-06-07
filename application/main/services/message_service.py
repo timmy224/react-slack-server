@@ -53,7 +53,6 @@ def store_private_message(clientMessage):
     
     sender = clientMessage['sender']
     receiver = User.query.filter_by(user_id=clientMessage["receiver"]).first()
-    message.sender = sender
     message.receiver = receiver
     
     db.session.add(message)
@@ -68,7 +67,6 @@ def store_channel_message(clientMessage):
     channel = Channel.query.filter_by(channel_id=clientMessage["channel_id"]).first()
     message = Message_model(sender_id, sent_dt, content)
 
-    message.sender = sender
     message.channel = channel
     
     db.session.add(message)
