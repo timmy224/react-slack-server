@@ -1,8 +1,9 @@
 from flask import request, jsonify
+import json
 from .. import main
 from ... import db
 from ..services import client_service
-from ...models.User import User, UserSchema, user_schema
+from ...models.User import User, user_schema
 
 
 @main.route("/check-username/", methods=["GET"])
@@ -26,18 +27,19 @@ def check_username():
 
 ### DATABASE ROUTES ###
 
-@main.route("/users/", methods=["GET"])
+@main.route("/usernames/", methods=["GET"])
 def get_users():
     """
-    [GET] - Grabs the users from the DB and returns a list of user objects (each containing a username) as a JSON response
+    [GET] - Grabs the usernames from the DB and returns a list of usernames as a JSON response
     Path: /users
-    Response Body: "users"    
+    Response Body: "usernames"    
     DB tables: "users"
     """
     response = {}
-    users = User.query.all()
-    users_json = UserSchema(only=["username"]).dump(users, many=True)
-    response["users"] = users_json
+    results = db.session.query(User.username).all()
+    usernames = [result[0] for result in results]
+    usernames_json = json.dumps(usernames)
+    response["users"] = usernames_json
     return response
 
 ### EXAMPLES ###
