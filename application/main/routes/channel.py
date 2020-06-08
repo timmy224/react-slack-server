@@ -122,23 +122,13 @@ def check_channel_name():
     exists = db.session.query(db.exists().where(Channel.name == channel_name)).scalar() is not None
     response['isAvailable'] = exists
 
-    # find a better way to see if exists
-    #channel = Channel.query.filter_by(name=channel_name).all()
-    # print(exists)
-    # if len(channel) != 0:
-    #     response['isAvailable'] = True
-    # else: 
-    #     response['isAvailable'] = False
-
     return jsonify(response)
 
 # possibly split logic for get/post in same route?
 @main.route("/create-channel/", methods=['POST'])
 def create_channel():
     if request.method == 'POST':
-        print('POST METHOD detected')
         data = request.json
-        
         channel_service.store_channel(data['channel_name'])
         
         print("SUCCESS: Channel inserted into db")
