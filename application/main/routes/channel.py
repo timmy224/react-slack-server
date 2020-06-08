@@ -5,7 +5,8 @@ from ... import db
 from ..services import channel_service
 from ...models.User import User, user_schema
 from ...models.Channel import Channel, channel_schema
-
+from sqlalchemy.sql import exists
+from flask import request
 
 @main.route("/channels/", methods=["GET"])
 def get_channels():
@@ -14,10 +15,10 @@ def get_channels():
     Path: /channels/
     Response Body: "channels"
     """
-    channel_ids = channel_service.get_channel_ids()
-    channels_json = json.dumps(channel_ids) 
+    channels = [r.channel_id for r in db.session.query(Channel.channel_id)]
     response = {}
-    response["channels"] = channels_json 
+    response["channels"] = f'{channels}'
+    print(response)
     return response
 
 ### DATABASE ROUTES ###
@@ -30,7 +31,7 @@ def channel():
     Response Body: "channel"
     
     [POST] - Inserts a channel into the DB using JSON passed in as request body
-    Path: /channel
+    Path: /channel/
     Request Body: "name"
     Response Body: "successful"
 
@@ -108,6 +109,31 @@ def channel_subscription():
         response["successful"] = True
         return jsonify(response)
 
+@main.route("/check-channel-name/", methods=['GET'])
+def check_channel_name():
+    channel_name = request.args.get("channel_name", None)
+    print(f"Checking channel name: {channel_name}")
+    response = {}
+    if channel_name is None:
+        response["ERROR"] = "Missing channel name in route"
+        return jsonify(response)
+
+    exists = db.session.query(db.exists().where(Channel.name == channel_name)).scalar() is not None
+    response['isAvailable'] = exists
+
+    return jsonify(response)
+
+# possibly split logic for get/post in same route?
+@main.route("/create-channel/", methods=['POST'])
+def create_channel():
+    if request.method == 'POST':
+        data = request.json
+        channel_service.store_channel(data['channel_name'])
+        
+        print("SUCCESS: Channel inserted into db")
+        response = {}
+        response["successful"] = True
+        return jsonify(response)
 
 """
 def get_channel_dict(): # route to messages
