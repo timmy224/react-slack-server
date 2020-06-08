@@ -27,6 +27,27 @@ def get_channel_messages():
 
 ### DATABASE ROUTES ###
 
+@main.route("/private-messages/", methods=["GET"])
+def get_private_messages():
+    """
+    [GET] - Grabs the private from the DB sent between two users and returns it as a JSON response
+    Path: /private-messages/?username1={username1}&username2={username2}
+    Response Body: "messages"
+
+    DB Tables: "messages", "private_messages"
+    """
+    username_1, username_2 = request.args.get("username1", None), request.args.get("username2", None)
+    response = {}
+    if username_1 is None or username_2 is None:
+        response["ERROR"] = "Two user ids are required in this route"
+        return jsonify(response)
+    # TODO - Sleyter Database Query goes here
+    messages = []
+    response["messages"] = json.dumps(messages)
+    return response
+
+### EXAMPLES ###
+
 @main.route("/message/", methods=["GET"])
 def get_message():
     """
@@ -60,7 +81,7 @@ def insert_private_message():
     sender_id, content = data["sender_id"], data["content"]
     sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M%p")
     message = Message(sender_id, sent_dt, content)
-    receiver = User.query.filter_by(user_id=data["receiver_id"]).first()
+    receiver = User.query.filter_by(user_id=data["receiver_id"]).one()
 
     message.receiver = receiver
     db.session.add(message)
@@ -85,7 +106,7 @@ def insert_channel_message():
     sender_id, content = data["sender_id"], data["content"]
     sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M%p")
     message = Message(sender_id, sent_dt, content)
-    channel = Channel.query.filter_by(channel_id=data["channel_id"]).first()
+    channel = Channel.query.filter_by(channel_id=data["channel_id"]).one()
 
     message.channel = channel
     db.session.add(message)

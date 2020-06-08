@@ -1,4 +1,5 @@
 from flask import request, jsonify
+import json
 from .. import main
 from ... import db
 from ..services import client_service
@@ -26,6 +27,23 @@ def check_username():
 
 ### DATABASE ROUTES ###
 
+@main.route("/usernames/", methods=["GET"])
+def get_users():
+    """
+    [GET] - Grabs the usernames from the DB and returns a list of usernames as a JSON response
+    Path: /users
+    Response Body: "usernames"    
+    DB tables: "users"
+    """
+    response = {}
+    results = db.session.query(User.username).all()
+    usernames = [result[0] for result in results]
+    usernames_json = json.dumps(usernames)
+    response["usernames"] = usernames_json
+    return response
+
+### EXAMPLES ###
+
 @main.route("/user/", methods=["GET", "POST"])
 def user():
     """
@@ -46,7 +64,7 @@ def user():
         if user_id is None:
             response["ERROR"] = "Missing user_id in route"
             return jsonify(response)
-        user = User.query.filter_by(user_id=user_id).first()
+        user = User.query.filter_by(user_id=user_id).one()
 
         user_json = user_schema.dump(user)
         response["user"] = user_json
