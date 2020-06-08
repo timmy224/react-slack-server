@@ -31,7 +31,7 @@ def channel():
     Response Body: "channel"
     
     [POST] - Inserts a channel into the DB using JSON passed in as request body
-    Path: /channel
+    Path: /channel/
     Request Body: "name"
     Response Body: "successful"
 
@@ -113,18 +113,13 @@ def channel_subscription():
 def check_channel_name():
     channel_name = request.args.get("channel_name", None)
     print(f"Checking channel name: {channel_name}")
-    print(request)
     response = {}
     if channel_name is None:
         response["ERROR"] = "Missing channel name in route"
         return jsonify(response)
 
-    # find a better way to see if exists
-    channel = Channel.query.filter_by(name=channel_name).all()
-    if len(channel) != 0:
-        response['isAvailable'] = True
-    else: 
-        response['isAvailable'] = False
+    exists = db.session.query(db.exists().where(Channel.name == channel_name)).scalar() is not None
+    response['isAvailable'] = exists
 
     return jsonify(response)
 
@@ -132,9 +127,7 @@ def check_channel_name():
 @main.route("/create-channel/", methods=['POST'])
 def create_channel():
     if request.method == 'POST':
-        print('POST METHOD detected')
         data = request.json
-        
         channel_service.store_channel(data['channel_name'])
         
         print("SUCCESS: Channel inserted into db")
