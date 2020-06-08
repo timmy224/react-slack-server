@@ -50,7 +50,6 @@ def channel():
     elif request.method == "POST":
         data = request.json
         channel = Channel(data["name"])
-        #channel_service.store_channel(data[c'channel_name'])
 
         db.session.add(channel)
         db.session.commit()
