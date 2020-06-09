@@ -44,8 +44,8 @@ def store_private_message(clientMessage):
     Create a new Message model and add the sender and receiver as properties on 
     the Message object. Then add the Message object to the database 
     """
-    sender_id = User.query(User.user_id).filter_by(username=clientMessage["sender"])
-    sent_dt = datetime.strptime(clientMessage["sent_dt"],  "%m/%d/%Y %I:%M%p")
+    sender_id = db.session.query(User.user_id).filter_by(username=clientMessage["sender"])
+    sent_dt = datetime.strptime(clientMessage["sent_dt"],  "%m/%d/%Y %I:%M %p")
     content = clientMessage['content']
     message = Message_model(sender_id, sent_dt, content)
     
@@ -57,8 +57,8 @@ def store_private_message(clientMessage):
     db.session.commit()
 
 def store_channel_message(clientMessage):
-    sender_id = User.query(User.user_id).filter_by(username=clientMessage["sender"])
-    sent_dt = datetime.strptime(clientMessage["sent_dt"],  "%m/%d/%Y %I:%M%p")
+    sender_id = db.session.query(User.user_id).filter_by(username=clientMessage["sender"])
+    sent_dt = datetime.strptime(clientMessage["sent_dt"],  "%m/%d/%Y %I:%M %p")
     content = clientMessage['content']
 
     sender = clientMessage['sender']
