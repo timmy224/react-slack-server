@@ -4,21 +4,21 @@ from .. import main
 from ... import db
 from ..services import channel_service
 from ...models.User import User, user_schema
-from ...models.Channel import Channel, channel_schema
+from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
 from flask import request
 
 @main.route("/channels/", methods=["GET"])
 def get_channels():
     """
-    [GET] - Returns a list of server-side stored channel ids as a JSON response
+    [GET] - Returns a list of server-side stored channels a JSON response
     Path: /channels/
     Response Body: "channels"
     """
-    channels = [r.channel_id for r in db.session.query(Channel.channel_id)]
+    channels = Channel.query.all()
+    channels_json = ChannelSchema(exclude=["users"]).dump(channels, many=True)
     response = {}
-    response["channels"] = f'{channels}'
-    print(response)
+    response["channels"] = channels_json
     return response
 
 ### DATABASE ROUTES ###
