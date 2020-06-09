@@ -15,7 +15,6 @@ def on_connect():
     client_service.on_client_connected(username, room)
     recent_messages = message_service.get_recent_messages(1) # set default channel here, but removed client socket listener for message-catchup
     recent_messages = json.dumps([message.__dict__ for message in recent_messages])
-    print(recent_messages)
     emit("message-catchup", recent_messages)
     # Broadcast to all other clients that a new client connected
     emit("user-joined-chat", {"username": username}, broadcast=True, include_self=False)
@@ -33,8 +32,6 @@ def on_send_message(clientMessage):
     else:
         # insert private message logic here
         pass
-
-    print("After send")
 
 @socketio.on("disconnect")
 def on_disconnect():

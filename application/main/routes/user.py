@@ -15,8 +15,6 @@ def check_username():
     Response Body: "isAvailable"
     """
     username = request.args.get("username", None)
-    print(f"Checking username: {username}")
-
     response = {}
     if username is None:
         response["ERROR"] = "Missing username in route"

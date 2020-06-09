@@ -36,8 +36,6 @@ def on_send_message(clientMessage):
                                                                                          
 def get_recent_messages(channel_id):
     curr_channel = get_ind_channel(channel_id) 
-    
-    print(curr_channel.messages[-25:])
     return curr_channel.messages[-25:]
 
 def store_private_message(clientMessage):
@@ -52,7 +50,7 @@ def store_private_message(clientMessage):
     message = Message_model(sender_id, sent_dt, content)
     
     sender = clientMessage['sender']
-    receiver = User.query.filter_by(user_id=clientMessage["receiver"]).first()
+    receiver = User.query.filter_by(user_id=clientMessage["receiver"]).one()
     message.receiver = receiver
     
     db.session.add(message)
@@ -64,7 +62,7 @@ def store_channel_message(clientMessage):
     content = clientMessage['content']
 
     sender = clientMessage['sender']
-    channel = Channel.query.filter_by(channel_id=clientMessage["channel_id"]).first()
+    channel = Channel.query.filter_by(channel_id=clientMessage["channel_id"]).one()
     message = Message_model(sender_id, sent_dt, content)
 
     message.channel = channel

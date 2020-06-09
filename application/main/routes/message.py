@@ -17,7 +17,6 @@ def get_channel_messages():
     Response Body: "messages"
     """
     sel_channel = request.args.get("channelId", None)
-    print(f'Received Selected Channel: {sel_channel}')
     sel_channel_messages = message_service.get_recent_messages(int(sel_channel))
 
     recent_messages = json.dumps([message.__dict__ for message in sel_channel_messages])
