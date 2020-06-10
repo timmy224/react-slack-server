@@ -1,4 +1,7 @@
 from .message_class import Message
+from ...models.User import User
+from ...models.Channel import Channel as Channel_model
+
 
 class Channel():
     def __init__(self, id, name, messages):
@@ -15,6 +18,15 @@ def add_dummy_channels():
 
 def get_channel_ids(): # returns list of available channel ids
     return [*channels]
+
+def store_channel(channel_name):
+    name = channel_name
+    users = db.session.query(User.username)
+
+    channel = Channel_model(name, users)
+
+    db.session.add(channel)
+    db.session.commit()
     
 
 """
