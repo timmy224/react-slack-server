@@ -15,9 +15,28 @@ def add_dummy_channels():
 
 def get_channel_ids(): # returns list of available channel ids
     return [*channels]
-    
+
+def delete_channel(channel):
+    channel = db.session.query(Channel.channel_id).filter_by(name=channel["name"])
+    channel.users = []#need to figure out how to update the specific channel's users to []
+    #unsure if this is the correct way to store a channels info
+    #probably will need to make changed to variable names
+
+    db.session.commit()
+    db.session.delete(channel)
+    de.session.commit()
+
+'''
+Use the Channel model to query for the channel based on channel_id. 
+First update channel.users = [] (empty list) so that the database is properly updated 
+and that users are not subscribed to a deleted channel.
+
+Do db.session.commit() to push the update, 
+then db.session.delete(channel) and db.session.commit() once more
+ '''   
 
 """
+
 def create_channel(channel_name):
     most_recent_channel_id = [*channels.keys()][-1]
     new_channel_id = most_recent_channel_id + 1
