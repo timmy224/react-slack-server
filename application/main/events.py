@@ -44,7 +44,6 @@ def on_send_message(clientMessage):
         receiver_room = client_service.clients[receiver_username].room
         emit("message-recieved", clientMessage,
              room=receiver_room, broadcast=True, include_self=True)
-        pass
 
     print("After send")
 
