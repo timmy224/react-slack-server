@@ -40,7 +40,8 @@ def on_send_message(clientMessage):
         # where the socket handles the private messages for storing and sending.
     elif clientMessage['type'] == "private":
         message_service.store_private_message(clientMessage)
-        receiver_room = clientMessage['reciever']
+        receiver_username = clientMessage['username']
+        receiver_room = client_service.clients[receiver_username].room
         emit("message-recieved", clientMessage,
              room=receiver_room, broadcast=True, include_self=True)
         pass
