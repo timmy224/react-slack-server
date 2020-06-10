@@ -1,6 +1,6 @@
 from .message_class import Message
 from ...models.User import User
-from ...models.Channel import Channel as Channel_model
+from ...models.Channel import Channel 
 
 
 class Channel():
@@ -23,7 +23,7 @@ def store_channel(channel_name):
     name = channel_name
     users = db.session.query(User.username)
 
-    channel = Channel_model(name, users)
+    channel = Channel(name, users)
 
     db.session.add(channel)
     db.session.commit()
