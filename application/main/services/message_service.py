@@ -5,6 +5,7 @@ from ... import db
 from ...models.User import User
 from ...models.Channel import Channel
 from ...models.Message import Message as Message_model
+from .private_message_service import PrivateMessageClient, MessageClient,ChannelMessageClient
 
 # class Message():
 #     def __init__(self, sender, time_sent, content, channel_id):
@@ -26,10 +27,21 @@ from ...models.Message import Message as Message_model
         #messages.append(message)
 
 def on_send_message(clientMessage):
-    message = Message_class(clientMessage["sender"], 
+    if ChannelMessageClient:
+        message = ChannelMessageClient(clientMessage["sender"], 
                       clientMessage["time_sent"], 
                       clientMessage["content"],
-                      clientMessage["channel_id"]
+                      clientMessage["channel_id"])
+    elif PrivateMessageClient:
+        message =PrivateMessageClient(clientMessage["sender"], 
+                      clientMessage["time_sent"], 
+                      clientMessage["content"],
+                      clientMessage["receiver"]))
+                      
+    # message = Message_class(clientMessage["sender"], 
+    #                   clientMessage["time_sent"], 
+    #                   clientMessage["content"],
+    #                   clientMessage["channel_id"]
                       )
     add_message_channel(message, int(clientMessage["channel_id"]))
     #messages.append(message)
