@@ -41,13 +41,6 @@ def on_send_message(clientMessage):
         # insert private message logic here
         pass
 
-# @socketio.on("added-to-channel")
-# def on_channel_addition():
-#     print("Added to channel:")
-
-#     room = request.sid
-#     client_service.remove_client_by_room(room)
-
 @socketio.on("delete-channel")
 def on_delete_channel():
     print("Channel deleted:")
@@ -55,6 +48,19 @@ def on_delete_channel():
     close_room(channel_id)
     emit("Channel deleted", broadcast=True, include_self=True)
 
+@socketio.on("added-to-channel")
+def on_channel_addition():
+    print("Added to channel:")
+
+    emit("added-to-channel",{'channel_id':channel_id} broadcast=True, include_self=True)
+
+@socketio.on("join-channel")
+def on_join_channel():
+    print("join_channel:")
+    channel_id = request.args.get("channel_id")
+    join_room(channel_id) 
+
+    emit("received_message", obj, room=channel_id)
 
 @socketio.on("disconnect")
 def on_disconnect():
