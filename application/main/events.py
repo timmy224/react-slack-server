@@ -1,6 +1,6 @@
 import json
 from flask import request
-from flask_socketio import emit, join_room, leave_room # didn't add leave_room anywhere yet
+from flask_socketio import emit, join_room, close_room 
 from .. import socketio
 from .services import client_service
 from .services import message_service
@@ -41,11 +41,19 @@ def on_send_message(clientMessage):
         # insert private message logic here
         pass
 
+# @socketio.on("added-to-channel")
+# def on_channel_addition():
+#     print("Added to channel:")
+
+#     room = request.sid
+#     client_service.remove_client_by_room(room)
+
 @socketio.on("delete-channel")
 def on_delete_channel():
     print("Channel deleted:")
-    room = request.sid
-    client_service.remove_client_by_room(room)
+    channel_id = request.args.get("channel_id")
+    close_room(channel_id)
+    emit("Channel deleted", broadcast=True, include_self=True)
 
 
 @socketio.on("disconnect")
