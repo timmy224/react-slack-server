@@ -1,6 +1,7 @@
 from .message_class import Message
 from ...models.User import User
 from ...models.Channel import Channel 
+from ... import db
 
 
 class Channel():
@@ -27,7 +28,7 @@ def delete_channel(channel):
 
     db.session.commit()
     db.session.delete(channel)
-    de.session.commit()
+    db.session.commit()
 
 '''
 Use the Channel model to query for the channel based on channel_id. 
@@ -37,11 +38,13 @@ and that users are not subscribed to a deleted channel.
 Do db.session.commit() to push the update, 
 then db.session.delete(channel) and db.session.commit() once more
  '''   
+
 def store_channel(channel_name):
     name = channel_name
-    users = db.session.query(User.username)
+    users = User.query.all()
 
-    channel = Channel(name, users)
+    channel = Channel(name, 'idk', [] )
+    channel.users = users
 
     db.session.add(channel)
     db.session.commit()

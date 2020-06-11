@@ -8,18 +8,17 @@ from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
 from flask import request
 
-# @main.route("/test-store-channel/", methods=["GET"])
-# def get_channels():
-#     """
-#     [GET] - Returns a list of server-side stored channels a JSON response
-#     Path: /channels/
-#     Response Body: "channels"
-#     """
-#     channels = Channel.query.all()
-#     channels_json = ChannelSchema(exclude=["users"]).dump(channels, many=True)
-#     response = {}
-#     response["channels"] = channels_json
-#     return response
+# @main.route("/test-luis/", methods=["GET"])
+# def create_channel():
+#     if request.method == 'POST':
+#         data = request.json
+#         channel_service.store_channel(data['channel_name'])
+        
+#         print("SUCCESS: Channel inserted into db")
+#         response = {}
+#         response["successful"] = True
+#         return jsonify(response)
+
 
 
 @main.route("/channels/", methods=["GET"])
@@ -139,7 +138,7 @@ def check_channel_name():
 
     return jsonify(response)
 
-# possibly split logic for get/post in same route?
+#possibly split logic for get/post in same route?
 @main.route("/create-channel/", methods=['POST'])
 def create_channel():
     if request.method == 'POST':
