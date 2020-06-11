@@ -16,7 +16,7 @@ class Message(db.Model):
         self.content = content
     
     def __repr__(self):
-        return f"<Message message_id={self.message_id} user_id={self.user_id} content={self.content}>"
+        return f"<Message message_id={self.message_id} sender_id={self.sender_id} content={self.content}>"
 
 class MessageSchema(ma.SQLAlchemyAutoSchema):
     sender = ma.Nested("UserSchema", exclude=("channels",))
