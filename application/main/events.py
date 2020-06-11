@@ -5,13 +5,15 @@ from .. import socketio
 from .services import client_service
 from .services import message_service
 import json
+from .. import db
+from .. models.User import User
 
 @socketio.on("connect")
 def on_connect():
     username = request.args.get("username")
 
-    user_id = db.session.query(User.user_id).filter_by(username={username})
-    channels = user_id.channel
+    user = User.query.filter_by(username=username)
+    channels = user.channel
     rooms_joined = join_room(channel[0].id for channel in channels)
 
     print(f"Client connected! username: {username}")
@@ -39,8 +41,17 @@ def on_send_message(clientMessage):
         # insert private message logic here
         pass
 
+@socketio.on("delete-channel")
+def on_delete_channel():
+    print("Channel deleted:")
+    room = request.sid
+    client_service.remove_client_by_room(room)
+
+
 @socketio.on("disconnect")
 def on_disconnect():
     print("Client disconnected:")
     room = request.sid
     client_service.remove_client_by_room(room)
+
+

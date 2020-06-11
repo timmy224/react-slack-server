@@ -21,35 +21,20 @@ def get_channel_ids(): # returns list of available channel ids
     return [*channels]
 
 def store_channel(channel_name):
-    most_recent_channel_id = [*channels.key()][-1]
-    new_channel_id = most_recent_channel_id + 1
-    name = channel_name['channel_name']
     users = User.query.all()
-
-    channel = Channel(new_channel_id, name, [] )
+    name = channel_name
+    channel = Channel(name)
     channel.users = users
 
     db.session.add(channel)
     db.session.commit()
 
-def delete_channel(channel):
-    channel = db.session.query(Channel.channel_id).filter_by(name=channel["name"])
+def delete_channel(channel_id):
+    channel = Channel.query.filter_by(channel_id=channel_id)
     channel.users = []
 
     db.session.commit()
     db.session.delete(channel)
-    db.session.commit()
-
-def store_channel(channel_name):
-    most_recent_channel_id = [*channels.key()][-1]
-    new_channel_id = most_recent_channel_id + 1
-    name = channel_name['channel_name']
-    users = User.query.all()
-
-    channel = Channel(new_channel_id, name, [] )
-    channel.users = users
-
-    db.session.add(channel)
     db.session.commit()
 
 

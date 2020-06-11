@@ -138,6 +138,17 @@ def create_channel():
         response["successful"] = True
         return jsonify(response)
 
+@main.route("/delete-channel/", methods=['DELETE'])
+def delete_channel():
+    if request.method == 'DELETE':
+        data = request.json
+        channel_service.delete_channel(data['channel_id'])
+
+        print("SUCCESS: Channel deleted from db")
+        response = {}
+        response['successful'] = True
+        return jsonify(response)
+
 """
 def get_channel_dict(): # route to messages
     channels_dict = channel_service.get_channel_dict()
