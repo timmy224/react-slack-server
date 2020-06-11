@@ -1,12 +1,15 @@
 from flask import request, jsonify
+from sqlalchemy import or_
+from sqlalchemy.orm import aliased
 from datetime import datetime
 import json
 from .. import main
 from ... import db
 from ..services import message_service
 from ...models.User import User, user_schema
-from ...models.Message import Message, message_schema
+from ...models.Message import Message, MessageSchemamessage_schema
 from ...models.Channel import Channel, channel_schema
+from ...models.PrivateMessages import private_messages
 
 
 @main.route("/messages/", methods=["GET"])
@@ -115,4 +118,21 @@ def insert_channel_message():
     print("SUCCESS: channel_message inserted into db")
     response = {}
     response["successful"] = True
+    return jsonify(response)
+
+
+# TODO - can be deleted eventually, for learning purposes
+@main.route("/join-messages/", methods=["GET"])
+def join_messages():
+    username1 = "BitPhoenix"
+    username2 = "Sleyter"
+    SendingUser = aliased(User)
+    ReceivingUser = aliased(User)
+    messages = Message.query.join(SendingUser).join(private_messages, Message.message_id==private_messages.c.message_id).join(ReceivingUser)\
+        .filter(or_(\
+        ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
+        ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
+        )).all()
+    print(messages)
+    response = {}
     return jsonify(response)
