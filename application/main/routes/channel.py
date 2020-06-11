@@ -8,6 +8,20 @@ from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
 from flask import request
 
+# @main.route("/test-store-channel/", methods=["GET"])
+# def get_channels():
+#     """
+#     [GET] - Returns a list of server-side stored channels a JSON response
+#     Path: /channels/
+#     Response Body: "channels"
+#     """
+#     channels = Channel.query.all()
+#     channels_json = ChannelSchema(exclude=["users"]).dump(channels, many=True)
+#     response = {}
+#     response["channels"] = channels_json
+#     return response
+
+
 @main.route("/channels/", methods=["GET"])
 def get_channels():
     """
