@@ -8,18 +8,6 @@ from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
 from flask import request
 
-# @main.route("/test-luis/", methods=["GET"])
-# def create_channel():
-#     if request.method == 'POST':
-#         data = request.json
-#         channel_service.store_channel(data['channel_name'])
-        
-#         print("SUCCESS: Channel inserted into db")
-#         response = {}
-#         response["successful"] = True
-#         return jsonify(response)
-
-
 
 @main.route("/channels/", methods=["GET"])
 def get_channels():
