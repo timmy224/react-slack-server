@@ -34,19 +34,13 @@ def on_send_message(clientMessage):
     if clientMessage['type'] == "channel":
         message_service.store_channel_message(clientMessage)
         channel_room = clientMessage['channel_id']
-        emit("message-received", clientMessage,
-             room=channel_room, broadcast=True, include_self=True)
-
-        # where the socket handles the private messages for storing and sending.
+        emit("message-received", clientMessage, room=channel_room, broadcast=True, include_self=True)
     elif clientMessage['type'] == "private":
         message_service.store_private_message(clientMessage)
-        receiver_username = clientMessage['username']
+        receiver_username = clientMessage['receiver']
         receiver_room = client_service.clients[receiver_username].room
-        emit("message-recieved", clientMessage,
-             room=receiver_room, broadcast=True, include_self=True)
-
-    print("After send")
-
+        emit("message-recieved", clientMessage, room=receiver_room, broadcast=True, include_self=True)
+       
 
 @socketio.on("disconnect")
 def on_disconnect():
