@@ -1,6 +1,6 @@
 from .message_class import Message
 from ...models.User import User
-from ...models.Channel import Channel 
+from ...models.Channel import Channel as Channel_model
 from ... import db
 
 
@@ -23,14 +23,14 @@ def get_channel_ids(): # returns list of available channel ids
 def store_channel(channel_name):
     users = User.query.all()
     name = channel_name
-    channel = Channel(name)
+    channel = Channel_model(name)
     channel.users = users
 
     db.session.add(channel)
     db.session.commit()
 
 def delete_channel(channel_id):
-    channel = Channel.query.filter_by(channel_id=channel_id)
+    channel = Channel_model.query.filter_by(channel_id=channel_id).first()
     channel.users = []
 
     db.session.commit()

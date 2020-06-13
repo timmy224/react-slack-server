@@ -12,9 +12,10 @@ from .. models.User import User
 def on_connect():
     username = request.args.get("username")
 
-    user = User.query.filter_by(username=username)
-    channels = user.channel
-    rooms_joined = join_room(channel[0].id for channel in channels)
+    user = User.query.filter_by(username=username).first()
+    channels = user.channels
+    for channel in channels:
+        join_room(channel[0].id)
 
     print(f"Client connected! username: {username}")
     # All clients are assigned a personal room by Flask SocketIO when they connect, named with the session ID of the connection. We want to store this so that we can relay messages to individual clients in the future using send/emit(..., room=room)
@@ -41,26 +42,18 @@ def on_send_message(clientMessage):
         # insert private message logic here
         pass
 
-@socketio.on("delete-channel")
-def on_delete_channel():
-    print("Channel deleted:")
-    channel_id = request.args.get("channel_id")
-    close_room(channel_id)
-    emit("Channel deleted", broadcast=True, include_self=True)
-
-@socketio.on("added-to-channel")
-def on_channel_addition():
-    print("Added to channel:")
-
-    emit("added-to-channel",{'channel_id':channel_id} broadcast=True, include_self=True)
+# @socketio.on("delete-channel")
+# def on_delete_channel():
+#     print("Channel deleted:")
+#     channel_id = request.args.get("channel_id")
+#     close_room(channel_id)
+#     emit("Channel deleted", broadcast=True, include_self=True)
 
 @socketio.on("join-channel")
 def on_join_channel():
     print("join_channel:")
     channel_id = request.args.get("channel_id")
     join_room(channel_id) 
-
-    emit("received_message", obj, room=channel_id)
 
 @socketio.on("disconnect")
 def on_disconnect():
