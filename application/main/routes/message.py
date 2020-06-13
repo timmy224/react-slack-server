@@ -36,12 +36,13 @@ def get_private_messages():
     DB Tables: "messages", "private_messages"
     """
     username_1, username_2 = request.args.get("username1", None), request.args.get("username2", None)
+    sel_private_messages =message_service.get_private_messages
     response = {}
     if username_1 is None or username_2 is None:
         response["ERROR"] = "Two user ids are required in this route"
         return jsonify(response)
     # TODO - Sleyter Database Query goes here
-    messages = []
+    messages = [sel_private_messages]
     response["messages"] = json.dumps(messages)
     return response
 

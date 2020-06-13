@@ -56,6 +56,10 @@ def store_private_message(clientMessage):
     
     db.session.add(message)
     db.session.commit()
+    
+def get_private_messages(username1, username2):
+    curr_private = get_private(sender_id,receiver)
+    return curr_private.messages[-25]
 
 def store_channel_message(clientMessage):
     sender_id = db.session.query(User.user_id).filter_by(username=clientMessage["sender"])
