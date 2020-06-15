@@ -38,3 +38,10 @@ def on_disconnect():
     print("Client disconnected:")
     room = request.sid
     client_service.remove_client_by_room(room)
+
+
+@socketio.on('my-special-event')
+def on_event(message):
+    print(message)
+    emit("event-received", message, broadcast=True, include_self=True)
+

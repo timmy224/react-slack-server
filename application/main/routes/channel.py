@@ -137,6 +137,13 @@ def create_channel():
         response["successful"] = True
         return jsonify(response)
 
+@main.route("/echo/", methods=['GET'])
+def print_message():
+    if request.method == 'GET':
+        response = {}
+        response["echo"] = 'yourmessagehere'
+        return jsonify(response)
+
 """
 def get_channel_dict(): # route to messages
     channels_dict = channel_service.get_channel_dict()
