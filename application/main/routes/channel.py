@@ -5,6 +5,7 @@ from ... import db
 from ..services import channel_service
 from ...models.User import User, user_schema
 from ...models.Channel import Channel, ChannelSchema, channel_schema
+from ...models.UserChallenge import User_Object
 from sqlalchemy.sql import exists
 from flask import request
 

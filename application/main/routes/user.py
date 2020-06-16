@@ -1,9 +1,10 @@
-from flask import request, jsonify
+from flask import request, jsonify, request
 import json
 from .. import main
 from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
+from ...models.UserChallenge import User_Object
 
 
 @main.route("/check-username/", methods=["GET"])
@@ -39,6 +40,21 @@ def get_users():
     usernames_json = json.dumps(usernames)
     response["usernames"] = usernames_json
     return response
+
+@main.route("/userinfo/", methods=['POST'])
+def post_user_info():
+    if request.method == "POST":
+        name = request.form.get("name", None)
+        username = request.form.get("username", None)
+        email = request.form.get("email", None)
+        user = User_Object(name, username, email)
+        newUser = {}
+        newUser[name] = {'username':username}, {'email':email}
+        print(newUser)
+    response = {}
+    response["successful"] = True
+    return response
+
 
 ### EXAMPLES ###
 
