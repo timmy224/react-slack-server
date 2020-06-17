@@ -12,10 +12,12 @@ from .. models.User import User
 def on_connect():
     username = request.args.get("username")
 
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter_by(username=username).one()
+    
     channels = user.channels
     for channel in channels:
-        join_room(channel[0].id)
+        channel_id = channel.channel_id
+        join_room(channel_id)
 
     print(f"Client connected! username: {username}")
     # All clients are assigned a personal room by Flask SocketIO when they connect, named with the session ID of the connection. We want to store this so that we can relay messages to individual clients in the future using send/emit(..., room=room)
@@ -41,13 +43,6 @@ def on_send_message(clientMessage):
     else:
         # insert private message logic here
         pass
-
-# @socketio.on("delete-channel")
-# def on_delete_channel():
-#     print("Channel deleted:")
-#     channel_id = request.args.get("channel_id")
-#     close_room(channel_id)
-#     emit("Channel deleted", broadcast=True, include_self=True)
 
 @socketio.on("join-channel")
 def on_join_channel():

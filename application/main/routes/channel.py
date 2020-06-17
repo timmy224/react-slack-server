@@ -46,7 +46,7 @@ def channel():
         if channel_id is None:
             response["ERROR"] = "Missing channel_id in route"
             return jsonify(response)
-        channel = Channel.query.filter_by(channel_id=channel_id).first()
+        channel = Channel.query.filter_by(channel_id=channel_id).one()
         channel_json = channel_schema.dump(channel)
         response["channel"] = channel_json
         return response        
@@ -134,7 +134,8 @@ def create_channel():
         channel_service.store_channel(data['channel_name'])
         
         print("SUCCESS: Channel inserted into db")
-        emit("added-to-channel", broadcast=True, include_self=False)
+        #missing logic to query for newest channel_id
+        emit("added-to-channel", {"channel_id":channel_id}, broadcast=True, include_self=False)
         response = {}
         response["successful"] = True
         return jsonify(response)
@@ -143,11 +144,12 @@ def create_channel():
 def delete_channel():
     if request.method == 'DELETE':
         data = request.json
-        channel_service.delete_channel(data['channel_id'])
+        channel_id = data["channel_id"]
+        channel_service.delete_channel(channel_id)
         close_room(channel_id)
 
         print("SUCCESS: Channel deleted from db")
-        emit("channel-deleted",room=channel_id, broadcast=True, include_self=True)
+        emit("channel-deleted", room=channel_id, broadcast=True, include_self=True)
         response = {}
         response['successful'] = True
         return jsonify(response)

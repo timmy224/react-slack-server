@@ -30,7 +30,7 @@ def store_channel(channel_name):
     db.session.commit()
 
 def delete_channel(channel_id):
-    channel = Channel_model.query.filter_by(channel_id=channel_id).first()
+    channel = Channel_model.query.filter_by(channel_id=channel_id).one()
     channel.users = []
 
     db.session.commit()
