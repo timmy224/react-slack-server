@@ -38,3 +38,30 @@ def on_disconnect():
     print("Client disconnected:")
     room = request.sid
     client_service.remove_client_by_room(room)
+
+### CHALLENGES WEEK 3 ###
+@socketio.on("send-ping")
+def on_send_ping(message):
+    print("Client requested ping")
+    print(message)
+    message = 'ping'
+    emit("ping", message, broadcast=True, include_self=True)
+
+
+@socketio.on("pong")
+def on_pong(message):
+    print("Client ponged")
+    print(message)
+    message = "ping-pong-success"
+    emit("ping-pong-success", message, broadcast=True, include_self=True)
+
+
+
+
+
+
+
+
+
+
+    
