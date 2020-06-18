@@ -131,9 +131,10 @@ def check_channel_name():
 def create_channel():
     if request.method == 'POST':
         data = request.json
-        channel_service.store_channel(data['channel_name'])
+        channel_id = channel_service.store_channel(data['channel_name'])
         
         print("SUCCESS: Channel inserted into db")
+        emit("added-to-channel", {"channel_id":channel_id}, broadcast=True, include_self=False)
         response = {}
         response["successful"] = True
         return jsonify(response)
