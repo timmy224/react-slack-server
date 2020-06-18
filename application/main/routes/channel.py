@@ -7,6 +7,7 @@ from ...models.User import User, user_schema
 from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
 from flask import request
+from flask_socketio import emit, close_room 
 
 @main.route("/channels/", methods=["GET"])
 def get_channels():
@@ -125,16 +126,31 @@ def check_channel_name():
 
     return jsonify(response)
 
-# possibly split logic for get/post in same route?
+#possibly split logic for get/post in same route?
 @main.route("/create-channel/", methods=['POST'])
 def create_channel():
     if request.method == 'POST':
         data = request.json
-        channel_service.store_channel(data['channel_name'])
+        channel_id = channel_service.store_channel(data['channel_name'])
         
         print("SUCCESS: Channel inserted into db")
+        emit("added-to-channel", {"channel_id":channel_id}, broadcast=True, include_self=False)
         response = {}
         response["successful"] = True
+        return jsonify(response)
+
+@main.route("/delete-channel/", methods=['DELETE'])
+def delete_channel():
+    if request.method == 'DELETE':
+        data = request.json
+        channel_id = data["channel_id"]
+        channel_service.delete_channel(channel_id)
+        close_room(channel_id)
+
+        print("SUCCESS: Channel deleted from db")
+        emit("channel-deleted", room=channel_id, broadcast=True, include_self=True)
+        response = {}
+        response['successful'] = True
         return jsonify(response)
 
 """
