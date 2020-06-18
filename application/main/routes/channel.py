@@ -98,32 +98,32 @@ def create_channel():
 
 
 
-@main.route("/luis-test/", methods=['GET'])
-def luis_test():
-    if request.method == 'GET': 
-        channels = Channel.query.all() #returns __repr__ from the channel module
-        channels_json = ChannelSchema(exclude=["users"]).dump(channels, many=True)
-        print('Channel(s) query:', channels, channels_json)
-        channel = Channel.query.filter_by(channel_id=19).one() #returns __repr__ from the channel module
-        channel_json = channel_schema.dump(channel)
-        print('Channel query:', channel, channel_json)
-        user = User.query.filter_by(user_id=1).one() #returns __repr__ from the channel module
-        user_json = user_schema.dump(user)
-        print('User query:', user, user_json)
-        # exists = db.session.query(db.exists().where('Channel.name' == channel_name)).scalar() is not None
-        # print('exists query:', exists)
-        response = {}
-        response["successful"] = True
-        return jsonify(response)
-# Channel(s) query: 
-#     [<Channel channel_id=19 name=test-channel>] #query
-#     [{'channel_id': 19, 'name': 'test-channel'}] #schema
-# Channel query: 
-#     <Channel channel_id=19 name=test-channel> #query
-#     {'name': 'test-channel', 'channel_id': 19, 'users': [{'user_id': 1, 'username': 'BitPhoenix'}, {'user_id': 2, 'username': 'Sleyter'}, {'user_id': 3, 'username': 'Timmy'}, {'user_id': 4, 'username': 'Luis'}, {'user_id': 5, 'username': 'Luis'}, {'user_id': 6, 'username': 'Luis'}]}
-# User query: 
-#     <User user_id=1 username=BitPhoenix> #query
-#     {'user_id': 1, 'channels': [{'channel_id': 19, 'name': 'test-channel'}], 'username': 'BitPhoenix'} #schema
+# @main.route("/luis-test/", methods=['GET'])
+# def luis_test():
+#     if request.method == 'GET': 
+#         channels = Channel.query.all() #returns __repr__ from the channel module
+#         channels_json = ChannelSchema(exclude=["users"]).dump(channels, many=True)
+#         print('Channel(s) query:', channels, channels_json)
+#         channel = Channel.query.filter_by(channel_id=19).one() #returns __repr__ from the channel module
+#         channel_json = channel_schema.dump(channel)
+#         print('Channel query:', channel, channel_json)
+#         user = User.query.filter_by(user_id=1).one() #returns __repr__ from the channel module
+#         user_json = user_schema.dump(user)
+#         print('User query:', user, user_json)
+#         # exists = db.session.query(db.exists().where('Channel.name' == channel_name)).scalar() is not None
+#         # print('exists query:', exists)
+#         response = {}
+#         response["successful"] = True
+#         return jsonify(response)
+# # Channel(s) query: 
+# #     [<Channel channel_id=19 name=test-channel>] #query
+# #     [{'channel_id': 19, 'name': 'test-channel'}] #schema
+# # Channel query: 
+# #     <Channel channel_id=19 name=test-channel> #query
+# #     {'name': 'test-channel', 'channel_id': 19, 'users': [{'user_id': 1, 'username': 'BitPhoenix'}, {'user_id': 2, 'username': 'Sleyter'}, {'user_id': 3, 'username': 'Timmy'}, {'user_id': 4, 'username': 'Luis'}, {'user_id': 5, 'username': 'Luis'}, {'user_id': 6, 'username': 'Luis'}]}
+# # User query: 
+# #     <User user_id=1 username=BitPhoenix> #query
+# #     {'user_id': 1, 'channels': [{'channel_id': 19, 'name': 'test-channel'}], 'username': 'BitPhoenix'} #schema
 
 """
 ON GET_CHANNEL()

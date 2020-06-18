@@ -42,18 +42,16 @@ def on_disconnect():
 ### CHALLENGES WEEK 3 ###
 @socketio.on("send-ping")
 def on_send_ping(message):
-    print("Client requested ping")
-    print(message)
-    message = 'ping'
-    emit("ping", message, broadcast=True, include_self=True)
+    print("Client requested ping:", message)
+    response = 'pinged'
+    emit("pinged", response, broadcast=True, include_self=True)
 
 
-@socketio.on("pong")
+@socketio.on("ponged")
 def on_pong(message):
-    print("Client ponged")
-    print(message)
-    message = "ping-pong-success"
-    emit("ping-pong-success", message, broadcast=True, include_self=True)
+    print("Client ponged:", message)
+    response = "ping-pong-success"
+    emit("ping-pong-success", response, broadcast=True, include_self=True)
 
 
 

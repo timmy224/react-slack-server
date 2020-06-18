@@ -58,6 +58,8 @@ def user():
         response["successful"] = True
         return jsonify(response)
 
+### CHALLENGES WEEK 3 ###
+
 @main.route("/challenge/", methods=["POST", "GET"]) #API endpoint and the method we expect from client request
 def challenge():#setting our function that will be called upon API endpoint being hit
     if request.method == "POST":#setting condition for a POST method
@@ -80,8 +82,6 @@ def challenge():#setting our function that will be called upon API endpoint bein
         response = {}#setting our response into a dict
         response["challenge"] = challenge_json#setting our response so its a JSON nested object
         return response#function needs to return something in our case it will be our response 
-
-### CHALLENGES WEEK 3 ###
 
 @main.route("/challenges/", methods=["GET"])#route set for retrieving all challenges
 def get_challenges(): # defining our function to be called
