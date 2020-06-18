@@ -2,7 +2,7 @@ from .message_class import Message
 from ...models.User import User
 from ...models.Channel import Channel as Channel_model
 from ... import db
-
+from flask_socketio import emit
 
 class Channel():
     def __init__(self, id, name, messages):
@@ -28,6 +28,9 @@ def store_channel(channel_name):
 
     db.session.add(channel)
     db.session.commit()
+    db.session.refresh(channel)
+    channel_id = channel.channel_id
+    emit("added-to-channel", {"channel_id":channel_id}, broadcast=True, include_self=False)
 
 def delete_channel(channel_id):
     channel = Channel_model.query.filter_by(channel_id=channel_id).one()
@@ -36,8 +39,7 @@ def delete_channel(channel_id):
     db.session.commit()
     db.session.delete(channel)
     db.session.commit()
-
-
+    
 """
 
 def create_channel(channel_name):

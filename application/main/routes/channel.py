@@ -134,8 +134,6 @@ def create_channel():
         channel_service.store_channel(data['channel_name'])
         
         print("SUCCESS: Channel inserted into db")
-        #missing logic to query for newest channel_id
-        emit("added-to-channel", {"channel_id":channel_id}, broadcast=True, include_self=False)
         response = {}
         response["successful"] = True
         return jsonify(response)
