@@ -17,7 +17,6 @@ def get_channel_messages():
     Response Body: "messages"
     """
     sel_channel = request.args.get("channelId", None)
-    print(f'Received Selected Channel: {sel_channel}')
     sel_channel_messages = message_service.get_recent_messages(int(sel_channel))
 
     recent_messages = json.dumps([message.__dict__ for message in sel_channel_messages])
@@ -72,14 +71,14 @@ def insert_private_message():
     """
     [POST] - Inserts a private message into the DB using JSON passed in as request body
     Path: /private-message
-    Request Body: "sender_id", "receiver_id", "content", "sent_dt" (ex: 05/02/2020 1:23PM)
+    Request Body: "sender_id", "receiver_id", "content", "sent_dt" (ex: 05/02/2020 1:23 PM)
     Response Body: "successful"
 
     DB tables: "messages", "private_messages", "users"
     """
     data = request.json
     sender_id, content = data["sender_id"], data["content"]
-    sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M%p")
+    sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M %p")
     message = Message(sender_id, sent_dt, content)
     receiver = User.query.filter_by(user_id=data["receiver_id"]).one()
 
@@ -97,14 +96,14 @@ def insert_channel_message():
     """
     [POST] - Inserts a channel message into the DB using JSON passed in as request body
     Path: /channel-message
-    Request Body: "sender_id", "channel_id", "content", "sent_dt" (ex: 05/02/2020 1:23PM)
+    Request Body: "sender_id", "channel_id", "content", "sent_dt" (ex: 05/02/2020 1:23 PM)
     Response Body: "successful"
 
     DB tables: "messages", "channel_messages", "channels"
     """
     data = request.json
     sender_id, content = data["sender_id"], data["content"]
-    sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M%p")
+    sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M %p")
     message = Message(sender_id, sent_dt, content)
     channel = Channel.query.filter_by(channel_id=data["channel_id"]).one()
 
