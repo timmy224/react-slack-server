@@ -1,4 +1,3 @@
-from .message_class import Message
 from ...models.User import User
 from ...models.Channel import Channel as Channel_model
 from ... import db
