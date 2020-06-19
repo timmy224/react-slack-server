@@ -1,15 +1,17 @@
 from flask import request, jsonify
+from sqlalchemy import or_
+from sqlalchemy.orm import aliased
 from datetime import datetime
 import json
 from .. import main
 from ... import db
 from ..services import message_service
 from ...models.User import User, user_schema
-from ...models.Message import Message, message_schema
+from ...models.Message import Message, MessageSchema, message_schema
 from ...models.Channel import Channel, channel_schema
+from ...models.PrivateMessages import private_messages
 
-
-@main.route("/messages/", methods=["GET"])
+@main.route("/channel-messages/", methods=["GET"])
 def get_channel_messages():
     """
     [GET] - Returns a list of the 25 most recent server-side stored messages and returns them as a JSON response
@@ -35,14 +37,21 @@ def get_private_messages():
 
     DB Tables: "messages", "private_messages"
     """
-    username_1, username_2 = request.args.get("username1", None), request.args.get("username2", None)
+    username1, username2 = request.args.get("username1", None), request.args.get("username2", None)
+    # sel_private_messages =message_service.get_private_messages(username_1,username_2)
     response = {}
-    if username_1 is None or username_2 is None:
+    if username1 is None or username2 is None:
         response["ERROR"] = "Two user ids are required in this route"
         return jsonify(response)
     # TODO - Sleyter Database Query goes here
-    messages = []
-    response["messages"] = json.dumps(messages)
+    SendingUser = aliased(User)
+    ReceivingUser = aliased(User)
+    messages = Message.query.join(SendingUser).join(private_messages, Message.message_id==private_messages.c.message_id).join(ReceivingUser)\
+        .filter(or_(\
+        ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
+        ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
+        )).all()
+    response["messages"] = message_schema.dump(messages, many=True)
     return response
 
 ### EXAMPLES ###
