@@ -2,6 +2,7 @@ from .message_class import Message
 from ...models.User import User
 from ...models.Channel import Channel as Channel_model
 from ... import db
+from .message_class import ChannelMessageClient
 
 class Channel():
     def __init__(self, id, name, messages):
@@ -73,7 +74,7 @@ def add_dummy_messages():
             username = "user" + str(i+1)
             time_sent = "12:01"
             content = f"Channel #{dummy_id}: My name is {username} and my favorite number is {i+1}"
-            message = Message(username, time_sent, content, dummy_id)
+            message = ChannelMessageClient(username, time_sent, content, dummy_id)
             add_message_channel(message, dummy_id)
 
 add_dummy_channels()
