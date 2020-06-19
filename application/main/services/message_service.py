@@ -1,18 +1,11 @@
 from datetime import datetime
 from .channel_service import get_ind_channel, add_message_channel
-from .message_class import PrivateMessageClient as Private_Message_Class
-from .message_class import ChannelMessageClient as Channel_Message_Class
+# from .message_class import PrivateMessageClient 
+from .message_class import ChannelMessageClient
 from ... import db
 from ...models.User import User
 from ...models.Channel import Channel
 from ...models.Message import Message as Message_model
-
-# class Message():
-#     def __init__(self, sender, time_sent, content, channel_id):
-#         self.sender = sender
-#         self.time_sent = time_sent
-#         self.content = content
-#         self.channel_id = channel_id
 
 #messages = []
 
@@ -27,7 +20,7 @@ from ...models.Message import Message as Message_model
         #messages.append(message)
 
 def on_send_message(clientMessage):
-    message = Channel_Message_Class(clientMessage["sender"], 
+    message = ChannelMessageClient(clientMessage["sender"], 
                       clientMessage["time_sent"], 
                       clientMessage["content"],
                       clientMessage["channel_id"]
