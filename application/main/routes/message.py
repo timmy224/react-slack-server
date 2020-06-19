@@ -7,7 +7,6 @@ from .. import main
 from ... import db
 from ..services import message_service
 from ...models.User import User, user_schema
-from ...models.Message import Message, message_schema
 from ...models.Message import Message, MessageSchema, message_schema
 from ...models.Channel import Channel, channel_schema
 from ...models.PrivateMessages import private_messages
