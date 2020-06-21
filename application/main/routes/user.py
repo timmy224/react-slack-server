@@ -6,6 +6,13 @@ from ..services import client_service
 from ...models.User import User, user_schema
 
 
+# Would normally be placed in separate file but we don't have a good place to put non-model classes yet
+class UserClient:
+    def __init__(self, name, username, email):
+        self.name = name
+        self.username = username
+        self.email = email
+
 @main.route("/check-username/", methods=["GET"])
 def check_username():
     """
@@ -22,6 +29,17 @@ def check_username():
     username_is_available = username.lower() not in client_service.clients
     response["isAvailable"] = username_is_available
     return jsonify(response)
+
+@main.route("/send-user-info", methods=["POST"])
+def send_user_info():
+    data = request.json
+    user_info = data["user_info"]
+    user_client = UserClient(user_info["name"], user_info["username"], user_info["email"])
+    formatted_user_client = {user_client.name: {"username": user_client.username, "email": user_client.email}}
+    response = {}
+    response["successful"] = True
+    return jsonify(response)
+    
 
 ### DATABASE ROUTES ###
 
