@@ -1,4 +1,4 @@
-from flask import request, jsonify, make_response
+from flask import request, jsonify, make_response, current_app
 import json
 from .. import main
 from ... import db
@@ -26,7 +26,8 @@ def check_username():
 @main.route("/get-cookie", methods=["GET"])
 def get_cookie():
     response = make_response({})
-    response.set_cookie("mycookie", "I am cookie", secure=True, httponly=True, samesite="None")
+    secure_cookies = current_app.config["SECURE_COOKIES"] 
+    response.set_cookie("mycookie", "I am cookie", secure=secure_cookies, httponly=True, samesite="None")
     return response
 
 @main.route("/send-cookie", methods=["GET"])
