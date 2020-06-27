@@ -1,4 +1,4 @@
-from flask import request, jsonify, make_response, current_app
+from flask import request, jsonify
 import json
 from .. import main
 from ... import db
@@ -22,19 +22,6 @@ def check_username():
     username_is_available = username.lower() not in client_service.clients
     response["isAvailable"] = username_is_available
     return jsonify(response)
-
-@main.route("/get-cookie", methods=["GET"])
-def get_cookie():
-    response = make_response({})
-    secure_cookies = current_app.config["SECURE_COOKIES"] 
-    response.set_cookie("mycookie", "I am cookie", secure=secure_cookies, httponly=True, samesite="None")
-    return response
-
-@main.route("/send-cookie", methods=["GET"])
-def send_cookie():
-    cookie_value = request.cookies.get("mycookie")
-    print("cookie_value: ", cookie_value)
-    return jsonify({})
 
 ### DATABASE ROUTES ###
 
