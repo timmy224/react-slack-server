@@ -26,7 +26,7 @@ def check_username():
 @main.route("/get-cookie", methods=["GET"])
 def get_cookie():
     response = make_response({})
-    response.set_cookie("mycookie", "I am cookie")
+    response.set_cookie("mycookie", "I am cookie", samesite=None)
     return response
 
 ### DATABASE ROUTES ###
