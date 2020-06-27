@@ -29,6 +29,12 @@ def get_cookie():
     response.set_cookie("mycookie", "I am cookie", secure=True, httponly=True, samesite="None")
     return response
 
+@main.route("/send-cookie", methods=["GET"])
+def send_cookie():
+    cookie_value = request.cookies.get("mycookie")
+    print("cookie_value: ", cookie_value)
+    return jsonify({})
+
 ### DATABASE ROUTES ###
 
 @main.route("/usernames/", methods=["GET"])
