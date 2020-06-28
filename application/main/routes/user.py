@@ -1,4 +1,5 @@
 from flask import request, jsonify
+from flask_login import login_user
 import json
 from .. import main
 from ... import db
@@ -22,6 +23,12 @@ def check_username():
     username_is_available = username.lower() not in client_service.clients
     response["isAvailable"] = username_is_available
     return jsonify(response)
+
+@main.route("/login", methods=["GET"])
+def login():
+    user = User.query.filter_by(username="BitPhoenix").one()
+    login_user(user, remember=True)
+    return jsonify({})
 
 ### DATABASE ROUTES ###
 
