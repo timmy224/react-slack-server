@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
 from flask_socketio import SocketIO
-from .models import configure_db, configure_marshmallow, configure_migrate
+from .models import configure_db, configure_marshmallow, configure_migrate, configure_login
 
 load_dotenv()
 from .config import config
@@ -20,6 +20,8 @@ def create_app():
     db = configure_db(app)
     ma = configure_marshmallow(app)
     migrate = configure_migrate(app, db)
+    # Configure Flask-Login
+    configure_login(app)
     # CORS
     CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
     # Register blueprints
