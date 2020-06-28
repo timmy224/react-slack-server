@@ -1,5 +1,5 @@
 import os
-from flask import jsonify
+from flask import jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_login import LoginManager
@@ -31,7 +31,7 @@ def configure_login(app):
 
     @login_manager.unauthorized_handler
     def unauthorized():
-        return jsonify({"message": "You are not logged in"})
+        return abort(403)
     
     
         
