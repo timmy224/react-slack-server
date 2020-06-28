@@ -26,15 +26,10 @@ def check_username():
 
 @main.route("/login", methods=["GET"])
 def login():
+    # TODO update to POST when Luis's code is brought in 
     # TODO Luis's code goes here
     user = User.query.filter_by(username="BitPhoenix").one() # TODO: replace with Luis's code
     login_user(user, remember=True)
-    return {}
-
-@main.route("/protected-route", methods=["GET"])
-@login_required
-def protected_route():
-    print("Printing current user in protected route: ", current_user.username)
     return {}
 
 ### DATABASE ROUTES ###
@@ -55,6 +50,12 @@ def get_users():
     return response
 
 ### EXAMPLES ###
+
+@main.route("/protected-route", methods=["GET"])
+@login_required
+def protected_route():
+    print("Printing current user in protected route: ", current_user.username)
+    return {}
 
 @main.route("/user/", methods=["GET", "POST"])
 def user():
