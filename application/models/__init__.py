@@ -1,4 +1,5 @@
 import os
+from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_login import LoginManager
@@ -21,11 +22,18 @@ def configure_migrate(app, db):
     return migrate
     
 def configure_login(app):
-    login = LoginManager(app)
-    from . import User
-    @login.user_loader
+    login_manager = LoginManager(app)
+    from .User import User
+
+    @login_manager.user_loader
     def load_user(id):
         return User.query.get(int(id))
+
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return jsonify({"message": "You are not logged in"})
+    
+    
         
 
 
