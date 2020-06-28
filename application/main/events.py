@@ -15,10 +15,11 @@ def on_connect():
 
     user = User.query.filter_by(username=username).one()
     
-    channels = user.channels
-    for channel in channels:
-        channel_id = channel.channel_id
-        join_room(channel_id)
+    if user == True:
+        channels = user.channels
+        for channel in channels:
+            channel_id = channel.channel_id
+            join_room(channel_id)
 
     print(f"Client connected! username: {username}")
     # All clients are assigned a personal room by Flask SocketIO when they connect, named with the session ID of the connection. We want to store this so that we can relay messages to individual clients in the future using send/emit(..., room=room)

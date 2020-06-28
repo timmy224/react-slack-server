@@ -19,7 +19,8 @@ def check_username():
     if username is None:
         response["ERROR"] = "Missing username in route"
         return jsonify(response)        
-    username_is_available = username.lower() not in client_service.clients
+    #username_is_available = username.lower() not in client_service.clients
+    username_is_available = False
     response["isAvailable"] = username_is_available
     return jsonify(response)
 
@@ -40,6 +41,29 @@ def get_users():
     response["usernames"] = usernames_json
     return response
 
+@main.route("/login/", methods=["POST"])
+def login_user():
+    if request.method == "POST":
+        data = request.json
+        print(data)
+        #not sure what we will do with data
+        print("SUCCESS: logged in user")
+        response = {}
+        response["successful"] = True
+        return jsonify(response)
+
+@main.route("/check-password/", methods=["GET"])
+def check_password():
+    if request.method == "GET":
+        print("Client is checking password")
+        password = request.args.get("password", None)
+        if password is None:
+            response["ERROR"] = "Missing password in route"
+            return jsonify(response)  
+        password_is_correct= True #logic for checking password
+        response = {}
+        response["isCorrect"] = password_is_correct
+        return jsonify(response)
 ### EXAMPLES ###
 
 @main.route("/user/", methods=["GET", "POST"])
