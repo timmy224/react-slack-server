@@ -8,6 +8,7 @@ from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
 from flask import request
 from flask_socketio import emit, close_room 
+from ...__init__ import socketio
 
 @main.route("/channels/", methods=["GET"])
 def get_channels():
@@ -114,17 +115,18 @@ def channel_subscription():
 
 @main.route("/check-channel-name/", methods=['GET'])
 def check_channel_name():
-    channel_name = request.args.get("channel_name", None)
-    print(f"Checking channel name: {channel_name}")
-    response = {}
-    if channel_name is None:
-        response["ERROR"] = "Missing channel name in route"
+    if request.method == "GET":
+        channel_name = request.args.get("channel_name", None)
+        print(f"Checking channel name: {channel_name}")
+        response = {}
+        if channel_name is None:
+            response["ERROR"] = "Missing channel name in route"
+            return jsonify(response)
+
+        exists = db.session.query(db.exists().where(Channel.name == channel_name)).scalar() is not None
+        response['isAvailable'] = exists
+
         return jsonify(response)
-
-    exists = db.session.query(db.exists().where(Channel.name == channel_name)).scalar() is not None
-    response['isAvailable'] = exists
-
-    return jsonify(response)
 
 #possibly split logic for get/post in same route?
 @main.route("/create-channel/", methods=['POST'])
@@ -132,9 +134,9 @@ def create_channel():
     if request.method == 'POST':
         data = request.json
         channel_id = channel_service.store_channel(data['channel_name'])
-        
         print("SUCCESS: Channel inserted into db")
-        emit("added-to-channel", {"channel_id":channel_id}, broadcast=True, include_self=False)
+
+        socketio.emit("added-to-channel", {"channel_id":channel_id}, broadcast=True, include_self=False)
         response = {}
         response["successful"] = True
         return jsonify(response)

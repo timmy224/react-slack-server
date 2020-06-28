@@ -6,8 +6,13 @@ Important: make sure you have Python installed locally on your machine
 2. Create virtual environment named env: `$ py -m venv env`
 3. Activate virtual environment: `$ env\Scripts\activate`
 4. Install dependencies: `$ pip install -r requirements.txt`
-5. Create a file named `.env` in the project root and add `LOCAL=True` to it
-6. Also add `DATABASE_URL=` and set it to the Heroku database url 
+
+## Create local .env file 
+1. Create a file named `.env` in the project root 
+2. Add `LOCAL=True` to it on the first line. All following entries should each be placed on their own line
+3. Add `DATABASE_URL_PROD=` and set it to the Heroku postgres database url 
+4. Add `DATABASE_URL_DEV=` and set it to your local postgres database url
+5. Add `MODE=development` 
 
 ## Running the server:
 1. Make sure you're in the root project folder `$ cd react-slack-server`

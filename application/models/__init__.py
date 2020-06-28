@@ -4,8 +4,6 @@ from flask_marshmallow import Marshmallow
 from flask_migrate import Migrate
 
 def configure_db(app):
-    # global db
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
     db = SQLAlchemy(app)
     return db
 
