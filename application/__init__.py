@@ -28,7 +28,7 @@ def create_app():
     # CSRF
     csrf = CSRFProtect(app)
     # CORS
-    CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+    CORS(app, origins=["http://localhost:3000"], supports_credentials=True, expose_headers=["csrf-token"])
 
     # Register blueprints
     from .main import main as main_blueprint

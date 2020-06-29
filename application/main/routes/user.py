@@ -28,8 +28,9 @@ def check_username():
 @main.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "GET":
-        response = Response("Foo")
-        response.headers["csrf_token"] = generate_csrf()
+        response = Response("CSRF token is on response header")
+        response.headers["csrf-token"] = generate_csrf()
+        print(response.headers)
         return response
     elif request.method == "POST":
         # TODO Luis's code goes here
