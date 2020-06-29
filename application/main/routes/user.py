@@ -5,6 +5,21 @@ from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
 
+@main.route("/register/", methods={"POST"})
+def register_user():
+    if request.method =="POST":
+        data = request.json
+        password = data["password"]
+        password_hash = User.set_password(password)
+        user = User(data["username"], password_hash)
+
+        db.session.add(user)
+        db.session.commit()
+
+        print("SUCCESS: user data inserted into db")
+        response = {}
+        response["successful"] = True
+        return jsonify(response)
 
 @main.route("/check-username/", methods=["GET"])
 def check_username():
