@@ -6,7 +6,6 @@ from .. import main
 from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
-from ..forms.login import LoginForm
 
 @main.route("/check-username/", methods=["GET"])
 def check_username():
