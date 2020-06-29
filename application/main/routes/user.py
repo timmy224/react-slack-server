@@ -56,14 +56,20 @@ def login_user():
 def check_password():
     if request.method == "GET":
         print("Client is checking password")
+        username = request.args.get("username", None)
+        if username is None:
+            response["ERROR"] = "Missing username in route"
+            return jsonify(response)
+        user = User.query.filter_by(username=username).one()
         password = request.args.get("password", None)
         if password is None:
             response["ERROR"] = "Missing password in route"
-            return jsonify(response)  
-        password_is_correct= True #logic for checking password
+            return jsonify(response) 
+        password_is_correct= user.check_password(password)
         response = {}
         response["isCorrect"] = password_is_correct
         return jsonify(response)
+
 ### EXAMPLES ###
 
 @main.route("/user/", methods=["GET", "POST"])
