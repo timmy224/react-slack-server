@@ -7,17 +7,17 @@ from ...models.User import User
 from ...models.Channel import Channel
 from ...models.Message import Message as Message_model
 
-#messages = []
+messages = []
 
-# def add_dummy_messages():
-#     for i in range(1, 25):
-#         username = "user" + str(i+1)
-#         time_sent = "12:01"
-#         content = f"My name is {username} and my favorite number is {i+1}"
-#         dummy_id = 1
-#         message = Message(username, time_sent, content, dummy_id)
-#         add_message_channel(message, dummy_id)
-        #messages.append(message)
+def add_dummy_messages():
+    for i in range(1, 25):
+        username = "user" + str(i+1)
+        time_sent = "12:01"
+        content = f"My name is {username} and my favorite number is {i+1}"
+        dummy_id = 1
+        message = ChannelMessageClient(username, time_sent, content, dummy_id)
+        add_message_channel(message, dummy_id)
+        messages.append(message)
 
 def on_send_message(clientMessage):
     message = ChannelMessageClient(clientMessage["sender"], 
@@ -26,11 +26,7 @@ def on_send_message(clientMessage):
                       clientMessage["channel_id"]
                       )
     add_message_channel(message, int(clientMessage["channel_id"]))
-    #messages.append(message)
-                                                                                         
-def get_recent_messages(channel_id):
-    curr_channel = get_ind_channel(channel_id) 
-    return curr_channel.messages[-25:]
+    messages.append(message)                                                                                   
 
 def store_private_message(clientMessage):
     """
@@ -64,4 +60,4 @@ def store_channel_message(clientMessage):
     db.session.add(message)
     db.session.commit()
 
-# add_dummy_messages()
+add_dummy_messages()

@@ -154,27 +154,3 @@ def delete_channel():
         response = {}
         response['successful'] = True
         return jsonify(response)
-
-"""
-def get_channel_dict(): # route to messages
-    channels_dict = channel_service.get_channel_dict()
-    channels_list_objs = json.dumps([channels_dict[channel].__dict__ for channel in channels_dict])
-    response["channels"] = channels_list_objs
-    response  = 
-        {
-            channels: [
-                {
-                    id: 1,
-                    name: "Channel #1",
-                    messages: [blah blah blah]
-                }, {
-                    id: 2,
-                    name: "Channel #2",
-                    messages: [blah blah blah]
-                }, 
-
-                ...
-
-                ]
-        }
-"""

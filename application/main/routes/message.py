@@ -10,6 +10,9 @@ from ...models.User import User, user_schema
 from ...models.Message import Message, MessageSchema, message_schema
 from ...models.Channel import Channel, channel_schema
 from ...models.PrivateMessages import private_messages
+from ...models.ChannelMessages import channel_messages
+
+### DATABASE ROUTES ###
 
 @main.route("/channel-messages/", methods=["GET"])
 def get_channel_messages():
@@ -19,14 +22,24 @@ def get_channel_messages():
     Response Body: "messages"
     """
     sel_channel = request.args.get("channelId", None)
-    sel_channel_messages = message_service.get_recent_messages(int(sel_channel))
 
-    recent_messages = json.dumps([message.__dict__ for message in sel_channel_messages])
+    sel_channel_messages = Message.query\
+                            .join(channel_messages, Message.message_id == channel_messages.c.message_id)\
+                            .filter_by(channel_id = sel_channel)\
+                            .limit(25)\
+                            .all()
+
+    # add channelmessageclient intermediate - only grab sender, send_dt, content, channel_id
+
+    #print(message_schema.dump(Message.query.all(), many=True))
+    
     response = {}
-    response['messages'] = recent_messages
-    return response
+    response['messages'] = message_schema.dump(sel_channel_messages, many=True)
+    
+    # turn object to JSON string - check network size
 
-### DATABASE ROUTES ###
+    print("Get channel messages", response)
+    return response
 
 @main.route("/private-messages/", methods=["GET"])
 def get_private_messages():
@@ -51,6 +64,9 @@ def get_private_messages():
         ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
         ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
         )).all()
+
+    # Sleyter (see line 32)   
+
     response["messages"] = message_schema.dump(messages, many=True)
     return response
 
