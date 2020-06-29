@@ -1,11 +1,12 @@
-from flask import request, jsonify
+from flask import request, Response, jsonify
 from flask_login import current_user, login_user, login_required
+from flask_wtf.csrf import generate_csrf
 import json
 from .. import main
 from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
-
+from ..forms.login import LoginForm
 
 @main.route("/check-username/", methods=["GET"])
 def check_username():
@@ -24,13 +25,31 @@ def check_username():
     response["isAvailable"] = username_is_available
     return jsonify(response)
 
-@main.route("/login", methods=["GET"])
+@main.route("/login", methods=["GET", "POST"])
 def login():
-    # TODO update to POST when Luis's code is brought in 
-    # TODO Luis's code goes here
-    user = User.query.filter_by(username="BitPhoenix").one() # TODO: replace with Luis's code
-    login_user(user, remember=True)
-    return {}
+    if request.method == "GET":
+        response = Response("Foo")
+        response.headers["csrf_token"] = generate_csrf()
+        return response
+    elif request.method == "POST":
+        # TODO Luis's code goes here
+        user = User.query.filter_by(username="BitPhoenix").one() # TODO: replace with Luis's code
+        login_user(user, remember=True)
+        return {} # TODO: replace with Luis's code
+
+# @main.route("/login-test", methods=["GET", "POST"])
+# def login_test():
+#     print("/login-test")
+#     if request.method == "GET":
+#         print("/login-test get")
+#         form = LoginForm()
+#         response = Response("Foo")
+#         response.headers["csrf_token"] = generate_csrf()
+#         return response
+#     elif request.method == "POST":
+#         print("/login-test post")
+#         return {}
+    
 
 ### DATABASE ROUTES ###
 
