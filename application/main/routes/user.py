@@ -38,20 +38,6 @@ def login():
         login_user(user, remember=True)
         return {} # TODO: replace with Luis's code
 
-# @main.route("/login-test", methods=["GET", "POST"])
-# def login_test():
-#     print("/login-test")
-#     if request.method == "GET":
-#         print("/login-test get")
-#         form = LoginForm()
-#         response = Response("Foo")
-#         response.headers["csrf_token"] = generate_csrf()
-#         return response
-#     elif request.method == "POST":
-#         print("/login-test post")
-#         return {}
-    
-
 ### DATABASE ROUTES ###
 
 @main.route("/usernames/", methods=["GET"])
