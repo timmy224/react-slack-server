@@ -4,6 +4,7 @@ from .. import main
 from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
+from sqlalchemy.orm.exc import NoResultFound
 
 
 @main.route("/check-username/", methods=["GET"])
@@ -19,8 +20,7 @@ def check_username():
     if username is None:
         response["ERROR"] = "Missing username in route"
         return jsonify(response)        
-    #username_is_available = username.lower() not in client_service.clients
-    username_is_available = False
+    username_is_available = username.lower() not in client_service.clients
     response["isAvailable"] = username_is_available
     return jsonify(response)
 
@@ -41,33 +41,31 @@ def get_users():
     response["usernames"] = usernames_json
     return response
 
-@main.route("/login/", methods=["POST"])
-def login_user():
-    if request.method == "POST":
-        data = request.json
-        print(data)
-        #not sure what we will do with data
-        print("SUCCESS: logged in user")
-        response = {}
-        response["successful"] = True
-        return jsonify(response)
 
-@main.route("/check-password/", methods=["GET"])
+@main.route("/login/", methods=["POST"])
 def check_password():
-    if request.method == "GET":
-        print("Client is checking password")
-        username = request.args.get("username", None)
-        if username is None:
-            response["ERROR"] = "Missing username in route"
+    if request.method == "POST":
+        print("Client is logging in User")
+        data = request.json
+        username = data["username"]
+        password = data["password"]
+        if username is None or password is None:
+            response["ERROR"] = "Missing username"
             return jsonify(response)
-        user = User.query.filter_by(username=username).one()
-        password = request.args.get("password", None)
-        if password is None:
-            response["ERROR"] = "Missing password in route"
-            return jsonify(response) 
-        password_is_correct= user.check_password(password)
+        try: 
+            user = User.query.filter_by(username=username).one()
+        except NoResultFound:
+            response= {}
+            response["ERROR"] = "Wrong credentials"
+            return jsonify(response)
+        try:
+            user.check_password(password)
+        except False:
+            response= {}
+            response["ERROR"] = "Wrong credentials"
+            return jsonify(response)
         response = {}
-        response["isCorrect"] = password_is_correct
+        response["isAuthenticated"] = True
         return jsonify(response)
 
 ### EXAMPLES ###
