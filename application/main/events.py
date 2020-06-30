@@ -60,8 +60,8 @@ def on_send_message(clientMessage):
        
 
 @socketio.on("join-channel")
-def on_join_channel():
-    print("join_channel:")
+def on_join_channel(channel_id):
+    print("join_channel:", channel_id)
     channel_id = request.args.get("channel_id")
     join_room(channel_id) 
 

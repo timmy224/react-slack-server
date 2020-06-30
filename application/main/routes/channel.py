@@ -3,12 +3,13 @@ import json
 from .. import main
 from ... import db
 from ..services import channel_service
+from ..services.client_service import clients
 from ...models.User import User, user_schema
 from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
 from flask import request
 from flask_socketio import emit, close_room 
-from ...__init__ import socketio
+from ... import socketio 
 
 @main.route("/channels/", methods=["GET"])
 def get_channels():
@@ -128,6 +129,8 @@ def check_channel_name():
 
         return jsonify(response)
 
+print("Client List:", clients)
+
 #possibly split logic for get/post in same route?
 @main.route("/create-channel/", methods=['POST'])
 def create_channel():
@@ -136,7 +139,8 @@ def create_channel():
         channel_id = channel_service.store_channel(data['channel_name'])
         print("SUCCESS: Channel inserted into db")
 
-        socketio.emit("added-to-channel", {"channel_id":channel_id}, broadcast=True, include_self=False)
+        socketio.emit("channel-created", f"{data['channel_name']} created", broadcast=True);
+        socketio.emit("added-to-channel", {"channel_id":channel_id}, broadcast=True)
         response = {}
         response["successful"] = True
         return jsonify(response)
@@ -150,7 +154,7 @@ def delete_channel():
         close_room(channel_id)
 
         print("SUCCESS: Channel deleted from db")
-        emit("channel-deleted", room=channel_id, broadcast=True, include_self=True)
+        socketio.emit("channel-deleted", room=channel_id, broadcast=True, include_self=True)
         response = {}
         response['successful'] = True
         return jsonify(response)
