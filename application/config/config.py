@@ -7,6 +7,7 @@ class Config:
     REMEMBER_COOKIE_SECURE = None # Flask-Login remember cookie configuration setting
     SESSION_COOKIE_HTTPONLY = None # Flask session cookie configuration setting
     REMEMBER_COOKIE_HTTPONLY = None # Flask-Login remember cookie configuration setting
+    SESSION_COOKIE_SAMESITE = None # Flask session cookie configuration setting
 
 class DevelopmentConfig(Config):
     def __init__(self):
@@ -16,6 +17,7 @@ class DevelopmentConfig(Config):
         self.REMEMBER_COOKIE_SECURE = False
         self.SESSION_COOKIE_HTTPONLY = True
         self.REMEMBER_COOKIE_HTTPONLY = True
+        self.SESSION_COOKIE_SAMESITE = "None"
  
 class ProductionConfig(Config):
     def __init__(self):
@@ -25,6 +27,7 @@ class ProductionConfig(Config):
         self.REMEMBER_COOKIE_SECURE = True
         self.SESSION_COOKIE_HTTPONLY = True
         self.REMEMBER_COOKIE_HTTPONLY = True
+        self.SESSION_COOKIE_SAMESITE = "None"
 
 def getConfig():
     return DevelopmentConfig() if os.getenv("MODE") == "development" else ProductionConfig()
