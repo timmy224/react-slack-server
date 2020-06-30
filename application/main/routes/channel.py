@@ -139,7 +139,7 @@ def create_channel():
         channel_id = channel_service.store_channel(data['channel_name'])
         print("SUCCESS: Channel inserted into db")
 
-        socketio.emit("channel-created", f"{data['channel_name']} created", broadcast=True);
+        socketio.emit("channel-created", broadcast=True);
         socketio.emit("added-to-channel", {"channel_id":channel_id}, broadcast=True)
         response = {}
         response["successful"] = True
@@ -151,10 +151,10 @@ def delete_channel():
         data = request.json
         channel_id = data["channel_id"]
         channel_service.delete_channel(channel_id)
-        close_room(channel_id)
+        socketio.close_room(channel_id)
 
         print("SUCCESS: Channel deleted from db")
-        socketio.emit("channel-deleted", room=channel_id, broadcast=True, include_self=True)
+        socketio.emit("channel-deleted", broadcast=True)
         response = {}
         response['successful'] = True
         return jsonify(response)
