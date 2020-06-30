@@ -29,7 +29,6 @@ def login():
     if request.method == "GET":
         response = Response("CSRF token is on response header")
         response.headers["csrf-token"] = generate_csrf()
-        print(response.headers)
         return response
     elif request.method == "POST":
         # TODO Luis's code goes here
