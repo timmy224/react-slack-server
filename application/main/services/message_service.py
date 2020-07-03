@@ -1,7 +1,7 @@
 from datetime import datetime
 from .channel_service import get_ind_channel, add_message_channel
 # from .message_class import PrivateMessageClient 
-from .message_class import ChannelMessageClient
+from .message_class import ChannelMessageClient, PrivateMessageClient
 from ... import db
 from ...models.User import User
 from ...models.Channel import Channel
@@ -20,13 +20,22 @@ def add_dummy_messages():
         messages.append(message)
 
 def on_send_message(clientMessage):
-    message = ChannelMessageClient(clientMessage["sender"], 
-                      clientMessage["time_sent"], 
-                      clientMessage["content"],
-                      clientMessage["channel_id"]
-                      )
-    add_message_channel(message, int(clientMessage["channel_id"]))
-    messages.append(message)                                                                                   
+        if clientMessage["channel_id"]== True:
+            message = ChannelMessageClient(clientMessage["sender"], 
+                            clientMessage["time_sent"], 
+                            clientMessage["content"],
+                            clientMessage["channel_id"]
+                            )
+            add_message_channel(message, int(clientMessage["channel_id"]))
+            messages.append(message)   
+        elif clientMessage["reciever"]== True:
+            message = PrivateMessageClient(clientMessage["sender"], 
+                        clientMessage["time_sent"], 
+                        clientMessage["content"],
+                        clientMessage["receiver"]
+                         )
+            # add_message_channel(message, int(clientMessage["channel_id"]))
+            messages.append(message)                                                                                 
 
 def store_private_message(clientMessage):
     """
