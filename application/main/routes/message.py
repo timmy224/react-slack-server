@@ -28,15 +28,12 @@ def get_channel_messages():
                             .filter_by(channel_id = sel_channel)\
                             .limit(25)\
                             .all()
+    # remember to sort first 
 
     # add channelmessageclient intermediate - only grab sender, send_dt, content, channel_id
 
-    #print(message_schema.dump(Message.query.all(), many=True))
-    
     response = {}
     response['messages'] = message_schema.dump(sel_channel_messages, many=True)
-    
-    # turn object to JSON string - check network size
 
     print("Get channel messages", response)
     return response

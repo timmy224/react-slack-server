@@ -8,7 +8,7 @@ from ...models.User import User, user_schema
 from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
 from flask import request
-from flask_socketio import emit, close_room 
+from flask_socketio import close_room
 from ... import socketio 
 
 @main.route("/channels/", methods=["GET"])
@@ -138,8 +138,8 @@ def create_channel():
         data = request.json
         channel_id = channel_service.store_channel(data['channel_name'])
         print("SUCCESS: Channel inserted into db")
-
-        socketio.emit("channel-created", broadcast=True);
+        
+        socketio.emit("channel-created", broadcast=True)
         socketio.emit("added-to-channel", {"channel_id":channel_id}, broadcast=True)
         response = {}
         response["successful"] = True
