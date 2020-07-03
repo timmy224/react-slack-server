@@ -1,4 +1,5 @@
 from .. import db, ma
+from werkzeug.security import check_password_hash
 
 class User(db.Model):
     __tablename__ = "users"
@@ -10,6 +11,9 @@ class User(db.Model):
     
     def __repr__(self):
         return f"<User user_id={self.user_id} username={self.username}>"
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
     
 class UserSchema(ma.SQLAlchemyAutoSchema):
     # Uses the "exclude" argument to avoid infinite recursion 
