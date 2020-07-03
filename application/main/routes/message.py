@@ -60,7 +60,7 @@ def get_private_messages():
         .filter(or_(\
         ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
         ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
-        )).all()
+        )).order_by(Message.sent_dt).limit(25).all()
 
     # Sleyter (see line 32)   
 
