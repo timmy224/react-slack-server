@@ -5,14 +5,14 @@ from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
 
-@main.route("/register/", methods={"POST"})
+@main.route("/register", methods={"POST"})
 def register_user():
     if request.method =="POST":
         data = request.json
         password = data["password"]
-        password_hash = User.set_password(password)
-        user = User(data["username"], password_hash)
-
+        user = User(data["username"]
+        User.set_password(password)
+        
         db.session.add(user)
         db.session.commit()
 
