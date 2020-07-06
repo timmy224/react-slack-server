@@ -11,7 +11,6 @@ from ...models.Message import Message, MessageSchema, message_schema
 from ...models.Channel import Channel, channel_schema
 from ...models.PrivateMessages import private_messages
 from ...models.ChannelMessages import channel_messages
-from  ..services.message_class import ChannelMessageClient, PrivateMessageClient
 
 ### DATABASE ROUTES ###
 
@@ -27,21 +26,14 @@ def get_channel_messages():
     sel_channel_messages = Message.query\
                             .join(channel_messages, Message.message_id == channel_messages.c.message_id)\
                             .filter_by(channel_id = sel_channel)\
-                            .order_by(Message.sent_dt)\
                             .limit(25)\
                             .all()
     # remember to sort first 
 
-    def createChanMessages (sel_channel_messages):
-        chanMessages= []
-        for msg in sel_channel_messages:
-            chanMessages.append(ChannelMessageClient(messages.sender, messages.sent_dt, messages.content, messages.channel_id))
- 
-    map(createChanMessages, sel_channel_messages)
     # add channelmessageclient intermediate - only grab sender, send_dt, content, channel_id
 
     response = {}
-    response['messages'] = message_schema.dump(chanMessages, many=True)
+    response['messages'] = message_schema.dump(sel_channel_messages, many=True)
 
     print("Get channel messages", response)
     return response
@@ -68,18 +60,11 @@ def get_private_messages():
         .filter(or_(\
         ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
         ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
-        )).order_by(Message.sent_dt)\
-        .limit(25)\
-        .all()
+        )).all()
 
     # Sleyter (see line 32)   
-    def createPrivMessages (messages):
-        privMessages= []
-        for msg in messages:
-            privMessages.append(PrivateMessageClient(messages.sender, messages.sent_dt, messages.content, messages.receiver))
- 
-    map(createPrivMessages, messages)
-    response["privMesssages"] = message_schema.dump(privMessages, many=True)
+
+    response["messages"] = message_schema.dump(messages, many=True)
     return response
 
 ### EXAMPLES ###
