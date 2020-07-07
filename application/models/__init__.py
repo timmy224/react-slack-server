@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 
 def configure_db(app):
     # global db
-    app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+    app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://Luis:jacket@localhost/slack_db"
     db = SQLAlchemy(app)
     return db
 

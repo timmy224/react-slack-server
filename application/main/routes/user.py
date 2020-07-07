@@ -113,24 +113,24 @@ def get_test_users():# defining our function to be called
     if request.method == "GET":#setting the condition for a GET method
         users = User.query.all() # we are quering for all our User objects thus no filter_by and using .all()
         #user_json = user_schema.dump(users, many=True) #we need the many=True arg since we will be passing in multiple user objects
-        users_json = UserSchema(exclude=["channels"]).dump(users, many=True)#this makes the User object into dicts which allow it to be subscriptable
-
+        #users_json = UserSchema(exclude=["channels"]).dump(users, many=True)#this makes the User object into dicts which allow it to be subscriptable
         user_clients = [] # setting our new list to var user_clients
         # user_clients_dict = [] # 2nd attempt at making UserClient serializable
         # for user in users:#cant do this because User object is not subsciptable
-        for user in users_json:#now the list we are looping through has subsriptable objects
-            user_id = user["user_id"]#we are getting neccesary info for instantiating a new UserClient
-            username = user["username"]#we are getting neccesary info for instantiating a new UserClient
+        for user in users:#now the list we are looping through has subsriptable objects
+            user_id = user.user_id#we are getting neccesary info for instantiating a new UserClient, have to use dot notation
+            username = user.username#we are getting neccesary info for instantiating a new UserClient, have to use dot notation
             new_userclient = UserClient(user_id, username)#we instantiate a new UserClient object
-            new_userclient_json = json.dumps(new_userclient.__dict__)#we turn those objects into JSON by turning the UserClient objects into dicts in order to be JSON serializable
+            # new_userclient_json = json.dumps(new_userclient.__dict__)#we turn those objects into JSON by turning the UserClient objects into dicts in order to be JSON serializable
             # new_userclient_dict = new_userclient.__dict__#2nd attempt at making new UserClient JSON serializable, would have worked if we had done json.dumps(new_userclient_dict) afterwards
-            user_clients.append(new_userclient_json)#adding our new JSON UserClient objects to user_clients list
+            user_clients.append(new_userclient)#adding our new JSON UserClient objects to user_clients list
             # user_clients_dict.append(new_userclient_dict)#2nd attempt,adding UserClient dicts to user_clients_dict list
         # user_clients_json = json.dumps([ob.__dict__ for ob in user_clients])#2nd attempt at making the previous UserClient dicts JSON serializable
-        # user_clients_json = json.dumps(user_clients)#1st attempt at making new UserClient objects JSON serializable
-    
+        #user_clients_json = json.dumps(user_clients)#1st attempt at making new UserClient objects JSON serializable
+        user_clients_json = json.dumps(user_clients, default=lambda o: o.__dict__)#creating a default function in order to make it JSON serializable
+
         response = {}#setting our response into a dict
-        response["userClients"] = user_clients#setting our response so its a JSON nested object
+        response["userClients"] = user_clients_json#setting our response so its a JSON nested object
         return response#function needs to return something in our case it will be our response 
 
 @main.route("/test-store-user/", methods=["POST"])
