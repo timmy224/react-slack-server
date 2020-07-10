@@ -22,7 +22,7 @@ def get_channel_messages():
     Path: /messages/?channelId={channel_id}
     Response Body: "messages"
     """
-    sel_channel = request.args.get("channelId", None)
+    sel_channel = request.args.get("channel_id", None)
     sel_channel_messages = Message.query\
                             .join(channel_messages, Message.message_id == channel_messages.c.message_id)\
                             .filter_by(channel_id = sel_channel)\
@@ -30,15 +30,24 @@ def get_channel_messages():
                             .limit(25)\
                             .all()
    # remember to sort first 
+    print("sel_channel num ", sel_channel)
+    print("sel_channel_messages object ", sel_channel_messages)
     chanMessages = []
-    def createChannelMessages(sel_channel_messages):
-        for msg in sel_channel_messages:
-             chanMessages= ChannelMessageClient(msg.sender, msg.send_dt, msg.content, msg.channel_id)
+    chanMessagesClient= []
+    for msg in sel_channel_messages:
+         sender= msg.sender.username
+         sent_dt= msg.sent_dt
+         content= msg.content
+         channel_id= msg.channel
+
+         chanMessages= ChannelMessageClient(sender, sent_dt, content, channel_id)
+         chanMessagesClient.append(chanMessages)
 
     #add channelmessageclient intermediate - only grab sender, send_dt, content, channel_id
-    map(createChannelMessages,sel_channel_messages)
+    print('chanMessages prints', chanMessages)
+    print("chanMessagesClient prints", chanMessagesClient)
     response = {}
-    response['messages'] = message_schema.dump(chanMessages, many=True)
+    response['messages'] = message_schema.dump(chanMessagesClient, many= True)
     print("Get channel messages", response)
     return response
 
@@ -52,6 +61,7 @@ def get_private_messages():
     DB Tables: "messages", "private_messages"
     """
     username1, username2 = request.args.get("username1", None), request.args.get("username2", None)
+    print("username1 &2 ",username1, username2)
     # sel_private_messages =message_service.get_private_messages(username_1,username_2)
     response = {}
     if username1 is None or username2 is None:
@@ -60,22 +70,22 @@ def get_private_messages():
     # TODO - Sleyter Database Query goes here
     SendingUser = aliased(User)
     ReceivingUser = aliased(User)
-    messages = Message.query.join(SendingUser).join(private_messages, Message.message_id==private_messages.c.message_id).join(ReceivingUser)\
+    messages = Message.query\
+        .join(SendingUser)\
+        .join(private_messages, Message.message_id==private_messages.c.message_id)\
+        .join(ReceivingUser)\
         .filter(or_(\
         ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
         ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
-        )).order_by(Message.sent_dt)\
-        .limit(25)\
-        .all()
-    privMessages = []
+        )).all()
+    print("Message object " , messages)
     # Sleyter (see line 32)   
-    def createPrivMessages(messages):
-        for msg in messages:
-            privMessages= PrivateMessageClient(messages.sender,messages.send_dt, messages.content, messages.receiver)
-    
-    map(createPrivMessages, messages)
+    privMessages = []
+    for msg in messages:
+         privMessages.append(PrivateMessageClient(msg.sender,msg.send_dt, msg.content, msg.receiver))
+    print("privMessages object ", privMessages)     
     response = {}
-    response['messages'] = message_schema.dump(privMessages, many=True)
+    response['messages'] = json.dumps(privMessages)
     print("Get private messages", response)
     return response
     

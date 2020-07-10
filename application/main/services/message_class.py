@@ -1,3 +1,5 @@
+from... import ma
+
 class MessageClient():
     def __init__(self, sender, sent_dt, content):
         self.sender = sender
@@ -13,4 +15,3 @@ class PrivateMessageClient(MessageClient):
     def __init__(self, sender, sent_dt, content, receiver):
         super().__init__(sender, sent_dt, content)
         self.receiver = receiver
-        
