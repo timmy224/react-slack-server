@@ -7,7 +7,6 @@ from ..services.client_service import clients
 from ...models.User import User, user_schema
 from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
-from flask import request
 from flask_socketio import close_room
 from ... import socketio 
 
