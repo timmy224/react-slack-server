@@ -35,6 +35,8 @@ def get_channel_messages():
     chanMessages = []
     chanMessagesClient= []
     for msg in sel_channel_messages:
+         print ("msg.sender is", msg.sender)
+         print ("msg.sender.username is", msg.sender.username)
          sender= msg.sender.username
          sent_dt= msg.sent_dt
          content= msg.content
@@ -47,7 +49,10 @@ def get_channel_messages():
     print('chanMessages prints', chanMessages)
     print("chanMessagesClient prints", chanMessagesClient)
     response = {}
-    response['messages'] = message_schema.dump(chanMessagesClient, many= True)
+    
+    chanMessagesList = [chanmsg.__dict__ for chanmsg in chanMessagesClient]
+    print("chanMessagesList = ", json.dumps(chanMessagesList))
+    # response['messages'] = channel_message_schema.dump(chanMessagesClient, many= True)
     print("Get channel messages", response)
     return response
 
