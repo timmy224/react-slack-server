@@ -2,6 +2,7 @@ import os
 
 class Config:
     SQLALCHEMY_DATABASE_URI = ""
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 class DevelopmentConfig(Config):
     def __init__(self):

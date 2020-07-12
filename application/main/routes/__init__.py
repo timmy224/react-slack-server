@@ -4,7 +4,7 @@ from . import channel
 from . import challenge2
 from .. import main
 
-__all__ = ["user", "message", "channel"]
+__all__ = ["user", "message", "channel", "challenge3"]
 
 @main.route("/")
 def index():

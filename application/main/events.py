@@ -15,32 +15,32 @@ from ..models.ChannelMessages import channel_messages
 def on_connect():
     username = request.args.get("username")
 
-    user = User.query.filter_by(username=username).one()
+    # user = User.query.filter_by(username=username).first()
     
-    channels = user.channels
-    for channel in channels:
-        channel_id = channel.channel_id
-        join_room(channel_id)
+    # channels = user.channels
+    # for channel in channels:
+    #     channel_id = channel.channel_id
+    #     join_room(channel_id)
 
-    print(f"Client connected! username: {username}")
-    # All clients are assigned a personal room by Flask SocketIO when they connect, named with the session ID of the connection. We want to store this so that we can relay messages to individual clients in the future using send/emit(..., room=room)
-    room = request.sid
-    client_service.on_client_connected(username, room)
+    # print(f"Client connected! username: {username}")
+    # # All clients are assigned a personal room by Flask SocketIO when they connect, named with the session ID of the connection. We want to store this so that we can relay messages to individual clients in the future using send/emit(..., room=room)
+    # room = request.sid
+    # client_service.on_client_connected(username, room)
 
-    # set default channel here, but removed client socket listener for message-catchup
-    # default_channel = 49
-    # recent_messages = Message.query\
-    #                         .join(channel_messages, Message.message_id == channel_messages.c.message_id)\
-    #                         .filter_by(channel_id = default_channel)\
-    #                         .all()
-    # response = {}
-    # response['messages'] = message_schema.dumps(recent_messages, many=True)
-    # print(response)
-    # emit("message-catchup", response)
+    # # set default channel here, but removed client socket listener for message-catchup
+    # # default_channel = 49
+    # # recent_messages = Message.query\
+    # #                         .join(channel_messages, Message.message_id == channel_messages.c.message_id)\
+    # #                         .filter_by(channel_id = default_channel)\
+    # #                         .all()
+    # # response = {}
+    # # response['messages'] = message_schema.dumps(recent_messages, many=True)
+    # # print(response)
+    # # emit("message-catchup", response)
 
-    # Broadcast to all other clients that a new client connected
-    emit("user-joined-chat", {"username": username},
-         broadcast=True, include_self=False)
+    # # Broadcast to all other clients that a new client connected
+    # emit("user-joined-chat", {"username": username},
+    #      broadcast=True, include_self=False)
 
 @socketio.on("send-message")
 def on_send_message(clientMessage):
@@ -70,3 +70,16 @@ def on_disconnect():
     print("Client disconnected:")
     room = request.sid
     client_service.remove_client_by_room(room)
+
+### Challenge 3
+# @socketio.on("ping-test") # for postwoman
+# def ping_test(message):
+#     emit("pong-test", "hello there", broadcast=True)
+
+@socketio.on("pong-test")
+def pong_test():
+    emit("ping-pong-success")
+
+@socketio.on("request-ping")
+def request_ping(message):
+    emit("ping-test")
