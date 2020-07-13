@@ -83,15 +83,27 @@ def get_private_messages():
         ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
         ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
         )).all()
+
     print("Message object " , messages)
     # Sleyter (see line 32)   
     privMessages = []
+    privMessagesClient=[]
     for msg in messages:
-         privMessages.append(PrivateMessageClient(msg.sender,msg.send_dt, msg.content, msg.receiver))
-    print("privMessages object ", privMessages)     
+         sender= msg.sender.username
+         sent_dt= msg.sent_dt
+         content= msg.content
+         receiver= msg.receiver.username
+
+         privMessages= PrivateMessageClient(sender, sent_dt, content, receiver)
+         privMessagesClient.append(privMessages)
+    
+    print("privMessages object ", privMessages)
+    print("privMessagesClient", privMessagesClient)     
     response = {}
-    response['messages'] = json.dumps(privMessages)
-    print("Get private messages", response)
+
+    privMessagesList = [privmsg.__dict__ for privmsg in privMessagesClient]
+    print ("privMessagesList= ", json.dumps(privMessagesList))
+    response['messages'] = json.dumps(privMessagesList)
     return response
     
 
