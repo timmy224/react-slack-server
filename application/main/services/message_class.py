@@ -23,4 +23,3 @@ class PrivateMessageClient(MessageClient):
 
     def __repr__(self):
         return f'<Sender={self.sender} sent_dt={self.sent_dt} Content={self.content} receiver={self.receiver}>'
-
