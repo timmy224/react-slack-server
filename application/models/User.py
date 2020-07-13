@@ -14,7 +14,7 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def __init__(self, username):
+    def __init__(self, username, password_hash):
         self.username = username 
     
     def __repr__(self):
