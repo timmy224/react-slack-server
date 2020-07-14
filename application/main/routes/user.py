@@ -34,24 +34,7 @@ def register_user():
         else:
             response["ERROR"] = "username is taken"
             return jsonify(response)
-
-# @main.route("/check-username/", methods=["GET"])
-# def check_username():
-#     """
-#     [GET] - Checks passed in username against server-side stored active socket connetions and returns
-#     whether the username git is available 
-#     Path: /check-username/
-#     Response Body: "isAvailable"
-#     """
-#     username = request.args.get("username", None)
-#     response = {}
-#     if username is None:
-#         response["ERROR"] = "Missing username in route"
-#         return jsonify(response)        
-#     username_is_available = username.lower() not in client_service.clients
-#     response["isAvailable"] = username_is_available
-#     return jsonify(response)
-
+            
 ### DATABASE ROUTES ###
 
 @main.route("/usernames/", methods=["GET"])
