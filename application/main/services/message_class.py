@@ -5,7 +5,6 @@ class MessageClient():
         self.content = content
         
 class ChannelMessageClient(MessageClient):
-
     def __init__(self, sender, sent_dt, content, channel_id):
         super().__init__(sender, sent_dt, content)
         self.channel_id = channel_id
@@ -14,7 +13,6 @@ class ChannelMessageClient(MessageClient):
         return f'<Sender={self.sender} sent_dt={self.sent_dt} Content={self.content} channel_id={self.channel_id}>'
     
 class PrivateMessageClient(MessageClient):
-
     def __init__(self, sender, sent_dt, content, receiver):
         super().__init__(sender, sent_dt, content)
         self.receiver = receiver

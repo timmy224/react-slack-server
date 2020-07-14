@@ -63,28 +63,28 @@ def store_channel_message(clientMessage):
 add_dummy_messages()
 def pop_channel_messages_client(messages):
      chan_message = None
-     chan_messages_client= []
+     chan_messages_client = []
      for msg in messages:
-         sender= msg.sender.username
-         sent_dt= msg.sent_dt
-         content= msg.content
-         channel_id= msg.channel.channel_id
+         sender = msg.sender.username
+         sent_dt = msg.sent_dt
+         content = msg.content
+         channel_id = msg.channel.channel_id
 
-         chan_message= ChannelMessageClient(sender, sent_dt, content, channel_id)
+         chan_message = ChannelMessageClient(sender, sent_dt, content, channel_id)
          chan_messages_client.append(chan_message)
      chan_messages_list = [chanmsg.__dict__ for chanmsg in chan_messages_client]
      return chan_messages_list
 
 def pop_private_messages_client(messages):
      priv_message = None
-     priv_messages_client=[]
+     priv_messages_client = []
      for msg in messages:
-         sender= msg.sender.username
-         sent_dt= msg.sent_dt
-         content= msg.content
-         receiver= msg.receiver.username
+         sender = msg.sender.username
+         sent_dt = msg.sent_dt
+         conten t= msg.content
+         receiver = msg.receiver.username
 
-         priv_message= PrivateMessageClient(sender, sent_dt, content, receiver)
+         priv_message = PrivateMessageClient(sender, sent_dt, content, receiver)
          priv_messages_client.append(priv_message)
      priv_messages_list = [privmsg.__dict__ for privmsg in priv_messages_client]
      return priv_messages_list
