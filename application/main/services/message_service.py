@@ -81,7 +81,7 @@ def pop_private_messages_client(messages):
      for msg in messages:
          sender = msg.sender.username
          sent_dt = msg.sent_dt
-         conten t= msg.content
+         content = msg.content
          receiver = msg.receiver.username
 
          priv_message = PrivateMessageClient(sender, sent_dt, content, receiver)
