@@ -11,7 +11,6 @@ from ...models.Message import Message, MessageSchema, message_schema
 from ...models.Channel import Channel, channel_schema
 from ...models.PrivateMessages import private_messages
 from ...models.ChannelMessages import channel_messages
-from ..services.message_class import ChannelMessageClient, PrivateMessageClient
 
 ### DATABASE ROUTES ###
 
@@ -22,6 +21,7 @@ def get_channel_messages():
     Path: /messages/?channelId={channel_id}
     Response Body: "messages"
     """
+    response= {}
     sel_channel = request.args.get("channel_id", None)
     sel_channel_messages = Message.query\
                             .join(channel_messages, Message.message_id == channel_messages.c.message_id)\
@@ -29,31 +29,9 @@ def get_channel_messages():
                             .order_by(Message.sent_dt)\
                             .limit(25)\
                             .all()
-   # remember to sort first 
-    print("sel_channel num ", sel_channel)
-    print("sel_channel_messages object ", sel_channel_messages)
-    chanMessages = []
-    chanMessagesClient= []
-    for msg in sel_channel_messages:
-         print ("msg.sender is", msg.sender)
-         print ("msg.sender.username is", msg.sender.username)
-         sender= msg.sender.username
-         sent_dt= msg.sent_dt
-         content= msg.content
-         channel_id= msg.channel.channel_id
 
-         chanMessages= ChannelMessageClient(sender, sent_dt, content, channel_id)
-         chanMessagesClient.append(chanMessages)
-
-    #add channelmessageclient intermediate - only grab sender, send_dt, content, channel_id
-    print('chanMessages prints', chanMessages)
-    print("chanMessagesClient prints", chanMessagesClient)
-    response = {}
-    
-    chanMessagesList = [chanmsg.__dict__ for chanmsg in chanMessagesClient]
-    print("chanMessagesList = ", json.dumps(chanMessagesList))
-    response['messages'] = json.dumps(chanMessagesList)
-    print("Get channel messages", response)
+    chan_messages_list= message_service.pop_channel_messages_client(sel_channel_messages)
+    response['messages'] = json.dumps(chan_messages_list)
     return response
 
 @main.route("/private-messages/", methods=["GET"])
@@ -65,14 +43,12 @@ def get_private_messages():
 
     DB Tables: "messages", "private_messages"
     """
-    username1, username2 = request.args.get("username1", None), request.args.get("username2", None)
-    print("username1 &2 ",username1, username2)
-    # sel_private_messages =message_service.get_private_messages(username_1,username_2)
     response = {}
+    username1, username2 = request.args.get("username1", None), request.args.get("username2", None)
     if username1 is None or username2 is None:
         response["ERROR"] = "Two user ids are required in this route"
         return jsonify(response)
-    # TODO - Sleyter Database Query goes here
+
     SendingUser = aliased(User)
     ReceivingUser = aliased(User)
     messages = Message.query\
@@ -82,28 +58,12 @@ def get_private_messages():
         .filter(or_(\
         ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
         ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
-        )).all()
+        )).order_by(Message.sent_dt)\
+        .limit(25)\
+        .all()
 
-    print("Message object " , messages)
-    # Sleyter (see line 32)   
-    privMessages = []
-    privMessagesClient=[]
-    for msg in messages:
-         sender= msg.sender.username
-         sent_dt= msg.sent_dt
-         content= msg.content
-         receiver= msg.receiver.username
-
-         privMessages= PrivateMessageClient(sender, sent_dt, content, receiver)
-         privMessagesClient.append(privMessages)
-    
-    print("privMessages object ", privMessages)
-    print("privMessagesClient", privMessagesClient)     
-    response = {}
-
-    privMessagesList = [privmsg.__dict__ for privmsg in privMessagesClient]
-    print ("privMessagesList= ", json.dumps(privMessagesList))
-    response['messages'] = json.dumps(privMessagesList)
+    priv_messages_list= message_service.pop_private_messages_client(messages)
+    response['messages'] = json.dumps(priv_messages_list)
     return response
     
 

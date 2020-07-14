@@ -1,5 +1,3 @@
-from... import ma
-
 class MessageClient():
     def __init__(self, sender, sent_dt, content):
         self.sender = sender
