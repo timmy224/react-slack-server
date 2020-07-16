@@ -7,42 +7,40 @@ from ...models.User import User, user_schema
 
 @main.route("/register", methods={"POST"})
 def register_user():
-    if request.method =="POST":
+    username = request.args.get("username", None)
+    password = request.args.get("password", None)
+    response = {}
+    print("username is ", username)
+    print("password is ", password)
+    if username  is None:
+         response["ERROR"] = "Missing username in route"
+         return jsonify(response)
 
-        username = request.args.get("username", None)
-        password = request.args.get("password", None)
-        response = {}
-        print("username is ", username)
-        print("password is ", password)
-        if username  is None:
-            response["ERROR"] = "Missing username in route"
-            return jsonify(response)
+    elif password is None:
+         response["ERROR"] = "Missing password in route"
+         return jsonify(response)
 
-        elif password is None:
-            response["ERROR"] = "Missing password in route"
-            return jsonify(response)
+    username_is_available = username.lower() not in client_service.clients
+    print("username_is_available is :", username_is_available)
 
-        username_is_available = username.lower() not in client_service.clients
-        print("username_is_available is :", username_is_available)
-
-        if username_is_available:
-            data = request.json
-            print("data is : ", data)
-            password = data["password"]
-            user = User(data["username"], user.set_password(password))
-            print("user is: ", user)
+    if username_is_available:
+         data = request.json
+         print("data is : ", data)
+         password = data["password"]
+         user = User(data["username"], user.set_password(password))
+         print("user is: ", user)
                 
-            db.session.add(user)
-            db.session.commit()
+         db.session.add(user)
+         db.session.commit()
 
-            print("SUCCESS: user data inserted into db")
+         print("SUCCESS: user data inserted into db")
          
-            response["successful"] = True
-            return jsonify(response)
+         response["successful"] = True
+         return jsonify(response)
 
-        else:
-            response["ERROR"] = "username is taken"
-            return jsonify(response)
+    else:
+         response["ERROR"] = "username is taken"
+         return jsonify(response)
             
 ### DATABASE ROUTES ###
 
