@@ -10,10 +10,7 @@ def register_user():
     response = {}
     data = request.json
     username, password = data["username"], data["password"]
-    result = db.session.query(db.exists().where(User.username == username)).scalar()
-    print("result", result)
-    print("After result")
-    username_is_available = result is not None
+    username_is_available =  db.session.query(User.user_id).filter_by(User.username = username).scalar() is None
     if username_is_available:
         print("Available")
     else:
