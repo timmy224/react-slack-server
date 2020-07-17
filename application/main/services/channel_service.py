@@ -39,26 +39,6 @@ def delete_channel(channel_id):
     db.session.delete(channel)
     db.session.commit()
 
-"""
-
-def create_channel(channel_name):
-    most_recent_channel_id = [*channels.keys()][-1]
-    new_channel_id = most_recent_channel_id + 1
-
-    new_channel = Channel(new_channel_id, channel_name, []) 
-    return new_channel
-
-def add_channel(channel): # have not created socket listener yet
-    channels[channel["id"]] = channel 
-
-def del_channel(channel_info): # have not created socket listener yet
-    remove_id = channel_info['id'] # gets id of desired channel to remove
-    del channels[remove_id]
-
-def get_channel_dict(): # just putting it here for possible use later?
-    return channels 
-"""
-
 def get_ind_channel(channel_id):
     return channels[channel_id]
 
