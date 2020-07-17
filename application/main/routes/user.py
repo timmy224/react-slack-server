@@ -11,11 +11,11 @@ def register_user():
     data = request.json
     username, password = data["username"], data["password"]
 
-    if username  is None:
+    if username  == "":
         response["ERROR"] = "Missing username in route"
         return jsonify(response)
 
-    elif password is None:
+    elif password == "":
         response["ERROR"] = "Missing password in route"
         return jsonify(response)
 
@@ -31,7 +31,7 @@ def register_user():
         return jsonify(response)
 
     else:
-        response["ERROR"] = "username is taken"
+        response["ERROR"] = "Username is taken"
         return jsonify(response)
             
 ### DATABASE ROUTES ###
