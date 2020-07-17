@@ -3,12 +3,13 @@ import json
 from .. import main
 from ... import db
 from ..services import channel_service
+from ..services.client_service import clients
 from ...models.User import User, user_schema
 from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
 from flask import request
-from flask_socketio import emit, close_room 
-from ...__init__ import socketio
+from flask_socketio import close_room
+from ... import socketio 
 
 @main.route("/channels/", methods=["GET"])
 def get_channels():
@@ -128,6 +129,8 @@ def check_channel_name():
 
         return jsonify(response)
 
+print("Client List:", clients)
+
 #possibly split logic for get/post in same route?
 @main.route("/create-channel/", methods=['POST'])
 def create_channel():
@@ -135,8 +138,9 @@ def create_channel():
         data = request.json
         channel_id = channel_service.store_channel(data['channel_name'])
         print("SUCCESS: Channel inserted into db")
-
-        socketio.emit("added-to-channel", {"channel_id":channel_id}, broadcast=True, include_self=False)
+        
+        socketio.emit("channel-created", broadcast=True)
+        socketio.emit("added-to-channel", {"channel_id":channel_id}, broadcast=True)
         response = {}
         response["successful"] = True
         return jsonify(response)
@@ -147,34 +151,10 @@ def delete_channel():
         data = request.json
         channel_id = data["channel_id"]
         channel_service.delete_channel(channel_id)
-        close_room(channel_id)
+        socketio.close_room(channel_id)
 
         print("SUCCESS: Channel deleted from db")
-        emit("channel-deleted", room=channel_id, broadcast=True, include_self=True)
+        socketio.emit("channel-deleted", broadcast=True)
         response = {}
         response['successful'] = True
         return jsonify(response)
-
-"""
-def get_channel_dict(): # route to messages
-    channels_dict = channel_service.get_channel_dict()
-    channels_list_objs = json.dumps([channels_dict[channel].__dict__ for channel in channels_dict])
-    response["channels"] = channels_list_objs
-    response  = 
-        {
-            channels: [
-                {
-                    id: 1,
-                    name: "Channel #1",
-                    messages: [blah blah blah]
-                }, {
-                    id: 2,
-                    name: "Channel #2",
-                    messages: [blah blah blah]
-                }, 
-
-                ...
-
-                ]
-        }
-"""

@@ -4,6 +4,7 @@ from .. import main
 from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
+from sqlalchemy.orm.exc import NoResultFound
 
 @main.route("/register", methods={"POST"})
 def register_user():
@@ -50,6 +51,33 @@ def get_users():
     usernames_json = json.dumps(usernames)
     response["usernames"] = usernames_json
     return response
+
+
+@main.route("/login/", methods=["POST"])
+def check_password():
+    if request.method == "POST":
+        print("Client is logging in User")
+        data = request.json
+        username = data["username"]
+        password = data["password"]
+        if username is None or password is None:
+            response["ERROR"] = "Missing username"
+            return jsonify(response)
+        try: 
+            user = User.query.filter_by(username=username).one()
+        except NoResultFound:
+            response= {}
+            response["ERROR"] = "Wrong credentials"
+            return jsonify(response)
+        try:
+            user.check_password(password)
+        except False:
+            response= {}
+            response["ERROR"] = "Wrong credentials"
+            return jsonify(response)
+        response = {}
+        response["isAuthenticated"] = True
+        return jsonify(response)
 
 ### EXAMPLES ###
 

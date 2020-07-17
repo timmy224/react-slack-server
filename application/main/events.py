@@ -8,6 +8,8 @@ import json
 from .. import db
 from .. models.User import User
 
+from ..models.Message import Message, MessageSchema, message_schema
+from ..models.ChannelMessages import channel_messages
 
 @socketio.on("connect")
 def on_connect():
@@ -24,16 +26,21 @@ def on_connect():
     # All clients are assigned a personal room by Flask SocketIO when they connect, named with the session ID of the connection. We want to store this so that we can relay messages to individual clients in the future using send/emit(..., room=room)
     room = request.sid
     client_service.on_client_connected(username, room)
+
     # set default channel here, but removed client socket listener for message-catchup
-    recent_messages = message_service.get_recent_messages(1)
-    recent_messages = json.dumps(
-        [message.__dict__ for message in recent_messages])
-    emit("message-catchup", recent_messages)
+    # default_channel = 49
+    # recent_messages = Message.query\
+    #                         .join(channel_messages, Message.message_id == channel_messages.c.message_id)\
+    #                         .filter_by(channel_id = default_channel)\
+    #                         .all()
+    # response = {}
+    # response['messages'] = message_schema.dumps(recent_messages, many=True)
+    # print(response)
+    # emit("message-catchup", response)
+
     # Broadcast to all other clients that a new client connected
     emit("user-joined-chat", {"username": username},
          broadcast=True, include_self=False)
-
-
 
 @socketio.on("send-message")
 def on_send_message(clientMessage):
@@ -53,8 +60,8 @@ def on_send_message(clientMessage):
        
 
 @socketio.on("join-channel")
-def on_join_channel():
-    print("join_channel:")
+def on_join_channel(channel_id):
+    print("join_channel:", channel_id)
     channel_id = request.args.get("channel_id")
     join_room(channel_id) 
 
