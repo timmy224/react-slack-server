@@ -10,12 +10,8 @@ def register_user():
     response = {}
     data = request.json
     username, password = data["username"], data["password"]
-    username_is_available =  db.session.query(User.user_id).filter_by(User.username = username).scalar() is None
-    if username_is_available:
-        print("Available")
-    else:
-        print("unavailable")
-    
+    username_is_available =  db.session.query(User.user_id).filter_by(username = username).scalar() is None
+
     if username  is None:
         response["ERROR"] = "Missing username in route"
         return jsonify(response)
