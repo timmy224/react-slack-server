@@ -10,7 +10,8 @@ def register_user():
     response = {}
     data = request.json
     username, password = data["username"], data["password"]
-
+    username_is_available = username.lower() not in client_service.clients
+    
     if username  is None:
         response["ERROR"] = "Missing username in route"
         return jsonify(response)
@@ -18,8 +19,6 @@ def register_user():
     elif password is None:
         response["ERROR"] = "Missing password in route"
         return jsonify(response)
-
-    username_is_available = username.lower() not in client_service.clients
 
     if username_is_available:
         user = User(username)
