@@ -10,7 +10,14 @@ def register_user():
     response = {}
     data = request.json
     username, password = data["username"], data["password"]
-    username_is_available= db.session.query(db.exists().where(User.username == username)).scalar() is not None
+    result = db.session.query(db.exists().where(User.username == username)).scalar()
+    print("result", result)
+    print("After result")
+    username_is_available = result is not None
+    if username_is_available:
+        print("Available")
+    else:
+        print("unavailable")
     
     if username  is None:
         response["ERROR"] = "Missing username in route"
