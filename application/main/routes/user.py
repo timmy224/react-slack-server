@@ -1,4 +1,5 @@
 from flask import request, jsonify
+from flask_login import current_user, login_user, login_required
 import json
 from .. import main
 from ... import db
@@ -23,6 +24,14 @@ def check_username():
     response["isAvailable"] = username_is_available
     return jsonify(response)
 
+@main.route("/login", methods=["GET"])
+def login():
+    # TODO update to POST when Luis's code is brought in 
+    # TODO Luis's code goes here
+    user = User.query.filter_by(username="BitPhoenix").one() # TODO: replace with Luis's code
+    login_user(user, remember=True)
+    return {}
+
 ### DATABASE ROUTES ###
 
 @main.route("/usernames/", methods=["GET"])
@@ -41,6 +50,12 @@ def get_users():
     return response
 
 ### EXAMPLES ###
+
+@main.route("/protected-route", methods=["GET"])
+@login_required
+def protected_route():
+    print("Printing current user in protected route: ", current_user.username)
+    return {}
 
 @main.route("/user/", methods=["GET", "POST"])
 def user():
