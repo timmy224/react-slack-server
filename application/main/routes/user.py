@@ -1,4 +1,6 @@
-from flask import request, jsonify
+from flask import request, Response, jsonify
+from flask_login import current_user, login_user, login_required
+from flask_wtf.csrf import generate_csrf
 import json
 from .. import main
 from ... import db
@@ -53,33 +55,44 @@ def get_users():
     return response
 
 
-@main.route("/login/", methods=["POST"])
-def check_password():
-    if request.method == "POST":
-        print("Client is logging in User")
-        data = request.json
-        username = data["username"]
-        password = data["password"]
-        if username is None or password is None:
-            response["ERROR"] = "Missing username"
+@main.route("/login", methods=["GET", "POST"])
+def login():
+    response = {}
+    if request.method == "GET":
+        response = Response("CSRF token is on response header")
+        response.headers["csrf-token"] = generate_csrf()
+        return response
+    elif request.method == "POST":
+        if request.method == "POST":
+            data = request.json
+            username = data["username"]
+            password = data["password"]
+            if username is None or password is None:
+                response["ERROR"] = "Missing username"
+                return jsonify(response)
+            try: 
+                user = User.query.filter_by(username=username).one()
+            except NoResultFound:
+                response= {}
+                response["ERROR"] = "Wrong credentials"
+                return jsonify(response)
+            is_correct_password = user.check_password(password)
+            if not is_correct_password:
+                response= {}
+                response["ERROR"] = "Wrong credentials"
+                return jsonify(response)
+            login_user(user, remember=True)
+            response = {}
+            response["isAuthenticated"] = True
             return jsonify(response)
-        try: 
-            user = User.query.filter_by(username=username).one()
-        except NoResultFound:
-            response= {}
-            response["ERROR"] = "Wrong credentials"
-            return jsonify(response)
-        try:
-            user.check_password(password)
-        except False:
-            response= {}
-            response["ERROR"] = "Wrong credentials"
-            return jsonify(response)
-        response = {}
-        response["isAuthenticated"] = True
-        return jsonify(response)
 
 ### EXAMPLES ###
+
+@main.route("/protected-route", methods=["GET"])
+@login_required
+def protected_route():
+    print("Printing current user in protected route: ", current_user.username)
+    return {}
 
 # @main.route("/user/", methods=["GET", "POST"])
 # def user():

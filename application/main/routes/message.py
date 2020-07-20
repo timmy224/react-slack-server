@@ -1,4 +1,5 @@
 from flask import request, jsonify
+from flask_login import login_required
 from sqlalchemy import or_
 from sqlalchemy.orm import aliased
 from datetime import datetime
@@ -15,6 +16,7 @@ from ...models.ChannelMessages import channel_messages
 ### DATABASE ROUTES ###
 
 @main.route("/channel-messages/", methods=["GET"])
+@login_required
 def get_channel_messages():
     """
     [GET] - Returns a list of the 25 most recent server-side stored messages and returns them as a JSON response
@@ -35,6 +37,7 @@ def get_channel_messages():
     return response
 
 @main.route("/private-messages/", methods=["GET"])
+@login_required
 def get_private_messages():
     """
     [GET] - Grabs the private from the DB sent between two users and returns it as a JSON response

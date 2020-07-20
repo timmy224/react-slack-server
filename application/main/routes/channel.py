@@ -1,4 +1,5 @@
 from flask import request, jsonify
+from flask_login import login_required
 import json
 from .. import main
 from ... import db
@@ -12,6 +13,7 @@ from flask_socketio import close_room
 from ... import socketio 
 
 @main.route("/channels/", methods=["GET"])
+@login_required
 def get_channels():
     """
     [GET] - Returns a list of server-side stored channels a JSON response
