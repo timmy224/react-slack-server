@@ -44,15 +44,12 @@ def on_connect():
 
 @socketio.on("send-message")
 def on_send_message(clientMessage):
-    print("Client sent message")
     print(clientMessage)
-
-    # message_service.on_send_message(clientMessage) - old method
-    if clientMessage['type'] == "channel":
+    if clientMessage["type"] == "channel":
         message_service.store_channel_message(clientMessage)
         channel_room = clientMessage['channel_id']
         emit("message-received", clientMessage, room=channel_room, broadcast=True, include_self=True)
-    elif clientMessage['type'] == "private":
+    elif clientMessage["type"] == "private":
         message_service.store_private_message(clientMessage)
         receiver_username = clientMessage['receiver']
         receiver_client = client_service.clients.get(receiver_username)

@@ -129,8 +129,6 @@ def check_channel_name():
 
         return jsonify(response)
 
-print("Client List:", clients)
-
 #possibly split logic for get/post in same route?
 @main.route("/create-channel/", methods=['POST'])
 def create_channel():
