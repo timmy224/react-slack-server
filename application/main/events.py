@@ -55,10 +55,11 @@ def on_send_message(clientMessage):
     elif clientMessage['type'] == "private":
         message_service.store_private_message(clientMessage)
         receiver_username = clientMessage['receiver']
-        receiver_room = client_service.clients[receiver_username].room
-        emit("message-recieved", clientMessage, room=receiver_room, broadcast=True, include_self=True)
-       
-
+        receiver_client = client_service.clients.get(receiver_username)
+        if receiver_client is not None:
+            receiver_room = receiver_client.room
+            emit("message-recieved", clientMessage, room=receiver_room, include_self=True)
+        
 @socketio.on("join-channel")
 def on_join_channel(channel_id):
     print("join_channel:", channel_id)
