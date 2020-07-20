@@ -44,21 +44,18 @@ def on_connect():
 
 @socketio.on("send-message")
 def on_send_message(clientMessage):
-    print("Client sent message")
     print(clientMessage)
-
-    # message_service.on_send_message(clientMessage) - old method
-    if clientMessage['type'] == "channel":
+    if clientMessage["type"] == "channel":
         message_service.store_channel_message(clientMessage)
         channel_room = clientMessage['channel_id']
         emit("message-received", clientMessage, room=channel_room, broadcast=True, include_self=True)
-    elif clientMessage['type'] == "private":
+    elif clientMessage["type"] == "private":
         message_service.store_private_message(clientMessage)
         receiver_username = clientMessage['receiver']
         receiver_client = client_service.clients.get(receiver_username)
         if receiver_client is not None:
             receiver_room = receiver_client.room
-            emit("message-recieved", clientMessage, room=receiver_room, include_self=True)
+            emit("message-received", clientMessage, room=receiver_room, include_self=True)
         
 @socketio.on("join-channel")
 def on_join_channel(channel_id):

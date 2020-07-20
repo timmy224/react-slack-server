@@ -39,8 +39,7 @@ def store_private_message(clientMessage):
     content = clientMessage['content']
     message = Message_model(sender_id, sent_dt, content)
     
-    sender = clientMessage['sender']
-    receiver = User.query.filter_by(user_id=clientMessage["receiver"]).one()
+    receiver = User.query.filter_by(username=clientMessage["receiver"]).one()
     message.receiver = receiver
     
     db.session.add(message)
