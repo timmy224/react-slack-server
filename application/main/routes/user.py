@@ -72,19 +72,19 @@ def login():
                 return jsonify(response)
             try: 
                 user = User.query.filter_by(username=username).one()
+                is_correct_password = user.check_password(password)
+                if not is_correct_password:
+                    response = {}
+                    response["ERROR"] = "Wrong credentials"
+                    return jsonify(response)
+                login_user(user, remember=True)
+                response = {}
+                response["isAuthenticated"] = True
+                return jsonify(response)
             except NoResultFound:
                 response= {}
                 response["ERROR"] = "Wrong credentials"
                 return jsonify(response)
-            is_correct_password = user.check_password(password)
-            if not is_correct_password:
-                response= {}
-                response["ERROR"] = "Wrong credentials"
-                return jsonify(response)
-            login_user(user, remember=True)
-            response = {}
-            response["isAuthenticated"] = True
-            return jsonify(response)
 
 ### EXAMPLES ###
 
