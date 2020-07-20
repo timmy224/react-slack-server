@@ -1,11 +1,11 @@
-from flask import request, jsonify
+from flask import request, Response, jsonify
 from flask_login import current_user, login_user, login_required
+from flask_wtf.csrf import generate_csrf
 import json
 from .. import main
 from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
-
 
 @main.route("/check-username/", methods=["GET"])
 def check_username():
@@ -24,13 +24,17 @@ def check_username():
     response["isAvailable"] = username_is_available
     return jsonify(response)
 
-@main.route("/login", methods=["GET"])
+@main.route("/login", methods=["GET", "POST"])
 def login():
-    # TODO update to POST when Luis's code is brought in 
-    # TODO Luis's code goes here
-    user = User.query.filter_by(username="BitPhoenix").one() # TODO: replace with Luis's code
-    login_user(user, remember=True)
-    return {}
+    if request.method == "GET":
+        response = Response("CSRF token is on response header")
+        response.headers["csrf-token"] = generate_csrf()
+        return response
+    elif request.method == "POST":
+        # TODO Luis's code goes here
+        user = User.query.filter_by(username="BitPhoenix").one() # TODO: replace with Luis's code
+        login_user(user, remember=True)
+        return {} # TODO: replace with Luis's code
 
 ### DATABASE ROUTES ###
 
