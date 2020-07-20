@@ -21,7 +21,7 @@ def create_app():
     ma = configure_marshmallow(app)
     migrate = configure_migrate(app, db)
     # CORS
-    CORS(app)
+    CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
     # Register blueprints
     from .main import main as main_blueprint
     app.register_blueprint(main_blueprint)
