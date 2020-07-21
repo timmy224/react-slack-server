@@ -14,6 +14,7 @@ from ..models.ChannelMessages import channel_messages
 @socketio.on("connect")
 def on_connect():
     username = request.args.get("username")
+    print("Onconnect:", username)
     user = User.query.filter_by(username=username).one()
     
     channels = user.channels
