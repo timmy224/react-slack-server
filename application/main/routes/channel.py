@@ -12,8 +12,8 @@ from flask import request
 from flask_socketio import close_room
 from ... import socketio 
 
-@login_required
-@main.route("/channels/", methods=["GET"])
+# @login_required
+@main.route("/channels", methods=["GET"])
 def get_channels():
     """
     [GET] - Returns a list of server-side stored channels a JSON response

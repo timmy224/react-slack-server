@@ -52,10 +52,17 @@ def on_send_message(clientMessage):
     elif clientMessage["type"] == "private":
         message_service.store_private_message(clientMessage)
         receiver_username = clientMessage['receiver']
+        sender_username = clientMessage['sender']
         receiver_client = client_service.clients.get(receiver_username)
+        sender_client = client_service.clients.get(sender_username)
         if receiver_client is not None:
             receiver_room = receiver_client.room
-            emit("message-received", clientMessage, room=receiver_room, include_self=True)
+            emit("message-received", clientMessage, room=receiver_room)
+        if sender_client is not None:
+            print("Sending back to sender ")
+            sender_room = sender_client.room
+            emit("message-received", clientMessage, room=sender_room)
+
         
 @socketio.on("join-channel")
 def on_join_channel(channel_id):
