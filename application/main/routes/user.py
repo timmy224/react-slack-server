@@ -6,6 +6,7 @@ from .. import main
 from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
+from ...models.Channel import Channel
 from sqlalchemy.orm.exc import NoResultFound
 
 @main.route("/register", methods={"POST"})
@@ -27,6 +28,10 @@ def register_user():
         user = User(username)
         user.set_password(password)
 
+        #TODO query for all channels, add all channels to user model before adding to database
+        channels = Channel.query.all()
+        user.channels = channels
+
         db.session.add(user)
         db.session.commit()  
                
@@ -39,7 +44,7 @@ def register_user():
             
 ### DATABASE ROUTES ###
 
-@main.route("/usernames/", methods=["GET"])
+@main.route("/usernames", methods=["GET"])
 def get_users():
     """
     [GET] - Grabs the usernames from the DB and returns a list of usernames as a JSON response
@@ -72,19 +77,19 @@ def login():
                 return jsonify(response)
             try: 
                 user = User.query.filter_by(username=username).one()
+                is_correct_password = user.check_password(password)
+                if not is_correct_password:
+                    response = {}
+                    response["ERROR"] = "Wrong credentials"
+                    return jsonify(response)
+                login_user(user, remember=True)
+                response = {}
+                response["isAuthenticated"] = True
+                return jsonify(response)
             except NoResultFound:
                 response= {}
                 response["ERROR"] = "Wrong credentials"
                 return jsonify(response)
-            is_correct_password = user.check_password(password)
-            if not is_correct_password:
-                response= {}
-                response["ERROR"] = "Wrong credentials"
-                return jsonify(response)
-            login_user(user, remember=True)
-            response = {}
-            response["isAuthenticated"] = True
-            return jsonify(response)
 
 ### EXAMPLES ###
 

@@ -14,7 +14,8 @@ from ..models.ChannelMessages import channel_messages
 @socketio.on("connect")
 def on_connect():
     username = request.args.get("username")
-
+    print("Onconnect:", username)
+    return
     user = User.query.filter_by(username=username).one()
     
     channels = user.channels
@@ -52,10 +53,18 @@ def on_send_message(clientMessage):
     elif clientMessage["type"] == "private":
         message_service.store_private_message(clientMessage)
         receiver_username = clientMessage['receiver']
+        sender_username = clientMessage['sender']
         receiver_client = client_service.clients.get(receiver_username)
-        if receiver_client is not None:
+        is_receiver_online = receiver_client is not None
+        if is_receiver_online:
             receiver_room = receiver_client.room
-            emit("message-received", clientMessage, room=receiver_room, include_self=True)
+            emit("message-received", clientMessage, room=receiver_room)
+        sender_client = client_service.clients.get(sender_username)
+        is_sender_online = sender_client is not None
+        if is_sender_online:
+            sender_room = sender_client.room
+            emit("message-received", clientMessage, room=sender_room)
+
         
 @socketio.on("join-channel")
 def on_join_channel(channel_id):

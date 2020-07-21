@@ -12,7 +12,7 @@ from flask import request
 from flask_socketio import close_room
 from ... import socketio 
 
-@main.route("/channels/", methods=["GET"])
+@main.route("/channels", methods=["GET"])
 @login_required
 def get_channels():
     """
