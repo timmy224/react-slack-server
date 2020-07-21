@@ -1,4 +1,4 @@
-from os import urandom
+import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_cors import CORS
@@ -16,7 +16,7 @@ ma = None
 def create_app():
     global db, ma
     app = Flask(__name__)
-    app.secret_key = urandom(24)
+    app.secret_key = os.getenv("SECRET")
     # Configure app
     configure_app(app)
     # Database and Migrate
