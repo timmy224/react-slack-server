@@ -54,12 +54,13 @@ def on_send_message(clientMessage):
         receiver_username = clientMessage['receiver']
         sender_username = clientMessage['sender']
         receiver_client = client_service.clients.get(receiver_username)
-        sender_client = client_service.clients.get(sender_username)
-        if receiver_client is not None:
+        is_receiver_online = receiver_client is not None
+        if is_receiver_online:
             receiver_room = receiver_client.room
             emit("message-received", clientMessage, room=receiver_room)
-        if sender_client is not None:
-            print("Sending back to sender ")
+        sender_client = client_service.clients.get(sender_username)
+        is_sender_online = sender_client is not None
+        if is_sender_online:
             sender_room = sender_client.room
             emit("message-received", clientMessage, room=sender_room)
 
