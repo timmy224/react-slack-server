@@ -116,45 +116,35 @@ def channel_subscription():
         response["successful"] = True
         return jsonify(response)
 
-@main.route("/check-channel-name/", methods=['GET'])
+@main.route("/check-channel-name", methods=['POST'])
 def check_channel_name():
-    if request.method == "GET":
-        channel_name = request.args.get("channel_name", None)
-        print(f"Checking channel name: {channel_name}")
-        response = {}
-        if channel_name is None:
-            response["ERROR"] = "Missing channel name in route"
-            return jsonify(response)
+    data = request.json
+    channel_name = data["channel_name"]
+    print(f"Checking channel name: {channel_name}")
+    name_is_available = db.session.query(Channel.channel_id).filter_by(name=channel_name).scalar() is None
+    response = {}
+    response['isAvailable'] = name_is_available
+    return jsonify(response)
 
-        exists = db.session.query(db.exists().where(Channel.name == channel_name)).scalar() is not None
-        response['isAvailable'] = exists
-
-        return jsonify(response)
-
-#possibly split logic for get/post in same route?
-@main.route("/create-channel/", methods=['POST'])
+@main.route("/create-channel", methods=['POST'])
 def create_channel():
-    if request.method == 'POST':
-        data = request.json
-        channel_id = channel_service.store_channel(data['channel_name'])
-        print("SUCCESS: Channel inserted into db")
-        
-        socketio.emit("channel-created", broadcast=True)
-        socketio.emit("added-to-channel", {"channel_id":channel_id}, broadcast=True)
-        response = {}
-        response["successful"] = True
-        return jsonify(response)
+    data = request.json
+    channel_id = channel_service.store_channel(data['channel_name'])
+    
+    socketio.emit("channel-created", broadcast=True)
+    socketio.emit("added-to-channel", channel_id, broadcast=True)
+    response = {}
+    response["successful"] = True
+    return jsonify(response)
 
-@main.route("/delete-channel/", methods=['DELETE'])
+@main.route("/delete-channel", methods=['DELETE'])
 def delete_channel():
-    if request.method == 'DELETE':
-        data = request.json
-        channel_id = data["channel_id"]
-        channel_service.delete_channel(channel_id)
-        socketio.close_room(channel_id)
+    data = request.json
+    channel_id = data["channel_id"]
+    channel_service.delete_channel(channel_id)
+    socketio.close_room(channel_id)
 
-        print("SUCCESS: Channel deleted from db")
-        socketio.emit("channel-deleted", broadcast=True)
-        response = {}
-        response['successful'] = True
-        return jsonify(response)
+    socketio.emit("channel-deleted", channel_id, broadcast=True)
+    response = {}
+    response['successful'] = True
+    return jsonify(response)
