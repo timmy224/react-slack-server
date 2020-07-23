@@ -72,6 +72,6 @@ def on_join_channel(channel_id):
 
 @socketio.on("disconnect")
 def on_disconnect():
-    print("Client disconnected:")
+    print("Client disconnected")
     room = request.sid
     client_service.remove_client_by_room(room)

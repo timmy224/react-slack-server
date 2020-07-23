@@ -1,5 +1,5 @@
 from flask import request, Response, jsonify
-from flask_login import current_user, login_user, login_required
+from flask_login import current_user, login_user, logout_user, login_required
 from flask_wtf.csrf import generate_csrf
 import json
 from .. import main
@@ -45,6 +45,7 @@ def register_user():
 ### DATABASE ROUTES ###
 
 @main.route("/usernames", methods=["GET"])
+@login_required
 def get_users():
     """
     [GET] - Grabs the usernames from the DB and returns a list of usernames as a JSON response
@@ -87,9 +88,18 @@ def login():
                 response["isAuthenticated"] = True
                 return jsonify(response)
             except NoResultFound:
-                response= {}
+                response = {}
                 response["ERROR"] = "Wrong credentials"
                 return jsonify(response)
+
+@main.route("/logout", methods=["POST"])
+@login_required
+def logout():
+    data = request.json
+    username = data["username"] # right now we don't use this but probably will in future
+    logout_user()
+    response = {}
+    return response
 
 ### EXAMPLES ###
 
