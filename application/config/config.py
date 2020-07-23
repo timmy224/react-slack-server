@@ -8,6 +8,7 @@ class Config:
     SESSION_COOKIE_HTTPONLY = None # Flask session cookie configuration setting
     REMEMBER_COOKIE_HTTPONLY = None # Flask-Login remember cookie configuration setting
     SESSION_COOKIE_SAMESITE = None # Flask session cookie configuration setting
+    WTF_CSRF_TIME_LIMIT = None # Flask-WTF csrf cookie configuration setting
 
 class DevelopmentConfig(Config):
     def __init__(self):
@@ -17,7 +18,8 @@ class DevelopmentConfig(Config):
         self.REMEMBER_COOKIE_SECURE = False
         self.SESSION_COOKIE_HTTPONLY = True
         self.REMEMBER_COOKIE_HTTPONLY = True
-        self.SESSION_COOKIE_SAMESITE = "None"
+        self.SESSION_COOKIE_SAMESITE = "None" # Quotes intentional
+        self.WTF_CSRF_TIME_LIMIT = None # When set to None, CSRF token is valid for the life of the session
  
 class ProductionConfig(Config):
     def __init__(self):
@@ -27,7 +29,8 @@ class ProductionConfig(Config):
         self.REMEMBER_COOKIE_SECURE = True
         self.SESSION_COOKIE_HTTPONLY = True
         self.REMEMBER_COOKIE_HTTPONLY = True
-        self.SESSION_COOKIE_SAMESITE = "None"
+        self.SESSION_COOKIE_SAMESITE = "None" # Quotes intentional
+        self.WTF_CSRF_TIME_LIMIT = None # When set to None, CSRF token is valid for the life of the session
 
 def getConfig():
     return DevelopmentConfig() if os.getenv("MODE") == "development" else ProductionConfig()
