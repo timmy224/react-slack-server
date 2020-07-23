@@ -5,6 +5,24 @@ from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
 
+@main.route("/challenge", methods=["POST"])
+def user_object():
+    data = request.json
+    email = data["email"]
+    username = data["username"]
+    name = data["name"]
+    user = User(email, username, name)
+    print("user is:", user)
+    print_post= {
+        user.name: {
+            "username": user.username,
+            "email": user.email
+        }
+    }
+    print(print_post)
+    response ={}
+    response["successful"] = True
+    return jsonify(response)
 
 @main.route("/check-username/", methods=["GET"])
 def check_username():
