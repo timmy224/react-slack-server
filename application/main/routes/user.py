@@ -94,7 +94,7 @@ def login():
 ### EXAMPLES ###
 
 @main.route("/protected-route", methods=["GET"])
-@login_required
+# @login_required
 def protected_route():
     print("Printing current user in protected route: ", current_user.username)
     return {}
