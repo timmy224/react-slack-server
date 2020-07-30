@@ -8,7 +8,7 @@ from ...models.Channel import Channel, ChannelSchema
 from flask_socketio import close_room
 from ... import socketio 
 
-@main.route("/channel", methods=["GET","POST"])
+@main.route("/channel", methods=["GET","POST","DELETE"])
 # @login_required
 def channels():
     if request.method == "GET":
@@ -40,7 +40,7 @@ def channels():
         return jsonify(response)
 
 
-@main.route("/check-channel-name", methods=['POST'])
+@main.route("/check-channel-name", methods=["POST"])
 def check_channel_name():
     data = request.json
     channel_name = data["channel_name"]
