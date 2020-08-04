@@ -13,7 +13,7 @@ def on_client_connected(username, room):
 
 def add_client(username, room):
     clients[username] = Client(username, room)
-
+    
 def remove_client_by_room(room):
     for username, client in list(clients.items()):
         if client.room == room:

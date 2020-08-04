@@ -1,16 +1,19 @@
 from flask import request, jsonify
+from flask_login import login_required
 import json
 from .. import main
 from ... import db
 from ..services import channel_service
+from ..services.client_service import clients
 from ...models.User import User, user_schema
 from ...models.Channel import Channel, ChannelSchema, channel_schema
 from sqlalchemy.sql import exists
 from flask import request
-from flask_socketio import emit, close_room 
-from ...__init__ import socketio
+from flask_socketio import close_room
+from ... import socketio 
 
-@main.route("/channels/", methods=["GET"])
+@main.route("/channels", methods=["GET"])
+@login_required
 def get_channels():
     """
     [GET] - Returns a list of server-side stored channels a JSON response
@@ -113,68 +116,35 @@ def channel_subscription():
         response["successful"] = True
         return jsonify(response)
 
-@main.route("/check-channel-name/", methods=['GET'])
+@main.route("/check-channel-name", methods=['POST'])
 def check_channel_name():
-    if request.method == "GET":
-        channel_name = request.args.get("channel_name", None)
-        print(f"Checking channel name: {channel_name}")
-        response = {}
-        if channel_name is None:
-            response["ERROR"] = "Missing channel name in route"
-            return jsonify(response)
+    data = request.json
+    channel_name = data["channel_name"]
+    print(f"Checking channel name: {channel_name}")
+    name_is_available = db.session.query(Channel.channel_id).filter_by(name=channel_name).scalar() is None
+    response = {}
+    response['isAvailable'] = name_is_available
+    return jsonify(response)
 
-        exists = db.session.query(db.exists().where(Channel.name == channel_name)).scalar() is not None
-        response['isAvailable'] = exists
-
-        return jsonify(response)
-
-#possibly split logic for get/post in same route?
-@main.route("/create-channel/", methods=['POST'])
+@main.route("/create-channel", methods=['POST'])
 def create_channel():
-    if request.method == 'POST':
-        data = request.json
-        channel_id = channel_service.store_channel(data['channel_name'])
-        print("SUCCESS: Channel inserted into db")
+    data = request.json
+    channel_id = channel_service.store_channel(data['channel_name'])
+    
+    socketio.emit("channel-created", broadcast=True)
+    socketio.emit("added-to-channel", channel_id, broadcast=True)
+    response = {}
+    response["successful"] = True
+    return jsonify(response)
 
-        socketio.emit("added-to-channel", {"channel_id":channel_id}, broadcast=True, include_self=False)
-        response = {}
-        response["successful"] = True
-        return jsonify(response)
-
-@main.route("/delete-channel/", methods=['DELETE'])
+@main.route("/delete-channel", methods=['DELETE'])
 def delete_channel():
-    if request.method == 'DELETE':
-        data = request.json
-        channel_id = data["channel_id"]
-        channel_service.delete_channel(channel_id)
-        close_room(channel_id)
+    data = request.json
+    channel_id = data["channel_id"]
+    channel_service.delete_channel(channel_id)
+    socketio.close_room(channel_id)
 
-        print("SUCCESS: Channel deleted from db")
-        emit("channel-deleted", room=channel_id, broadcast=True, include_self=True)
-        response = {}
-        response['successful'] = True
-        return jsonify(response)
-
-"""
-def get_channel_dict(): # route to messages
-    channels_dict = channel_service.get_channel_dict()
-    channels_list_objs = json.dumps([channels_dict[channel].__dict__ for channel in channels_dict])
-    response["channels"] = channels_list_objs
-    response  = 
-        {
-            channels: [
-                {
-                    id: 1,
-                    name: "Channel #1",
-                    messages: [blah blah blah]
-                }, {
-                    id: 2,
-                    name: "Channel #2",
-                    messages: [blah blah blah]
-                }, 
-
-                ...
-
-                ]
-        }
-"""
+    socketio.emit("channel-deleted", channel_id, broadcast=True)
+    response = {}
+    response['successful'] = True
+    return jsonify(response)
