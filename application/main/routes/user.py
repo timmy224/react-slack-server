@@ -53,21 +53,23 @@ def get_challenges3():
 
 @main.route("/user/test-get-user/", methods=["GET"])
 def get_one_user():
-    if request.method == "GET"
+    if request.method == "GET":
         user_id = request.args.get("user_id", None) #this allows us to set a none (hence stopping a crash if nothing is there)        
         test_user= User.query.filter_by(user_id=user_id).first() # returns the first instance of when our user_id (from client) matches our user_id (from database)
-        user_json = UserSchema.dump(user) #possible channel exclusion.
+        user_json = UserSchema.dump(test_user) #possible channel exclusion.
 
         #making code readable
         json_user_id = user_json["user_id"]
         json_username = user_json["username"]
         user_client = UserClient(json_user_id, json_username)
 
+        print("User_client is.. ", user_client)
+
         response = {}
         response["user"] = user_json #still need to user user_client and test it can work.
         return response 
 
-@main.route("user/test-get-users", method=["GET"])
+@main.route("/user/test-get-users", methods=["GET"])
 def get_all_users():
     if request.method == "GET":
         #query for all users in db
@@ -82,9 +84,9 @@ def get_all_users():
             user_client_json = json.dumps(user_client.__dict__)
             users_client.append(user_client_json)
 
-@main.route ("user/test-store-user/", methods=["POST"])
+@main.route ("/user/test-store-user/", methods=["POST"])
 def test_user_post():
-    if request.method == "POST"
+    if request.method == "POST":
         data = request.json #getting data from client
         username = data["username"] #extracting username we should be getting from client
         user = User(username)
