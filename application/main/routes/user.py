@@ -4,7 +4,7 @@ from .. import main
 from ... import db
 from ..services import client_service
 from ...models.User import User, user_schema
-
+from ...models.Challenge3 import challenge_schema, Challenge3
 
 @main.route("/check-username/", methods=["GET"])
 def check_username():
@@ -41,6 +41,14 @@ def get_users():
     return response
 
 ### EXAMPLES ###
+@main.route("/get-something/", methods=["GET"]) #API end point and method type expected
+def get_challenges3():
+    if request.method == "GET": #good practice in case we ever wanted to add another method
+        results = Challenge3.query.all() #querying for all challenge3 objects
+        challengers_json = challenge_schema.dump(results, many=True) #using our MA schema to convert them to json
+        response = {}
+        response["challenge3"] = challengers_json
+        return response
 
 @main.route("/user/", methods=["GET", "POST"])
 def user():
