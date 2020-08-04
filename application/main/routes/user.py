@@ -1,4 +1,4 @@
-from flask import request, Response, jsonify
+from flask import request, Response, jsonify, session
 from flask_login import current_user, login_user, logout_user, login_required
 from flask_wtf.csrf import generate_csrf
 import json
@@ -67,6 +67,7 @@ def login():
     if request.method == "GET":
         response = Response("CSRF token is on response header")
         response.headers["csrf-token"] = generate_csrf()
+        session.permanent = True
         return response
     elif request.method == "POST":
         if request.method == "POST":
