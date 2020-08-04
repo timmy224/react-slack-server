@@ -1,26 +1,34 @@
 from flask import request, jsonify
+from flask_login import login_required
 import json
 from .. import main
 from ... import db
 from ..services import channel_service
+from ..services.client_service import clients
 from ...models.User import User, user_schema
-from ...models.Channel import Channel, channel_schema
+from ...models.Channel import Channel, ChannelSchema, channel_schema
+from sqlalchemy.sql import exists
+from flask import request
+from flask_socketio import close_room
+from ... import socketio 
 
-
-@main.route("/channels/", methods=["GET"])
+@main.route("/channels", methods=["GET"])
+@login_required
 def get_channels():
     """
-    [GET] - Returns a list of server-side stored channel ids as a JSON response
+    [GET] - Returns a list of server-side stored channels a JSON response
     Path: /channels/
     Response Body: "channels"
     """
-    channel_ids = channel_service.get_channel_ids()
-    channels_json = json.dumps(channel_ids) 
+    channels = Channel.query.all()
+    channels_json = ChannelSchema(exclude=["users"]).dump(channels, many=True)
     response = {}
-    response["channels"] = channels_json 
+    response["channels"] = channels_json
     return response
 
 ### DATABASE ROUTES ###
+
+### EXAMPLES ###
 
 @main.route("/channel/", methods=["GET", "POST"])
 def channel():
@@ -30,7 +38,7 @@ def channel():
     Response Body: "channel"
     
     [POST] - Inserts a channel into the DB using JSON passed in as request body
-    Path: /channel
+    Path: /channel/
     Request Body: "name"
     Response Body: "successful"
 
@@ -42,7 +50,7 @@ def channel():
         if channel_id is None:
             response["ERROR"] = "Missing channel_id in route"
             return jsonify(response)
-        channel = Channel.query.filter_by(channel_id=channel_id).first()
+        channel = Channel.query.filter_by(channel_id=channel_id).one()
         channel_json = channel_schema.dump(channel)
         response["channel"] = channel_json
         return response        
@@ -83,11 +91,11 @@ def channel_subscription():
         channel_id = request.args.get("channel_id", None)
         response = {}
         if user_id is not None: # Going to return this user's channels
-            user = User.query.filter_by(user_id=user_id).first()
+            user = User.query.filter_by(user_id=user_id).one()
             channels_json = channel_schema.dump(user.channels, many=True)
             response["channels"] = channels_json
         elif channel_id is not None: # Going to return this channel's users
-            channel = Channel.query.filter_by(channel_id=channel_id).first()
+            channel = Channel.query.filter_by(channel_id=channel_id).one()
             users_json = user_schema.dump(channel.users, many=True)
             response["users"] = users_json
         else:
@@ -97,8 +105,8 @@ def channel_subscription():
         data = request.json
         user_id = data["user_id"]
         channel_id = data["channel_id"]
-        user = User.query.filter_by(user_id=user_id).first()
-        channel = Channel.query.filter_by(channel_id=channel_id).first()
+        user = User.query.filter_by(user_id=user_id).one()
+        channel = Channel.query.filter_by(channel_id=channel_id).one()
 
         channel.users.append(user)
         db.session.commit()
@@ -108,27 +116,35 @@ def channel_subscription():
         response["successful"] = True
         return jsonify(response)
 
+@main.route("/check-channel-name", methods=['POST'])
+def check_channel_name():
+    data = request.json
+    channel_name = data["channel_name"]
+    print(f"Checking channel name: {channel_name}")
+    name_is_available = db.session.query(Channel.channel_id).filter_by(name=channel_name).scalar() is None
+    response = {}
+    response['isAvailable'] = name_is_available
+    return jsonify(response)
 
-"""
-def get_channel_dict(): # route to messages
-    channels_dict = channel_service.get_channel_dict()
-    channels_list_objs = json.dumps([channels_dict[channel].__dict__ for channel in channels_dict])
-    response["channels"] = channels_list_objs
-    response  = 
-        {
-            channels: [
-                {
-                    id: 1,
-                    name: "Channel #1",
-                    messages: [blah blah blah]
-                }, {
-                    id: 2,
-                    name: "Channel #2",
-                    messages: [blah blah blah]
-                }, 
+@main.route("/create-channel", methods=['POST'])
+def create_channel():
+    data = request.json
+    channel_id = channel_service.store_channel(data['channel_name'])
+    
+    socketio.emit("channel-created", broadcast=True)
+    socketio.emit("added-to-channel", channel_id, broadcast=True)
+    response = {}
+    response["successful"] = True
+    return jsonify(response)
 
-                ...
+@main.route("/delete-channel", methods=['DELETE'])
+def delete_channel():
+    data = request.json
+    channel_id = data["channel_id"]
+    channel_service.delete_channel(channel_id)
+    socketio.close_room(channel_id)
 
-                ]
-        }
-"""
+    socketio.emit("channel-deleted", channel_id, broadcast=True)
+    response = {}
+    response['successful'] = True
+    return jsonify(response)
