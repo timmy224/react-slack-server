@@ -67,11 +67,11 @@ def on_disconnect():
 @socketio.on("pingy-test")
 def on_ping(message):
     print("server side PING!")
-    response = 'Pingy-test'
-    emit("Pingy-test", response, broadcast=True, include_self=True)
+    response = 'pingy-test'
+    emit("pingy-test", response, broadcast=True, include_self=True)
 
 @socketio.on("pongy-test")
-def on_pong(message):
+def on_pong():
     print("server side PONG!")
-    response = 'Pingy-Pongy success donkey'
-    emit("Pingy-Pongy success donkey", response, broadcast=True, include_self=True)
+    response = 'pingy-pongy success'
+    emit("pingy-pongy success", response, broadcast=True, include_self=True)

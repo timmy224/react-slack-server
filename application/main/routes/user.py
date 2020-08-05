@@ -55,8 +55,8 @@ def get_challenges3():
 def get_one_user():
     if request.method == "GET":
         user_id = request.args.get("user_id", None) #this allows us to set a none (hence stopping a crash if nothing is there)        
-        test_user= User.query.filter_by(user_id=user_id).first() # returns the first instance of when our user_id (from client) matches our user_id (from database)
-        user_json = UserSchema.dump(test_user) #possible channel exclusion.
+        test_user = User.query.filter_by(user_id=user_id).first() # returns the first instance of when our user_id (from client) matches our user_id (from database)
+        user_json = UserSchema(exclude=["channels"]).dump(test_user) #had to exclude channels to get this to work.
 
         #making code readable
         json_user_id = user_json["user_id"]
@@ -69,7 +69,7 @@ def get_one_user():
         response["user"] = user_json #still need to user user_client and test it can work.
         return response 
 
-@main.route("/user/test-get-users", methods=["GET"])
+@main.route("/user/test-get-users/", methods=["GET"])
 def get_all_users():
     if request.method == "GET":
         #query for all users in db
@@ -84,7 +84,11 @@ def get_all_users():
             user_client_json = json.dumps(user_client.__dict__)
             users_client.append(user_client_json)
 
-@main.route ("/user/test-store-user/", methods=["POST"])
+        response = {}
+        response["users"] = users_client
+        return response
+
+@main.route("/user/test-store-user/", methods=["POST"])
 def test_user_post():
     if request.method == "POST":
         data = request.json #getting data from client
@@ -94,7 +98,7 @@ def test_user_post():
         db.session.add(user)
         db.session.commit()
 
-        response ={}
+        response = {}
         response ["successful"] = True
         return jsonify(response)
 
