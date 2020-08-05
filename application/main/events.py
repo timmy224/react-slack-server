@@ -63,3 +63,15 @@ def on_disconnect():
     print("Client disconnected:")
     room = request.sid
     client_service.remove_client_by_room(room)
+
+@socketio.on("pingy-test")
+def on_ping(message):
+    print("server side PING!")
+    response = 'Pingy-test'
+    emit("Pingy-test", response, broadcast=True, include_self=True)
+
+@socketio.on("pongy-test")
+def on_pong(message):
+    print("server side PONG!")
+    response = 'Pingy-Pongy success donkey'
+    emit("Pingy-Pongy success donkey", response, broadcast=True, include_self=True)
