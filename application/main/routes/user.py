@@ -42,6 +42,7 @@ def register_user():
         return jsonify(response)
 
 @main.route("/user/usernames", methods=["GET"])
+# @login_required
 def get_users():
     response = {}
     results = db.session.query(User.username).all()

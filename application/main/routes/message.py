@@ -14,7 +14,7 @@ from ...models.PrivateMessages import private_messages
 from ...models.ChannelMessages import channel_messages
 
 
-@main.route("/message/channel", methods=["GET","POST"])
+@main.route("/message/channel", methods=["GET"])
 # @login_required
 def get_channel_messages():
     
@@ -31,8 +31,7 @@ def get_channel_messages():
         response['messages'] = json.dumps(chan_messages_list)
         return response
 
-@main.route("/message/channel", methods=["GET","POST"])
-# @login_required
+@main.route("/message/channel", methods=["POST"])
 def post_channel_messages():
 
         data = request.json
@@ -51,7 +50,7 @@ def post_channel_messages():
         return jsonify(response)
 
 
-@main.route("/message/private", methods=["GET","POST"])
+@main.route("/message/private", methods=["GET"])
 # @login_required
 def get_private_messages():
     
@@ -78,8 +77,7 @@ def get_private_messages():
         response['messages'] = json.dumps(priv_messages_list)
         return response
 
-@main.route("/message/private", methods=["GET","POST"])
-# @login_required
+@main.route("/message/private", methods=["POST"])
 def post_private_messages():
     
         data = request.json
