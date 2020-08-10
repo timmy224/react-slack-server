@@ -14,10 +14,10 @@ from ...models.PrivateMessages import private_messages
 from ...models.ChannelMessages import channel_messages
 
 
-@main.route("/channel-messages", methods=["GET","POST"])
+@main.route("/message/channel", methods=["GET","POST"])
 # @login_required
-def channel_messages():
-    if request.method == "GET":
+def get_channel_messages():
+    
         response = {}
         sel_channel = request.args.get("channel_id", None)
         sel_channel_messages = Message.query\
@@ -31,7 +31,10 @@ def channel_messages():
         response['messages'] = json.dumps(chan_messages_list)
         return response
 
-    elif request.method == "POST":
+@main.route("/message/channel", methods=["GET","POST"])
+# @login_required
+def post_channel_messages():
+
         data = request.json
         sender_id, content = data["sender_id"], data["content"]
         sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M %p")
@@ -48,11 +51,10 @@ def channel_messages():
         return jsonify(response)
 
 
-@main.route("/private-messages", methods=["GET","POST"])
+@main.route("/message/private", methods=["GET","POST"])
 # @login_required
-def private_messages():
+def get_private_messages():
     
-    if request.method == "GET":
         response = {}
         username1, username2 = request.args.get("username1", None), request.args.get("username2", None)
         if username1 is None or username2 is None:
@@ -75,8 +77,11 @@ def private_messages():
         priv_messages_list = message_service.pop_private_messages_client(messages)
         response['messages'] = json.dumps(priv_messages_list)
         return response
+
+@main.route("/message/private", methods=["GET","POST"])
+# @login_required
+def post_private_messages():
     
-    elif request.method == "POST":
         data = request.json
         sender_id, content = data["sender_id"], data["content"]
         sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M %p")

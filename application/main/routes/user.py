@@ -8,7 +8,7 @@ from ...models.User import User
 from ...models.Channel import Channel
 from sqlalchemy.orm.exc import NoResultFound
 
-@main.route("/register", methods=["POST"])
+@main.route("/register/post", methods=["POST"])
 def register_user():
     response = {}
     data = request.json
@@ -41,7 +41,7 @@ def register_user():
         response["ERROR"] = "Username is taken"
         return jsonify(response)
 
-@main.route("/usernames", methods=["GET"])
+@main.route("/user/usernames", methods=["GET"])
 def get_users():
     response = {}
     results = db.session.query(User.username).all()
@@ -51,36 +51,37 @@ def get_users():
     return response
 
 
-@main.route("/login", methods=["GET", "POST"])
-def login():
+@main.route("/auth/csrf", methods=["GET"])
+def get_login():
     response = {}
-    if request.method == "GET":
         response = Response("CSRF token is on response header")
         response.headers["csrf-token"] = generate_csrf()
         return response
-    elif request.method == "POST":
-        if request.method == "POST":
-            data = request.json
-            username = data["username"]
-            password = data["password"]
-            if username is None or password is None:
-                response["ERROR"] = "Missing username"
-                return jsonify(response)
-            try: 
-                user = User.query.filter_by(username=username).one()
-                is_correct_password = user.check_password(password)
-                if not is_correct_password:
-                    response = {}
-                    response["ERROR"] = "Wrong credentials"
-                    return jsonify(response)
-                login_user(user, remember=True)
-                response = {}
-                response["isAuthenticated"] = True
-                return jsonify(response)
-            except NoResultFound:
-                response= {}
-                response["ERROR"] = "Wrong credentials"
-                return jsonify(response)
+
+@main.route("/auth/login", methods=["POST"])
+def post_login():
+    
+    data = request.json
+    username = data["username"]
+    password = data["password"]
+    if username is None or password is None:
+        response["ERROR"] = "Missing username"
+        return jsonify(response)
+    try: 
+        user = User.query.filter_by(username=username).one()
+        is_correct_password = user.check_password(password)
+        if not is_correct_password:
+            response = {}
+            response["ERROR"] = "Wrong credentials"
+            return jsonify(response)
+        login_user(user, remember=True)
+        response = {}
+        response["isAuthenticated"] = True
+        return jsonify(response)
+    except NoResultFound:
+        response= {}
+        response["ERROR"] = "Wrong credentials"
+        return jsonify(response)
 
 ### EXAMPLES ###
 

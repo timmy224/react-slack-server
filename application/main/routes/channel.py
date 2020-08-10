@@ -40,7 +40,7 @@ def channels():
         return jsonify(response)
 
 
-@main.route("/check-channel-name", methods=["POST"])
+@main.route("/channel/name-available", methods=["POST"])
 def check_channel_name():
     data = request.json
     channel_name = data["channel_name"]
