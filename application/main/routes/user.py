@@ -1,5 +1,5 @@
-from flask import request, Response, jsonify
-from flask_login import current_user, login_user, login_required
+from flask import request, Response, jsonify, session
+from flask_login import current_user, login_user, logout_user, login_required
 from flask_wtf.csrf import generate_csrf
 import json
 from .. import main
@@ -42,7 +42,7 @@ def register_user():
         return jsonify(response)
 
 @main.route("/user/usernames", methods=["GET"])
-# @login_required
+@login_required
 def get_users():
     response = {}
     results = db.session.query(User.username).all()
@@ -57,6 +57,7 @@ def get_login():
     response = {}
         response = Response("CSRF token is on response header")
         response.headers["csrf-token"] = generate_csrf()
+        session.permanent = True
         return response
 
 @main.route("/auth/login", methods=["POST"])
@@ -83,6 +84,15 @@ def post_login():
         response= {}
         response["ERROR"] = "Wrong credentials"
         return jsonify(response)
+
+@main.route("/logout", methods=["POST"])
+@login_required
+def logout():
+    data = request.json
+    username = data["username"] # right now we don't use this but probably will in future
+    logout_user()
+    response = {}
+    return response
 
 ### EXAMPLES ###
 
