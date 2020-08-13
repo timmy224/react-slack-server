@@ -8,7 +8,7 @@ from ...models.User import User
 from ...models.Channel import Channel
 from sqlalchemy.orm.exc import NoResultFound
 
-@main.route("/register/post", methods=["POST"])
+@main.route("/register", methods=["POST"])
 def register_user():
     response = {}
     data = request.json
@@ -52,39 +52,6 @@ def get_users():
     return response
 
 
-@main.route("/auth/csrf", methods=["GET"])
-def get_login():
-    response = {}
-        response = Response("CSRF token is on response header")
-        response.headers["csrf-token"] = generate_csrf()
-        session.permanent = True
-        return response
-
-@main.route("/auth/login", methods=["POST"])
-def post_login():
-    
-    data = request.json
-    username = data["username"]
-    password = data["password"]
-    if username is None or password is None:
-        response["ERROR"] = "Missing username"
-        return jsonify(response)
-    try: 
-        user = User.query.filter_by(username=username).one()
-        is_correct_password = user.check_password(password)
-        if not is_correct_password:
-            response = {}
-            response["ERROR"] = "Wrong credentials"
-            return jsonify(response)
-        login_user(user, remember=True)
-        response = {}
-        response["isAuthenticated"] = True
-        return jsonify(response)
-    except NoResultFound:
-        response= {}
-        response["ERROR"] = "Wrong credentials"
-        return jsonify(response)
-
 @main.route("/logout", methods=["POST"])
 @login_required
 def logout():
@@ -101,3 +68,40 @@ def logout():
 def protected_route():
     print("Printing current user in protected route: ", current_user.username)
     return {}
+
+@main.route("/user/", methods=["GET", "POST"])
+def user():
+    """
+    [GET] - Grabs the user from the DB and returns it as a JSON response
+    Path: /user/?user_id={user_id}
+    Response Body: "user"
+    
+    [POST] - Inserts a user into the DB using JSON passed in as request body
+    Path: /user
+    Request Body: "username"
+    Response Body: "successful"
+
+    DB tables: "users"
+    """
+    if request.method == "GET":
+        user_id = request.args.get("user_id", None)
+        response = {}
+        if user_id is None:
+            response["ERROR"] = "Missing user_id in route"
+            return jsonify(response)
+        user = User.query.filter_by(user_id=user_id).one()
+
+        user_json = user_schema.dump(user)
+        response["user"] = user_json
+        return response
+    elif request.method == "POST":
+        data = request.json
+        user = User(data["username"])
+
+        db.session.add(user)
+        db.session.commit()
+
+        print("SUCCESS: user inserted into db")
+        response = {}
+        response["successful"] = True
+        return jsonify(response)

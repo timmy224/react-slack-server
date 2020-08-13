@@ -32,7 +32,7 @@ def get_channel_messages():
         return response
 
 @main.route("/message/channel", methods=["POST"])
-def post_channel_messages():
+def store_channel_messages():
 
         data = request.json
         sender_id, content = data["sender_id"], data["content"]
@@ -78,7 +78,7 @@ def get_private_messages():
         return response
 
 @main.route("/message/private", methods=["POST"])
-def post_private_messages():
+def store_private_messages():
     
         data = request.json
         sender_id, content = data["sender_id"], data["content"]
