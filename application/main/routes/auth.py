@@ -9,10 +9,10 @@ from sqlalchemy.orm.exc import NoResultFound
 @main.route("/auth/csrf", methods=["GET"])
 def get_csrf_token():
     response = {}
-        response = Response("CSRF token is on response header")
-        response.headers["csrf-token"] = generate_csrf()
-        session.permanent = True
-        return response
+    response = Response("CSRF token is on response header")
+    response.headers["csrf-token"] = generate_csrf()
+    session.permanent = True
+    return response
 
 @main.route("/auth/login", methods=["POST"])
 def login():

@@ -4,7 +4,6 @@ from . import channel
 from . import cookie
 from . import auth
 from .. import main
-from . import auth
 
 __all__ = ["user", "message", "channel", "cookie", "auth"]
 

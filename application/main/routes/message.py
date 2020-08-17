@@ -14,7 +14,7 @@ from ...models.PrivateMessages import private_messages
 from ...models.ChannelMessages import channel_messages
 
 
-@main.route("/message/channel", methods=["GET"])
+@main.route("/message/channel/", methods=["GET"])
 # @login_required
 def get_channel_messages():
     
