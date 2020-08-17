@@ -17,7 +17,6 @@ from ...models.ChannelMessages import channel_messages
 @main.route("/message/channel/", methods=["GET"])
 # @login_required
 def get_channel_messages():
-    
         response = {}
         sel_channel = request.args.get("channel_id", None)
         sel_channel_messages = Message.query\
@@ -33,7 +32,6 @@ def get_channel_messages():
 
 @main.route("/message/channel", methods=["POST"])
 def store_channel_messages():
-
         data = request.json
         sender_id, content = data["sender_id"], data["content"]
         sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M %p")
@@ -50,10 +48,9 @@ def store_channel_messages():
         return jsonify(response)
 
 
-@main.route("/message/private", methods=["GET"])
+@main.route("/message/private/", methods=["GET"])
 # @login_required
 def get_private_messages():
-    
         response = {}
         username1, username2 = request.args.get("username1", None), request.args.get("username2", None)
         if username1 is None or username2 is None:
