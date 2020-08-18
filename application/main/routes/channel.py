@@ -20,9 +20,9 @@ def channels():
 
     elif request.method == "POST":
         data = request.json
-        channel_admin: data['channel_admin']
-        channel_name: data['channel_name']
-        channel_id = channel_service.store_channel(channel_name,channel_admin)
+        name = data["channel_name"]
+        admin = data["channel_admin"]
+        channel_id = channel_service.store_channel(name, admin)
 
         socketio.emit("channel-created", broadcast=True)
         socketio.emit("added-to-channel", channel_id, broadcast=True)
