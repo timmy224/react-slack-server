@@ -20,13 +20,20 @@ def channels():
 
     elif request.method == "POST":
         data = request.json
-        channel_id = channel_service.store_channel(data['channel_name'])
+        channel_name = data["channel_name"]
+        channel_is_available = db.session.query(Channel.name).filter_by(name = channel_name).scalar() is None
+        if channel_is_available:
+            channel_id = channel_service.store_channel(channel_name)
 
-        socketio.emit("channel-created", broadcast=True)
-        socketio.emit("added-to-channel", channel_id, broadcast=True)
-        response = {}
-        response["successful"] = True
-        return jsonify(response)
+            socketio.emit("channel-created", broadcast=True)
+            socketio.emit("added-to-channel", channel_id, broadcast=True)
+            response = {}
+            response["successful"] = True
+            return jsonify(response)
+        else:
+            response = {}
+            response["ERROR"] = "Channel name is taken"
+            return jsonify(response)
 
     elif request.method == "DELETE":
         data = request.json
@@ -38,19 +45,6 @@ def channels():
         response = {}
         response['successful'] = True
         return jsonify(response)
-
-
-@main.route("/channel/name-available", methods=["POST"])
-def check_channel_name():
-    data = request.json
-    channel_name = data["channel_name"]
-    print(f"Checking channel name: {channel_name}")
-    name_is_available = db.session.query(Channel.channel_id).filter_by(name=channel_name).scalar() is None
-    response = {}
-    response['isAvailable'] = name_is_available
-    return jsonify(response)
-
-
 
 # EXAMPLES #
 @main.route("/channel-subscription/", methods=["GET", "POST"])
