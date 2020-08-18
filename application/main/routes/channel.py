@@ -24,7 +24,6 @@ def channels():
         channel_name: data['channel_name']
         channel_id = channel_service.store_channel(channel_name,channel_admin)
 
-
         socketio.emit("channel-created", broadcast=True)
         socketio.emit("added-to-channel", channel_id, broadcast=True)
         response = {}
