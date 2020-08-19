@@ -22,11 +22,11 @@ def channels():
         data = request.json
         channel_info = data["channel_info"]
         name = channel_info["name"]
-        # members = channel_info["members"]
+        members = channel_info["members"]
+        print('members:', members)
         is_private = channel_info["isPrivate"]
         admin = current_user.username
-        # channel_id = channel_service.store_channel(name, members, is_private, admin)
-        channel_id = channel_service.store_channel(name, is_private, admin)
+        channel_id = channel_service.store_channel(name, members, is_private, admin)
 
         socketio.emit("channel-created", broadcast=True)
         socketio.emit("added-to-channel", channel_id, broadcast=True)

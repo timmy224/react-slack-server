@@ -19,17 +19,16 @@ def add_dummy_channels():
 def get_channel_ids(): # returns list of available channel ids
     return [*channels]
 
-# def store_channel(name, members, is_private, admin):
-def store_channel(name, is_private, admin):
+def store_channel(name, members, is_private, admin):
     channel = Channel_model(name, admin, is_private)
-    # if members == []:
-    #     users = User.query.all()
-    #     channel.users = users
-    # else:
-    #     users = members
-    #     channel.users = users
+    if is_private:
+        users = []
+        for username in members:
+            user = User.query.filter_by(username=username).one()
+            users.append(user)
+    else:
+        users = User.query.all()
 
-    users = User.query.all()
     channel.users = users
 
     db.session.add(channel)
