@@ -4,15 +4,17 @@ class Channel(db.Model):
     __tablename__ = "channels"
     channel_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
-    admin = db.Column(db.String())
+    admin_username = db.Column(db.String(),db.ForeignKey("users.username"))
+    is_private = db.Column(db.String())
     users = db.relationship("User", backref="channels", secondary="channel_subscriptions", lazy=True)
 
-    def __init__(self, name, admin):
+    def __init__(self, name, admin, is_private):
         self.name = name
-        self.admin = admin
+        self.admin_username = admin
+        self.is_private = is_private
     
     def __repr__(self):
-        return f"<Channel channel_id={self.channel_id} name={self.name} admin = {self.admin}>"
+        return f"<Channel channel_id={self.channel_id} name={self.name} admin_username = {self.admin_username} is_private={self.is_private}>"
 
 class ChannelSchema(ma.SQLAlchemyAutoSchema):
     users = ma.Nested("UserSchema", exclude=("channels",), many=True)

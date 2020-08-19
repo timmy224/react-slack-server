@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 import json
 from .. import main
 from ... import db
@@ -20,13 +20,18 @@ def channels():
 
     elif request.method == "POST":
         data = request.json
-        name = data["channel_name"]
-        admin = data["channel_admin"]
-        channel_id = channel_service.store_channel(name, admin)
+        channel_info = data["channel_info"]
+        name = channel_info["name"]
+        # members = channel_info["members"]
+        is_private = channel_info["isPrivate"]
+        admin = current_user.username
+        # channel_id = channel_service.store_channel(name, members, is_private, admin)
+        channel_id = channel_service.store_channel(name, is_private, admin)
 
         socketio.emit("channel-created", broadcast=True)
         socketio.emit("added-to-channel", channel_id, broadcast=True)
-        response = {}
+        admin_username = {"channel_username":admin}
+        response={}
         response["successful"] = True
         return jsonify(response)
 
