@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 from sqlalchemy import or_
 from sqlalchemy.orm import aliased
 from datetime import datetime
@@ -52,7 +52,8 @@ def store_channel_messages():
 # @login_required
 def get_private_messages():
         response = {}
-        username1, username2 = request.args.get("username1", None), request.args.get("username2", None)
+        username1 = current_user.username
+        username2 =  request.args.get("username2", None)
         if username1 is None or username2 is None:
             response["ERROR"] = "Two user ids are required in this route"
             return jsonify(response)
