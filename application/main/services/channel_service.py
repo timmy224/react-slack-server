@@ -2,6 +2,7 @@ from ...models.User import User
 from ...models.Channel import Channel as Channel_model
 from ... import db
 from .message_class import ChannelMessageClient
+from sqlalchemy.orm.exc import NoResultFound
 
 class Channel():
     def __init__(self, id, name, messages):
@@ -23,14 +24,21 @@ def create_channel(name, members, is_private, admin_username):
     channel = Channel_model(name, admin_username, is_private)
     if is_private:
         users = []
+        users_not_found = []
         for username in members:
-            user = User.query.filter_by(username=username).one()
-            users.append(user)
+            try:
+                user = User.query.filter_by(username=username).one()
+                users.append(user)
+            except NoResultFound:
+                users_not_found.append(username)
+        channel.users = users
+        response= {'channel':channel, 'users_not_found':users_not_found}
+        return response
     else:
         users = User.query.all()
-
-    channel.users = users
-    return channel
+        channel.users = users
+        response={'channel':channel, 'users_not_found':[]}
+        return response
 
 
 def store_channel(channel):

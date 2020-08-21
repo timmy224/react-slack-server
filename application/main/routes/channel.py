@@ -22,18 +22,27 @@ def channels():
         data = request.json
         channel_info = data["channel_info"]
         name = channel_info["name"]
-        members = channel_info["members"]
-        is_private = channel_info["isPrivate"]
-        admin_username = current_user.username
-        channel = channel_service.create_channel(name, members, is_private, admin_username)
-        channel_id = channel_service.store_channel(channel)
+        channel_is_available = db.session.query(Channel.name).filter_by(name = name).scalar() is None
+        if channel_is_available:
+            members = channel_info["members"]
+            is_private = channel_info["isPrivate"]
+            admin_username = current_user.username
+            channel_response = channel_service.create_channel(name, members, is_private, admin_username)
+            channel = channel_response['channel']
+            channel_id = channel_service.store_channel(channel)
 
-        socketio.emit("channel-created", broadcast=True)
-        socketio.emit("added-to-channel", channel_id, broadcast=True)
-        admin_username = {"channel_username":admin_username}
-        response={}
-        response["successful"] = True
-        return jsonify(response)
+            socketio.emit("channel-created", broadcast=True)
+            socketio.emit("added-to-channel", channel_id, broadcast=True)
+            response={
+                "successful": True,
+                "channel_admin":admin_username,
+                "users_not_found":channel_response['users_not_found']
+            }
+            return jsonify(response)
+        else:
+            response = {}
+            response["ERROR"] = "Channel name is taken"
+            return jsonify(response)
 
     elif request.method == "DELETE":
         data = request.json
@@ -45,19 +54,6 @@ def channels():
         response = {}
         response['successful'] = True
         return jsonify(response)
-
-
-@main.route("/channel/name-available", methods=["POST"])
-def check_channel_name():
-    data = request.json
-    channel_name = data["channel_name"]
-    print(f"Checking channel name: {channel_name}")
-    name_is_available = db.session.query(Channel.channel_id).filter_by(name=channel_name).scalar() is None
-    response = {}
-    response['isAvailable'] = name_is_available
-    return jsonify(response)
-
-
 
 # EXAMPLES #
 @main.route("/channel-subscription/", methods=["GET", "POST"])
