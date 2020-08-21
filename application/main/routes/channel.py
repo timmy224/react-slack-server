@@ -23,14 +23,14 @@ def channels():
         channel_info = data["channel_info"]
         name = channel_info["name"]
         members = channel_info["members"]
-        print('members:', members)
         is_private = channel_info["isPrivate"]
-        admin = current_user.username
-        channel_id = channel_service.store_channel(name, members, is_private, admin)
+        admin_username = current_user.username
+        channel = channel_service.create_channel(name, members, is_private, admin_username)
+        channel_id = channel_service.store_channel(channel)
 
         socketio.emit("channel-created", broadcast=True)
         socketio.emit("added-to-channel", channel_id, broadcast=True)
-        admin_username = {"channel_username":admin}
+        admin_username = {"channel_username":admin_username}
         response={}
         response["successful"] = True
         return jsonify(response)

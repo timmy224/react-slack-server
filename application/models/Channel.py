@@ -5,12 +5,12 @@ class Channel(db.Model):
     channel_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
     admin_username = db.Column(db.String(),db.ForeignKey("users.username"))
-    is_private = db.Column(db.String())
+    is_private = db.Column(db.Boolean(), default=False)
     users = db.relationship("User", backref="channels", secondary="channel_subscriptions", lazy=True)
 
-    def __init__(self, name, admin, is_private):
+    def __init__(self, name, admin_username, is_private):
         self.name = name
-        self.admin_username = admin
+        self.admin_username = admin_username
         self.is_private = is_private
     
     def __repr__(self):
