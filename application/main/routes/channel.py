@@ -35,7 +35,6 @@ def channels():
             socketio.emit("added-to-channel", channel_id, broadcast=True)
             response={
                 "successful": True,
-                "channel_admin":admin_username,
                 "users_not_found":channel_response['users_not_found']
             }
             return jsonify(response)
