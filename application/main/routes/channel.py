@@ -13,8 +13,8 @@ from ... import socketio
 def channels():
     if request.method == "GET":
         channels = Channel.query.all()
-        # channels_json = ChannelSchema(exclude=["users"]).dump(channels, many=True)
-        channels_json = ChannelSchema.dump(channels, many=True)
+        channels_json = ChannelSchema(exclude=["users"]).dump(channels, many=True)
+        # channels_json = ChannelSchema.dump(channels, many=True)
         response = {}
         response["channels"] = channels_json
         return response
@@ -23,21 +23,23 @@ def channels():
         data = request.json
         channel_info = data["channel_info"]
         channel_name = channel_info["name"]
-        channel_is_available = db.session.query(Channel.name).filter_by(name = name).scalar() is None
+        channel_is_available = db.session.query(Channel.name).filter_by(name = channel_name).scalar() is None
         if channel_is_available:
             members = channel_info["members"]
             is_private = channel_info["isPrivate"]
             if is_private:
-                users = channel.service.get_users_by_usernames(members)
-                if users["usernames_not_found"]:
+                usersResult = channel_service.get_users_by_usernames(members)
+                if usersResult["usernames_not_found"]:
                     response = {
                         "ERROR":"Some users were not found",
-                        "users_not_found": users["usernames_not_found"]
+                        "users_not_found": usersResult["usernames_not_found"]
                         }
                     return response
+                users = usersResult["users"]
             else:
                 users = channel_service.get_users()
             admin_username = current_user.username
+            print('users:', users)
             channel = channel_service.create_channel(channel_name, users, is_private, admin_username)
             channel_id = channel_service.store_channel(channel)
 

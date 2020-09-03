@@ -28,8 +28,8 @@ def get_users_by_usernames(usernames):
             user = User.query.filter_by(username=username).one()
             users.append(user)
         except NoResultFound:
-            users_not_found.append(username)
-    return {"users": usernames, "usernames_not_found": usernames_not_found}
+            usernames_not_found.append(username)
+    return {"users": users, "usernames_not_found": usernames_not_found}
 
 def get_users():
     return User.query.all()
