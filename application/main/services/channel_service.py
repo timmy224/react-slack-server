@@ -23,7 +23,7 @@ def store_channel(channel_name):
     users = User.query.all()
     name = channel_name
     channel = Channel_model(name)
-    channel.users = users
+    channel.members = users
 
     db.session.add(channel)
     db.session.commit()
@@ -33,7 +33,7 @@ def store_channel(channel_name):
 
 def delete_channel(channel_id):
     channel = Channel_model.query.filter_by(channel_id=channel_id).one()
-    channel.users = []
+    channel.members = []
 
     db.session.commit()
     db.session.delete(channel)

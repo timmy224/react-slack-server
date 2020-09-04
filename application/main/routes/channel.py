@@ -61,7 +61,7 @@ def channel_subscription():
     Path: /channel-subscription
     Request Body: "user_id", "channel_id"
     Response Body: "successful"
-    DB tables: "users", "channels", "channel-subscriptions"
+    DB tables: "users", "channels", "channel-members"
     """
     # Get user's channels (include user_id arg) OR Get channel's users (include channel_id arg)
     if request.method == "GET":
@@ -75,7 +75,7 @@ def channel_subscription():
             response["channels"] = channels_json
         elif channel_id is not None: # Going to return this channel's users
             channel = Channel.query.filter_by(channel_id=channel_id).one()
-            users_json = user_schema.dump(channel.users, many=True)
+            users_json = user_schema.dump(channel.members, many=True)
             response["users"] = users_json
         else:
             response["ERROR"] = "Missing user_id OR channel_id in route (only include one of them)"
@@ -87,7 +87,7 @@ def channel_subscription():
         user = User.query.filter_by(user_id=user_id).one()
         channel = Channel.query.filter_by(channel_id=channel_id).one()
 
-        channel.users.append(user)
+        channel.members.append(user)
         db.session.commit()
 
         print("SUCCESS: channel_subscription inserted into db")
