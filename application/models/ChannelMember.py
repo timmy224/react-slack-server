@@ -12,6 +12,7 @@ class ChannelMember(db.Model):
 
     user_id = column_property(channel_members.c.user_id, User.user_id)
     username = User.username
+    channel_id = channel_members.c.channel_id
     role_id = column_property(channel_members.c.role_id, Role.role_id)
     role_name = Role.name
 
@@ -20,6 +21,7 @@ class ChannelMemberSchema(ma.SQLAlchemySchema):
         model = ChannelMember
     user_id = ma.auto_field()
     username = ma.auto_field()
+    channel_id = ma.auto_field()
     role_id = ma.auto_field()
     role_name = ma.auto_field()
     
