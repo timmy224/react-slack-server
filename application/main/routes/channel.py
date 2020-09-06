@@ -7,6 +7,7 @@ from ..services import channel_service
 from ...models.Channel import Channel, ChannelSchema
 from flask_socketio import close_room
 from ... import socketio 
+from ...models.ChannelMember import ChannelMember, channel_member_schema
 
 @main.route("/channel", methods=["GET","POST","DELETE"])
 # @login_required
@@ -45,6 +46,14 @@ def channels():
         response = {}
         response['successful'] = True
         return jsonify(response)
+
+@main.route("/channel-member", methods=["GET"])
+def get_channel_member():
+    channel_members = db.session.query(ChannelMember).all()
+    print("attempting to print", channel_member_schema.dumps(channel_members, many=True))
+    # print("attempting to print", channel_members[0])
+    # print("attempting to print", channel_members[1])
+    return {}
 
 # EXAMPLES #
 @main.route("/channel-subscription/", methods=["GET", "POST"])
