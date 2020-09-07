@@ -97,12 +97,12 @@ def channel_subscription():
         return jsonify(response)
 
 @main.route("/channel/member/", methods=["GET"])
-def get_channel_member():
+def get_channel_members():
     """
-    [GET] - grabs the channel members from the DB and returns it as a JSON response (note that the channel member is a join of multiple tables - see ChannelMember schema)
+    [GET] - grabs a channel's channel members from the DB and returns it as a JSON response (note that the ChannelMember is a join of multiple tables - see ChannelMember schema)
     Path: /channel/member/?channel_id={channel_id}
     Response Body: "channel_members"
-    DB tables: "users", "channel-members", "roles"
+    DB tables: "users", "channel_members", "roles"
     """
     channel_id = request.args.get("channel_id")
     response = {}
