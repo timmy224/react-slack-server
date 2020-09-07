@@ -20,25 +20,24 @@ def add_dummy_channels():
 def get_channel_ids(): # returns list of available channel ids
     return [*channels]
 
-def create_channel(name, members, is_private, admin_username):
+def get_users_by_usernames(usernames):
+    users = []
+    usernames_not_found = []
+    for username in usernames:
+        try:
+            user = User.query.filter_by(username=username).one()
+            users.append(user)
+        except NoResultFound:
+            usernames_not_found.append(username)
+    return {"users": users, "usernames_not_found": usernames_not_found}
+
+def get_users():
+    return User.query.all()
+
+def create_channel(name, users, is_private, admin_username):
     channel = Channel_model(name, admin_username, is_private)
-    if is_private:
-        users = []
-        users_not_found = []
-        for username in members:
-            try:
-                user = User.query.filter_by(username=username).one()
-                users.append(user)
-            except NoResultFound:
-                users_not_found.append(username)
-        channel.users = users
-        response= {'channel':channel, 'users_not_found':users_not_found}
-        return response
-    else:
-        users = User.query.all()
-        channel.users = users
-        response={'channel':channel, 'users_not_found':[]}
-        return response
+    channel.users = users
+    return channel
 
 
 def store_channel(channel):
