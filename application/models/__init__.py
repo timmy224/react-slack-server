@@ -15,9 +15,9 @@ def configure_marshmallow(app):
 
 def configure_migrate(app, db):
     # import tables
-    from . import ChannelMembers, OrgMembers, OrgChannels, PrivateMessages, ChannelMessages
+    from . import ChannelMembers, OrgMembers, OrgChannels, PrivateMessages, ChannelMessages, RolePermissions
     # import models
-    from . import User, Channel, Message, Org, Role, ChannelMember
+    from . import User, Channel, Message, Org, Role, Permission
     migrate = Migrate(app, db)
     return migrate
     
