@@ -9,7 +9,7 @@ class Role(db.Model):
         self.name = name
 
     def __repr__(self):
-        return f"<Role role_id={self.role_id} name={self.name}"
+        return f"<Role role_id={self.role_id} name={self.name}>"
 
 class RoleSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
