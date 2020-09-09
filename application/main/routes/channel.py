@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_login import login_required
+from flask_login import login_required, current_user
 import json
 from .. import main
 from ... import db
@@ -20,15 +20,30 @@ def channels():
 
     elif request.method == "POST":
         data = request.json
-        channel_name = data["channel_name"]
+        channel_info = data["channel_info"]
+        channel_name = channel_info["name"]
         channel_is_available = db.session.query(Channel.name).filter_by(name = channel_name).scalar() is None
         if channel_is_available:
-            channel_id = channel_service.store_channel(channel_name)
+            members = channel_info["members"]
+            is_private = channel_info["isPrivate"]
+            if is_private:
+                usersResult = channel_service.get_users_by_usernames(members)
+                if usersResult["usernames_not_found"]:
+                    response = {
+                        "ERROR":"Some users were not found",
+                        "users_not_found": usersResult["usernames_not_found"]
+                        }
+                    return response
+                users = usersResult["users"]
+            else:
+                users = channel_service.get_users()
+            admin_username = current_user.username
+            channel = channel_service.create_channel(channel_name, users, is_private, admin_username)
+            channel_id = channel_service.store_channel(channel)
 
             socketio.emit("channel-created", broadcast=True)
             socketio.emit("added-to-channel", channel_id, broadcast=True)
-            response = {}
-            response["successful"] = True
+            response={"successful": True,}
             return jsonify(response)
         else:
             response = {}
@@ -45,6 +60,22 @@ def channels():
         response = {}
         response['successful'] = True
         return jsonify(response)
+
+@main.route("/channel/users/", methods=["GET"])
+def get_number_of_users():
+    channel_id = request.args.get("channel_id", None)
+    if channel_id is None:
+        response = {'ERROR': "Missing channel_id in route"}
+        return jsonify(response)
+    channel = Channel.query.filter_by(channel_id=channel_id).one()
+    number_of_users = len(channel.users)
+    response = {'total_users': number_of_users}
+    return response
+        # user_json = user_schema.dump(user)
+        # response["user"] = user_json
+        # return response
+
+
 
 # EXAMPLES #
 @main.route("/channel-subscription/", methods=["GET", "POST"])
