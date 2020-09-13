@@ -1,13 +1,11 @@
 from flask import request, jsonify
 from flask_login import login_required
-from sqlalchemy import and_
 import json
 from .. import main
 from ... import db
 from ..services import channel_service
 from ...models.Channel import Channel, ChannelSchema
 from ...models.ChannelMember import ChannelMember, channel_member_schema
-from ...models.ChannelMemberPermission import ChannelMemberPermission, channel_member_permission_schema
 from flask_socketio import close_room
 from ... import socketio 
 
@@ -115,28 +113,3 @@ def get_channel_members():
     response["channel_members"] = channel_member_schema.dumps(channel_members, many=True);
     return response
 
-@main.route("/channel/member/permission/", methods=["GET"])
-def get_channel_member_permission():
-    """
-    [GET] - grabs a channel channel member's permissions from the DB and returns it as a JSON response
-    Path: /channel/member/permission?user_id={user_id}&channel_id={channel_id}
-    Response Body: "channel_member_permissions"
-    DB tables: "channel_members", "role_permissions", "permissions", "resources", "actions"
-    """
-    user_id, channel_id = request.args.get("user_id"), request.args.get("channel_id")
-    response = {}
-    if user_id is None:
-        response["ERROR"] = "Missing user_id in route"
-        return response
-    if channel_id is None:
-        response["ERROR"] = "Missing channel_id in route"
-        return response
-    channel_member_permissions = db.session.query(ChannelMemberPermission).filter(
-        and_(
-            ChannelMemberPermission.user_id == user_id,
-            ChannelMemberPermission.channel_id == channel_id
-        )
-    ).all()
-    response["channel_member_permissions"] = channel_member_permission_schema\
-        .dumps(channel_member_permissions, many=True)
-    return response

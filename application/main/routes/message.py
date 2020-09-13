@@ -26,7 +26,7 @@ def get_channel_messages():
                                 .limit(25)\
                                 .all()
 
-        chan_messages_list = message_service.pop_channel_messages_client(sel_channel_messages)
+        chan_messages_list = message_service.populate_channel_messages_client(sel_channel_messages)
         response['messages'] = json.dumps(chan_messages_list)
         return response
 
@@ -71,7 +71,7 @@ def get_private_messages():
             .limit(25)\
             .all()
 
-        priv_messages_list = message_service.pop_private_messages_client(messages)
+        priv_messages_list = message_service.populate_private_messages_client(messages)
         response['messages'] = json.dumps(priv_messages_list)
         return response
 
