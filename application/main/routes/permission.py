@@ -8,31 +8,22 @@ from ...models.OrgMemberPermission import OrgMemberPermission, org_member_permis
 from ...models.ChannelMemberPermission import ChannelMemberPermission, channel_member_permission_schema
 from ..services import permission_service
 
-@main.route("/permissions", methods=["GET"])
+@main.route("/permission/", methods=["GET"])
 # @login_required
 def get_permissions():
+    """
+    [GET] - grabs a user's OrgMemberPermissions and ChannelMemberPermissions from the DB. The returned JSON object contains two maps. org_member_perms organizes OrgMemberPermissions by key org_id (value is a list of OrgMemberPermission for that org). channel_member_perms organizes ChannelMemberPermissions by key org_id (value is another map where key is channel_id and value is a list of ChannelMemberPermission)
+    Path: /permission/?user_id={user_id}
+    Response Body: {org_member_perms, channel_member_perms}
+    """
     # user_id = current_user.user_id
     user_id = request.args.get("user_id")
-    org_member_perms = OrgMemberPermission.query().filter_by(user_id=user_id).all()
-    channel_member_perms = ChannelMemberPermission.query().filter_by(user_id=user_id).all()
+    org_member_perms = db.session.query(OrgMemberPermission).filter_by(user_id=user_id).all()
+    channel_member_perms = db.session.query(ChannelMemberPermission).filter_by(user_id=user_id).all()
     response = {}
     response["org_member_perms"] = permission_service.gen_org_member_perms_map(org_member_perms)
     response["channel_member_perms"] = permission_service.gen_channel_member_perms_map(channel_member_perms)
     return jsonify(response)
-
-    # interesting thing to think about: organizing channel permissions by what org they're a part of
-    # maybe I should add org_id to ChannelPermission (not a bad idea honestly)
-
-    # j = db.session.query(org_members)\
-    #     .join(org_channels, org_members.c.org_id == org_channels.c.org_id)
-    #     .join(ChannelMemberPermission, (org_members.c.user_id == ChannelMemberPermission.user_id) & (org_channels.c.channel_id = ChannelMemberPermission.channel_id))\
-    
-    # j = ChannelMemberPermission\
-    #     .join(org_channels, ChannelMemberPermission.channel_id == org_channels.c.channel_id)
-    #     .join(org_members, )
-   
-    # ChannelMemberPermission.query.join(channel_members, (ChannelMemberPermission.user_id == channel_members.c.user_id) & (ChannelMemberPermission.channel_id == channel_members.c.channel_id)).filter_by(user_id=user_id) 
-
 
 # EXAMPLES
 @main.route("/permission/org-member/", methods=["GET"])
