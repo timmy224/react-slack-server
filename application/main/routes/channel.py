@@ -14,7 +14,7 @@ from ... import socketio
 def channels():
     if request.method == "GET":
         channels = Channel.query.all()
-        channels_json = ChannelSchema(exclude=["users"]).dump(channels, many=True)
+        channels_json = ChannelSchema(exclude=["members"]).dump(channels, many=True)
         response = {}
         response["channels"] = channels_json
         return response
