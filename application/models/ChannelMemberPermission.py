@@ -2,6 +2,7 @@ from .. import db, ma
 from sqlalchemy import select
 from sqlalchemy.orm import column_property
 from .ChannelMembers import channel_members
+from .User import User
 from .OrgChannels import org_channels
 from .RolePermissions import role_permissions
 from .Permissions import permissions
@@ -17,6 +18,12 @@ org_channels_alias = select([
 role_permissions_alias = select([
     role_permissions.c.role_id.label("role_id_a"),
     role_permissions.c.permission_id
+]).alias()
+
+User_alias = select([
+    User.user_id.label("user_id_a"),
+    User.username,
+    User.password_hash
 ]).alias()
 
 permissions_alias = select([
@@ -36,6 +43,7 @@ Action_alias = select([
 ]).alias()
 
 j = db.join(channel_members, role_permissions_alias, channel_members.c.role_id == role_permissions_alias.c.role_id_a)\
+    .join(User_alias, channel_members.c.user_id == User_alias.c.user_id_a)\
     .join(org_channels_alias, channel_members.c.channel_id == org_channels_alias.c.channel_id_a)\
     .join(Org, org_channels_alias.c.org_id_a == Org.org_id)\
     .join(permissions_alias, role_permissions_alias.c.permission_id == permissions_alias.c.permission_id_a)\
@@ -45,6 +53,7 @@ j = db.join(channel_members, role_permissions_alias, channel_members.c.role_id =
 class ChannelMemberPermission(db.Model):
     __table__ = j
     user_id = channel_members.c.user_id
+    username = User_alias.c.username
     channel_id = channel_members.c.channel_id
     org_id = Org.org_id
     resource_name = Resource_alias.c.name_a_resource
@@ -54,6 +63,7 @@ class ChannelMemberPermissionSchema(ma.SQLAlchemySchema):
     class Meta:
         model = ChannelMemberPermission
     user_id = ma.auto_field()
+    username = ma.auto_field()
     channel_id = ma.auto_field()
     org_id = ma.auto_field()
     resource_name = ma.auto_field()

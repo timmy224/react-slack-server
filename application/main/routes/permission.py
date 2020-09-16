@@ -13,13 +13,13 @@ from ..services import permission_service
 def get_permissions():
     """
     [GET] - grabs a user's OrgMemberPermissions and ChannelMemberPermissions from the DB. The returned JSON object contains two maps. org_member_perms organizes OrgMemberPermissions by key org_id (value is a list of OrgMemberPermission for that org). channel_member_perms organizes ChannelMemberPermissions by key org_id (value is another map where key is channel_id and value is a list of ChannelMemberPermission)
-    Path: /permission/?user_id={user_id}
+    Path: /permission/?username={username}
     Response Body: {org_member_perms, channel_member_perms}
     """
-    # user_id = current_user.user_id
-    user_id = request.args.get("user_id")
-    org_member_perms = db.session.query(OrgMemberPermission).filter_by(user_id=user_id).all()
-    channel_member_perms = db.session.query(ChannelMemberPermission).filter_by(user_id=user_id).all()
+    # username = current_user.username
+    username = request.args.get("username")
+    org_member_perms = db.session.query(OrgMemberPermission).filter_by(username=username).all()
+    channel_member_perms = db.session.query(ChannelMemberPermission).filter_by(username=username).all()
     response = {}
     response["org_member_perms"] = permission_service.gen_org_member_perms_map(org_member_perms)
     response["channel_member_perms"] = permission_service.gen_channel_member_perms_map(channel_member_perms)
