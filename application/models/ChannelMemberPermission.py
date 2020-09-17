@@ -56,8 +56,8 @@ class ChannelMemberPermission(db.Model):
     username = User_alias.c.username
     channel_id = channel_members.c.channel_id
     org_id = Org.org_id
-    resource_name = Resource_alias.c.name_a_resource
-    action_name = Action_alias.c.name_a_action
+    resource = Resource_alias.c.name_a_resource
+    action = Action_alias.c.name_a_action
 
 class ChannelMemberPermissionSchema(ma.SQLAlchemySchema):
     class Meta:
@@ -66,8 +66,8 @@ class ChannelMemberPermissionSchema(ma.SQLAlchemySchema):
     username = ma.auto_field()
     channel_id = ma.auto_field()
     org_id = ma.auto_field()
-    resource_name = ma.auto_field()
-    action_name = ma.auto_field()
+    resource = ma.auto_field()
+    action = ma.auto_field()
 
 channel_member_permission_schema = ChannelMemberPermissionSchema()
 

@@ -46,8 +46,8 @@ class OrgMemberPermission(db.Model):
     user_id = org_members.c.user_id
     username = User_alias.c.username
     org_id = org_members.c.org_id
-    resource_name = Resource_alias.c.name_a
-    action_name = Action_alias.c.name
+    resource = Resource_alias.c.name_a
+    action = Action_alias.c.name
 
 class OrgMemberPermissionSchema(ma.SQLAlchemySchema):
     class Meta:
@@ -55,8 +55,8 @@ class OrgMemberPermissionSchema(ma.SQLAlchemySchema):
     user_id = ma.auto_field()
     username = ma.auto_field()
     org_id = ma.auto_field()
-    resource_name = ma.auto_field()
-    action_name = ma.auto_field()
+    resource = ma.auto_field()
+    action = ma.auto_field()
 
 org_member_permission_schema = OrgMemberPermissionSchema()
 
