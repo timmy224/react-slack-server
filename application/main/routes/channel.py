@@ -1,10 +1,13 @@
 from flask import request, jsonify
 from flask_login import login_required
+from sqlalchemy import and_
 import json
 from .. import main
 from ... import db
 from ..services import channel_service
 from ...models.Channel import Channel, ChannelSchema
+from ...models.ChannelMember import ChannelMember, channel_member_schema
+from ...models.ChannelMemberPermission import ChannelMemberPermission, channel_member_permission_schema
 from flask_socketio import close_room
 from ... import socketio 
 
@@ -61,7 +64,7 @@ def channel_subscription():
     Path: /channel-subscription
     Request Body: "user_id", "channel_id"
     Response Body: "successful"
-    DB tables: "users", "channels", "channel-subscriptions"
+    DB tables: "users", "channels", "channel-members"
     """
     # Get user's channels (include user_id arg) OR Get channel's users (include channel_id arg)
     if request.method == "GET":
@@ -75,7 +78,7 @@ def channel_subscription():
             response["channels"] = channels_json
         elif channel_id is not None: # Going to return this channel's users
             channel = Channel.query.filter_by(channel_id=channel_id).one()
-            users_json = user_schema.dump(channel.users, many=True)
+            users_json = user_schema.dump(channel.members, many=True)
             response["users"] = users_json
         else:
             response["ERROR"] = "Missing user_id OR channel_id in route (only include one of them)"
@@ -87,10 +90,53 @@ def channel_subscription():
         user = User.query.filter_by(user_id=user_id).one()
         channel = Channel.query.filter_by(channel_id=channel_id).one()
 
-        channel.users.append(user)
+        channel.members.append(user)
         db.session.commit()
 
         print("SUCCESS: channel_subscription inserted into db")
         response = {}
         response["successful"] = True
         return jsonify(response)
+
+@main.route("/channel/member/", methods=["GET"])
+def get_channel_members():
+    """
+    [GET] - grabs a channel's channel members from the DB and returns it as a JSON response (note that the ChannelMember is a join of multiple tables - see ChannelMember schema)
+    Path: /channel/member/?channel_id={channel_id}
+    Response Body: "channel_members"
+    DB tables: "users", "channel_members", "roles"
+    """
+    channel_id = request.args.get("channel_id")
+    response = {}
+    if channel_id is None:
+        response["ERROR"] = "Missing channel_id in route"
+        return response
+    channel_members = db.session.query(ChannelMember).filter_by(channel_id=channel_id).all()
+    response["channel_members"] = channel_member_schema.dumps(channel_members, many=True);
+    return response
+
+@main.route("/channel/member/permission/", methods=["GET"])
+def get_channel_member_permission():
+    """
+    [GET] - grabs a channel channel member's permissions from the DB and returns it as a JSON response
+    Path: /channel/member/permission?user_id={user_id}&channel_id={channel_id}
+    Response Body: "channel_member_permissions"
+    DB tables: "channel_members", "role_permissions", "permissions", "resources", "actions"
+    """
+    user_id, channel_id = request.args.get("user_id"), request.args.get("channel_id")
+    response = {}
+    if user_id is None:
+        response["ERROR"] = "Missing user_id in route"
+        return response
+    if channel_id is None:
+        response["ERROR"] = "Missing channel_id in route"
+        return response
+    channel_member_permissions = db.session.query(ChannelMemberPermission).filter(
+        and_(
+            ChannelMemberPermission.user_id == user_id,
+            ChannelMemberPermission.channel_id == channel_id
+        )
+    ).all()
+    response["channel_member_permissions"] = channel_member_permission_schema\
+        .dumps(channel_member_permissions, many=True)
+    return response
