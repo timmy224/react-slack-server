@@ -4,11 +4,11 @@ from .User import User
 from .OrgMembers import org_members
 from .Role import Role
 
-j = db.join(User, org_members, User.user_id == org_members.c.user_id)\
+org_member_join = db.join(User, org_members, User.user_id == org_members.c.user_id)\
     .join(Role, org_members.c.role_id == Role.role_id)
 
 class OrgMember(db.Model):
-    __table__ = j
+    __table__ = org_member_join
     user_id = column_property(org_members.c.user_id, User.user_id)
     username = User.username
     org_id = org_members.c.org_id

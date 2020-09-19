@@ -20,7 +20,7 @@ role_permissions_alias = select([
     role_permissions.c.permission_id
 ]).alias()
 
-User_alias = select([
+UserAlias = select([
     User.user_id.label("user_id_a"),
     User.username,
     User.password_hash
@@ -32,32 +32,32 @@ permissions_alias = select([
     permissions.c.action_id
 ]).alias()
 
-Resource_alias = select([
+ResourceAlias = select([
     Resource.resource_id.label("resource_id_a"),
     Resource.name.label("name_a_resource")
 ]).alias()
 
-Action_alias = select([
+ActionAlias = select([
     Action.action_id.label("action_id_a"),
     Action.name.label("name_a_action")
 ]).alias()
 
-j = db.join(channel_members, role_permissions_alias, channel_members.c.role_id == role_permissions_alias.c.role_id_a)\
-    .join(User_alias, channel_members.c.user_id == User_alias.c.user_id_a)\
+channel_member_permission_join = db.join(channel_members, role_permissions_alias, channel_members.c.role_id == role_permissions_alias.c.role_id_a)\
+    .join(UserAlias, channel_members.c.user_id == UserAlias.c.user_id_a)\
     .join(org_channels_alias, channel_members.c.channel_id == org_channels_alias.c.channel_id_a)\
     .join(Org, org_channels_alias.c.org_id_a == Org.org_id)\
     .join(permissions_alias, role_permissions_alias.c.permission_id == permissions_alias.c.permission_id_a)\
-    .join(Resource_alias, permissions_alias.c.resource_id == Resource_alias.c.resource_id_a)\
-    .join(Action_alias, permissions_alias.c.action_id == Action_alias.c.action_id_a)
+    .join(ResourceAlias, permissions_alias.c.resource_id == ResourceAlias.c.resource_id_a)\
+    .join(ActionAlias, permissions_alias.c.action_id == ActionAlias.c.action_id_a)
 
 class ChannelMemberPermission(db.Model):
-    __table__ = j
+    __table__ = channel_member_permission_join
     user_id = channel_members.c.user_id
-    username = User_alias.c.username
+    username = UserAlias.c.username
     channel_id = channel_members.c.channel_id
     org_id = Org.org_id
-    resource = Resource_alias.c.name_a_resource
-    action = Action_alias.c.name_a_action
+    resource = ResourceAlias.c.name_a_resource
+    action = ActionAlias.c.name_a_action
 
 class ChannelMemberPermissionSchema(ma.SQLAlchemySchema):
     class Meta:
