@@ -2,6 +2,7 @@ from ...models.User import User
 from ...models.Channel import Channel as Channel_model
 from ... import db
 from .message_class import ChannelMessageClient
+from sqlalchemy.orm.exc import NoResultFound
 
 class Channel():
     def __init__(self, id, name, messages):
@@ -19,12 +20,27 @@ def add_dummy_channels():
 def get_channel_ids(): # returns list of available channel ids
     return [*channels]
 
-def store_channel(channel_name):
-    users = User.query.all()
-    name = channel_name
-    channel = Channel_model(name)
-    channel.members = users
+def get_users_by_usernames(usernames):
+    users = []
+    usernames_not_found = []
+    for username in usernames:
+        try:
+            user = User.query.filter_by(username=username).one()
+            users.append(user)
+        except NoResultFound:
+            usernames_not_found.append(username)
+    return {"users": users, "usernames_not_found": usernames_not_found}
 
+def get_users():
+    return User.query.all()
+
+def create_channel(name, users, is_private, admin_username):
+    channel = Channel_model(name, admin_username, is_private)
+    channel.users = users
+    return channel
+
+
+def store_channel(channel):
     db.session.add(channel)
     db.session.commit()
     db.session.refresh(channel)
