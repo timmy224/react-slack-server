@@ -5,8 +5,7 @@ from ...models.ChannelMemberPermission import channel_member_permission_schema
 
 def gen_org_member_perms_map(org_member_perms):
     """
-    Takes in a list of a specific user's OrgMemberPermission and constructs a map with org_id as the key and a list of
-    jsonified OrgMemberPermission as the value
+    Takes in a list of a specific user's OrgMemberPermission and constructs a map with org_id as the key and a list of jsonified OrgMemberPermission as the value
     Returns: the constructed map
     """
     org_to_org_member_perms = collections.defaultdict(list)
