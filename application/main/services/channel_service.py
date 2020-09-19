@@ -34,9 +34,9 @@ def get_users_by_usernames(usernames):
 def get_users():
     return User.query.all()
 
-def create_channel(name, users, is_private, admin_username):
+def create_channel(name, members, is_private, admin_username):
     channel = Channel_model(name, admin_username, is_private)
-    channel.users = users
+    channel.members = members
     return channel
 
 

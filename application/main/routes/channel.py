@@ -10,10 +10,10 @@ from flask_socketio import close_room
 from ... import socketio 
 
 @main.route("/channel", methods=["GET","POST","DELETE"])
-# @login_required
+@login_required
 def channels():
     if request.method == "GET":
-        channels = Channel.query.all()
+        channels = current_user.channels
         channels_json = ChannelSchema(exclude=["members"]).dump(channels, many=True)
         response = {}
         response["channels"] = channels_json
