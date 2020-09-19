@@ -62,21 +62,16 @@ def channels():
         response['successful'] = True
         return jsonify(response)
 
-@main.route("/channel/users/", methods=["GET"])
-def get_number_of_users():
+@main.route("/channel/members/", methods=["GET"])
+def get_num_members():
     channel_id = request.args.get("channel_id", None)
     if channel_id is None:
         response = {'ERROR': "Missing channel_id in route"}
         return jsonify(response)
     channel = Channel.query.filter_by(channel_id=channel_id).one()
-    number_of_users = len(channel.users)
-    response = {'total_users': number_of_users}
+    num_members = len(channel.members)
+    response = {'num_members': num_members}
     return response
-        # user_json = user_schema.dump(user)
-        # response["user"] = user_json
-        # return response
-
-
 
 # EXAMPLES #
 @main.route("/channel-subscription/", methods=["GET", "POST"])
