@@ -34,14 +34,13 @@ def get_users_by_usernames(usernames):
 def get_users():
     return User.query.all()
 
-def create_channel(name, users, is_private, admin_username):
+def create_channel(name, members, is_private, admin_username):
     channel = Channel_model(name, admin_username, is_private)
-    channel.users = users
+    channel.members = members
     return channel
 
 
 def store_channel(channel):
-
     db.session.add(channel)
     db.session.commit()
     db.session.refresh(channel)
@@ -50,7 +49,7 @@ def store_channel(channel):
 
 def delete_channel(channel_id):
     channel = Channel_model.query.filter_by(channel_id=channel_id).one()
-    channel.users = []
+    channel.members = []
 
     db.session.commit()
     db.session.delete(channel)

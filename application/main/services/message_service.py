@@ -60,7 +60,7 @@ def store_channel_message(clientMessage):
     db.session.commit()
 
 add_dummy_messages()
-def pop_channel_messages_client(messages):
+def populate_channel_messages_client(messages):
      chan_message = None
      chan_messages_client = []
      for msg in messages:
@@ -74,7 +74,7 @@ def pop_channel_messages_client(messages):
      chan_messages_list = [chanmsg.__dict__ for chanmsg in chan_messages_client]
      return chan_messages_list
 
-def pop_private_messages_client(messages):
+def populate_private_messages_client(messages):
      priv_message = None
      priv_messages_client = []
      for msg in messages:
