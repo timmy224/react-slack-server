@@ -20,7 +20,7 @@ class DevelopmentConfig(Config):
         self.REMEMBER_COOKIE_HTTPONLY = True
         self.SESSION_COOKIE_SAMESITE = "None" # Quotes intentional
         self.WTF_CSRF_TIME_LIMIT = None # When set to None, CSRF token is valid for the life of the session
-        # self.SQLALCHEMY_ECHO = True UNCOMMENT TO HAVE SQL OUTPUT TO CONSOLE
+        # self.SQLALCHEMY_ECHO = True # UNCOMMENT TO HAVE SQL OUTPUT TO CONSOLE
  
 class ProductionConfig(Config):
     def __init__(self):
