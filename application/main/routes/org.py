@@ -23,3 +23,26 @@ def get_org_members():
     response["org_members"] = org_member_schema.dumps(org_members, many=True)
     return response
 
+@main.route("/org/invitations", methods=["GET"])
+def get_org_invitations():
+    '''
+    Query database on app being loaded to see if user has an outstanding invitation.
+    '''
+    invitations = [
+        {
+        'orgName': 'apple',
+        'message': 'join us'
+        },
+        {
+        'orgName': 'google',
+        'message': 'join our chat'
+        },
+        {
+        'orgName': 'netflix',
+        'message': 'join!'
+        }
+    ]
+    response = {}
+    response["invitations"] = invitations
+    return response
+
