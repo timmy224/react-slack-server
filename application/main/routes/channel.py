@@ -5,7 +5,6 @@ from .. import main
 from ... import db
 from ..services import channel_service, role_service
 from ...models.Channel import Channel, ChannelSchema
-from ...models.ChannelMembers import channel_members
 from ...models.ChannelMember import ChannelMember, channel_member_schema
 from ...constants.roles import channel_roles
 from flask_socketio import close_room
