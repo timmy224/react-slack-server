@@ -12,6 +12,6 @@ class ChannelRoles:
     MODERATOR = "channel_moderator"
     ADMIN = "channel_admin"
 
-org = OrgRoles()
-channel = ChannelRoles()    
+org_roles = OrgRoles()
+channel_roles = ChannelRoles()    
 

@@ -1,11 +1,14 @@
 from flask import request, jsonify
 from flask_login import login_required, current_user
+from sqlalchemy import and_
 import json
 from .. import main
 from ... import db
-from ..services import channel_service
+from ..services import channel_service, role_service
 from ...models.Channel import Channel, ChannelSchema
+from ...models.ChannelMembers import channel_members
 from ...models.ChannelMember import ChannelMember, channel_member_schema
+from ...constants.roles import channel_roles
 from flask_socketio import close_room
 from ... import socketio 
 
@@ -41,6 +44,28 @@ def channels():
             admin_username = current_user.username
             channel = channel_service.create_channel(channel_name, users, is_private, admin_username)
             channel_id = channel_service.store_channel(channel)
+            # get roles
+            members_channel_role, admin_channel_role = role_service.get_role(channel_roles.TADPOLE),                                                               role_service.get_role(channel_roles.ADMIN)
+            # get channel_members entries
+            admin_user_id = current_user.user_id
+            member_user_ids = map(lambda user: user.user_id, users)
+            # members role update
+            stmt = channel_members.update().where(
+                and_(
+                    channel_members.c.channel_id == channel_id,
+                    channel_members.c.user_id.in_(member_user_ids)
+                )
+            ).values(role_id=members_channel_role.role_id)
+            db.session.execute(stmt)
+            # admin role update
+            stmt = channel_members.update().where(
+                and_(
+                    channel_members.c.channel_id == channel_id,
+                    channel_members.c.user_id == admin_user_id
+                )
+            ).values(role_id=admin_channel_role.role_id)
+            db.session.execute(stmt)            
+            db.session.commit()
 
             socketio.emit("channel-created", broadcast=True)
             socketio.emit("added-to-channel", channel_id, broadcast=True)
