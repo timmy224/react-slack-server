@@ -43,7 +43,7 @@ def channels():
             channel = channel_service.create_channel(channel_name, users, is_private, admin_username)
             channel_id = channel_service.store_channel(channel)
             # get roles
-            members_channel_role, admin_channel_role = role_service.get_role(channel_roles.TADPOLE),                                                               role_service.get_role(channel_roles.ADMIN)
+            members_channel_role, admin_channel_role = role_service.get_role(channel_roles.TADPOLE), role_service.get_role(channel_roles.ADMIN)
             # member ids
             admin_user_id = current_user.user_id
             member_user_ids = map(lambda user: user.user_id, users)
