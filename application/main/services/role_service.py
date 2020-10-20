@@ -1,7 +1,8 @@
 from sqlalchemy import and_
+from ... import db
 from ...models.Role import Role
 from ...models.ChannelMembers import channel_members
-from ... import db
+
 
 def get_role(name):
     role = Role.query.filter_by(name=name).one()
@@ -15,4 +16,5 @@ def gen_channel_members_role_update(channel_id, member_ids, role_id):
         )
     ).values(role_id=role_id)
     return statement
+
 

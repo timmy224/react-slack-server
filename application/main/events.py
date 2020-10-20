@@ -27,17 +27,6 @@ def on_connect():
     room = request.sid
     client_service.on_client_connected(username, room)
 
-    # set default channel here, but removed client socket listener for message-catchup
-    # default_channel = 49
-    # recent_messages = Message.query\
-    #                         .join(channel_messages, Message.message_id == channel_messages.c.message_id)\
-    #                         .filter_by(channel_id = default_channel)\
-    #                         .all()
-    # response = {}
-    # response['messages'] = message_schema.dumps(recent_messages, many=True)
-    # print(response)
-    # emit("message-catchup", response)
-
     # Broadcast to all other clients that a new client connected
     emit("user-joined-chat", {"username": username},
          broadcast=True, include_self=False)
@@ -53,12 +42,12 @@ def on_send_message(clientMessage):
         message_service.store_private_message(clientMessage)
         receiver_username = clientMessage['receiver']
         sender_username = clientMessage['sender']
-        receiver_client = client_service.clients.get(receiver_username)
+        receiver_client = client_service.get_client(receiver_username)
         is_receiver_online = receiver_client is not None
         if is_receiver_online:
             receiver_room = receiver_client.room
             emit("message-received", clientMessage, room=receiver_room)
-        sender_client = client_service.clients.get(sender_username)
+        sender_client = client_service.get_client(sender_username)
         is_sender_online = sender_client is not None
         if is_sender_online:
             sender_room = sender_client.room

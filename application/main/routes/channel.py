@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 import json
 from .. import main
 from ... import db
-from ..services import channel_service, role_service
+from ..services import channel_service, role_service, permission_service, org_service
 from ...models.Channel import Channel, ChannelSchema
 from ...models.ChannelMember import ChannelMember, channel_member_schema
 from ...constants.roles import channel_roles
@@ -40,7 +40,9 @@ def channels():
             else:
                 users = channel_service.get_users()
             admin_username = current_user.username
-            channel = channel_service.create_channel(channel_name, users, is_private, admin_username)
+            org = org_service.get_org(channel_info["orgName"])
+            print("number of org channels: ", len(org.channels))
+            channel = channel_service.create_channel(channel_name, users, is_private, admin_username, org)
             channel_id = channel_service.store_channel(channel)
             # get roles
             members_channel_role, admin_channel_role = role_service.get_role(channel_roles.TADPOLE), role_service.get_role(channel_roles.ADMIN)
@@ -54,6 +56,9 @@ def channels():
             statement = role_service.gen_channel_members_role_update(channel_id, [admin_user_id], admin_channel_role.role_id)
             db.session.execute(statement)
             db.session.commit()
+            # notify that permissions were updated for these users
+            usernames = map(lambda user: user.username, users)
+            permission_service.notify_permissions_updated(usernames)
 
             socketio.emit("channel-created", broadcast=True)
             socketio.emit("added-to-channel", channel_id, broadcast=True)
