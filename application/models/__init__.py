@@ -17,7 +17,7 @@ def configure_migrate(app, db):
     # import tables
     from . import ChannelMembers, OrgMembers, OrgChannels, PrivateMessages, ChannelMessages, RolePermissions, Permissions
     # import models
-    from . import Org, User, Channel, Message,  Role, Resource, Action
+    from . import Org, User, Channel, Message,  Role, Resource, Action, OrgInvite
     migrate = Migrate(app, db)
     return migrate
     

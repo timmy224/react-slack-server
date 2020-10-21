@@ -4,7 +4,6 @@ from .. import main
 from ... import db
 from ...models.OrgMember import OrgMember, org_member_schema
 
-
 # EXAMPLES
 @main.route("/org/member/", methods=["GET"])
 def get_org_members():
