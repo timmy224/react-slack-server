@@ -4,6 +4,17 @@ from .. import main
 from ... import db
 from ...models.OrgMember import OrgMember, org_member_schema
 
+@main.route("/org/invite", methods=["POST"])
+def invite_to_org():
+    """
+    [POST] - stores an org invite into the database 
+    Request Body: "org_name", "inviter_username", "email" 
+    DB tables: "org_invites"
+    """
+    data = request.json
+    # TODO: query for org, for inviter and add to org_invite.org, org_invite.inviter attributes
+    
+
 # EXAMPLES
 @main.route("/org/member/", methods=["GET"])
 def get_org_members():
