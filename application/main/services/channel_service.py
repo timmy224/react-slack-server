@@ -1,7 +1,7 @@
 from ...models.User import User
 from ...models.Channel import Channel as Channel_model
 from ... import db
-from .message_class import ChannelMessageClient
+from ...client_models.message import ChannelMessageClient
 from sqlalchemy.orm.exc import NoResultFound
 
 class Channel():

@@ -41,7 +41,6 @@ def channels():
                 users = channel_service.get_users()
             admin_username = current_user.username
             org = org_service.get_org(channel_info["orgName"])
-            print("number of org channels: ", len(org.channels))
             channel = channel_service.create_channel(channel_name, users, is_private, admin_username, org)
             channel_id = channel_service.store_channel(channel)
             # get roles

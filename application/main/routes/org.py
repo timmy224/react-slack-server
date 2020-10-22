@@ -2,18 +2,40 @@ from flask import request, jsonify
 import json
 from .. import main
 from ... import db
+from ..services import org_service, user_service
 from ...models.OrgMember import OrgMember, org_member_schema
+from ...models.OrgInvite import org_invite_schema
+from ...client_models.org_invite import OrgInviteClient
 
-@main.route("/org/invite", methods=["POST"])
+@main.route("/org/invite", methods=["GET", "POST"])
 def invite_to_org():
     """
-    [POST] - stores an org invite into the database 
-    Request Body: "org_name", "inviter_username", "email" 
+    [GET] - retrives all outstanding invitations for a user where user is the receipient of an invite
+    Path: /org/invite?username={username}
+    DB tables: "org_invites"
+    [POST] - stores an org invite in the database 
+    Request Body: "orgName", "inviterUsername", "email" 
     DB tables: "org_invites"
     """
-    data = request.json
-    # TODO: query for org, for inviter and add to org_invite.org, org_invite.inviter attributes
-    
+    if request.method == "GET":
+        response = {}
+        username = request.args.get("username")
+        if username is None: 
+            response["ERROR"] = "Missing username in route"
+            return response
+        org_invites = org_service.get_active_received_org_invites(username)
+        org_invites_client = org_service.populate_org_invites_client(org_invites)
+        response["org_invites"] = json.dumps(org_invites_client)
+        return response
+    elif request.method == "POST":
+        data = request.json
+        org = org_service.get_org(data["orgName"])
+        inviter = user_service.get_user(data["inviterUsername"])
+        email = data["email"]
+        org_invite = org_service.create_org_invite(inviter, org, email)
+        org_service.store_org_invite(org_invite)
+        response={"successful": True}
+        return jsonify(response)    
 
 # EXAMPLES
 @main.route("/org/member/", methods=["GET"])

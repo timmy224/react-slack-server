@@ -8,9 +8,7 @@ class OrgInvite(db.Model):
     email = db.Column(db.String())
     responded = db.Column(db.Boolean(), default=False)
 
-    def __init__(self, inviter_id, org_id, email):
-        self.inviter_id = inviter_id
-        self.org_id = org_id
+    def __init__(self, email):
         self.email = email
     
     def __repr__(self):
