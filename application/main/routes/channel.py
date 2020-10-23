@@ -76,12 +76,18 @@ def get_num_members():
 @main.route("/channel/usernames/", methods=["GET"])
 def get_channel_members():
     channel_id = request.args.get("channel_id")
+    username = request.args.get("username")
     response = {}
     if channel_id is None:
         response["ERROR"] = "Missing channel_id in route"
         return response
-    channel_usernames = db.session.query(ChannelMember.username).filter_by(channel_id=channel_id).all()
+    if username is None:
+        response["ERROR"] = "Missing username in route"
+        return response
+    channel_usernames = db.session.query(ChannelMember).filter_by(channel_id=channel_id).filter_by(username=username).all()
+    username_role = db.session.query(ChannelMember.role_name).filter_by(channel_id=channel_id).filter_by(username=username).one()
     response["channel_usernames"] = channel_member_schema.dumps(channel_usernames, many=True);
+    response["username_role"] = channel_member_schema.dumps(username_role)
     return response
 
 # EXAMPLES #
