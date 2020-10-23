@@ -84,7 +84,7 @@ def get_channel_members():
     if username is None:
         response["ERROR"] = "Missing username in route"
         return response
-    channel_usernames = db.session.query(ChannelMember).filter_by(channel_id=channel_id).filter_by(username=username).all()
+    channel_usernames = db.session.query(ChannelMember.username).filter_by(channel_id=channel_id).all()
     username_role = db.session.query(ChannelMember.role_name).filter_by(channel_id=channel_id).filter_by(username=username).one()
     response["channel_usernames"] = channel_member_schema.dumps(channel_usernames, many=True);
     response["username_role"] = channel_member_schema.dumps(username_role)
