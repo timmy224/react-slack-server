@@ -7,19 +7,22 @@ from ...models.OrgMember import OrgMember, org_member_schema
 from ...models.OrgInvite import org_invite_schema
 from ...client_models.org_invite import OrgInviteClient
 
-@main.route("/org/invite", methods=["GET", "POST"])
+@main.route("/org/invite", methods=["POST"])
 def invite_to_org():
-    """
-    [GET] - retrives all outstanding invitations for a user where user is the receipient of an invite
+    """    
+    [action: GET] - retrives all outstanding invitations for a user where user is the receipient of an invite
+    Request Body: "action", "username"
     Path: /org/invite?username={username}
     DB tables: "org_invites"
-    [POST] - stores an org invite in the database 
-    Request Body: "orgName", "inviterUsername", "email" 
+    [action: STORE] - stores an org invite in the database if user does not already have an active invite to this org
+    Request Body: "action", "orgName", "inviterUsername", "email" 
     DB tables: "org_invites"
     """
-    if request.method == "GET":
-        response = {}
-        username = request.args.get("username")
+    response = {}
+    data = request.json    
+    action = data["action"]
+    if action == "GET":        
+        username = data["username"]
         if username is None: 
             response["ERROR"] = "Missing username in route"
             return response
@@ -27,9 +30,8 @@ def invite_to_org():
         org_invites_client = org_service.populate_org_invites_client(org_invites)
         response["org_invites"] = json.dumps(org_invites_client)
         return response
-    elif request.method == "POST":
+    elif action == "STORE":
         response = {}
-        data = request.json
         org = org_service.get_org(data["orgName"])
         inviter = user_service.get_user(data["inviterUsername"])
         email = data["email"]
@@ -38,14 +40,30 @@ def invite_to_org():
             return response
         org_invite = org_service.create_org_invite(inviter, org, email)
         org_service.store_org_invite(org_invite)
-        response = {"successful": True}
-        return jsonify(response)    
+        response["successful"] = True
+        return response
 
 @main.route("/org/invite-response", methods=["POST"])
+def org_invite_response():
+    """
+    [POST] - marks an org_invite as responded in the database. If isAccepted is True, adds the user to the org and adds them to all public channels in the org
+    Request Body: "orgName", "username" "isAccepted"
+    DB tables: "org_invites", "org_members", "channel_members"
+    """
     data = request.json
-    #org_name, #username, accepted
-    # query where org_name, username, and responded=False 
-
+    org = org_service.get_org(data["orgName"])
+    user = user_service.get_user(data["username"])
+    is_accepted = data["isAccepted"]
+    org_invite = org_service.get_active_org_invite(org.org_id, user.username)
+    org_service.mark_org_invite_responded(org_invite)
+    if is_accepted:
+        org.members.append(user)
+        for channel in org.channels:
+            channel.members.append(user)
+        # TODO: any socket events for adding to org / channel. will be addressed in near future after add to channel refactor
+    db.session.commit()
+    response = {"successful": True}
+    return response
 
 # EXAMPLES
 @main.route("/org/member/", methods=["GET"])
