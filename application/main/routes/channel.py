@@ -72,6 +72,17 @@ def get_num_members():
     num_members = len(channel.members)
     response = {'num_members': num_members}
     return response
+    
+@main.route("/channel/member/", methods=["GET"])
+def get_channel_members():
+    channel_id = request.args.get("channel_id")
+    response = {}
+    if channel_id is None:
+        response["ERROR"] = "Missing channel_id in route"
+        return response
+    channel_members = db.session.query(ChannelMember.username).filter_by(channel_id=channel_id).all()
+    response["channel_members"] = channel_member_schema.dumps(channel_members, many=True);
+    return response
 
 # EXAMPLES #
 @main.route("/channel-subscription/", methods=["GET", "POST"])
@@ -121,21 +132,3 @@ def channel_subscription():
         response = {}
         response["successful"] = True
         return jsonify(response)
-
-@main.route("/channel/member/", methods=["GET"])
-def get_channel_members():
-    """
-    [GET] - grabs a channel's channel members from the DB and returns it as a JSON response (note that the ChannelMember is a join of multiple tables - see ChannelMember schema)
-    Path: /channel/member/?channel_id={channel_id}
-    Response Body: "channel_members"
-    DB tables: "users", "channel_members", "roles"
-    """
-    channel_id = request.args.get("channel_id")
-    response = {}
-    if channel_id is None:
-        response["ERROR"] = "Missing channel_id in route"
-        return response
-    channel_members = db.session.query(ChannelMember).filter_by(channel_id=channel_id).all()
-    response["channel_members"] = channel_member_schema.dumps(channel_members, many=True);
-    return response
-
