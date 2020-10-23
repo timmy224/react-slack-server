@@ -28,14 +28,24 @@ def invite_to_org():
         response["org_invites"] = json.dumps(org_invites_client)
         return response
     elif request.method == "POST":
+        response = {}
         data = request.json
         org = org_service.get_org(data["orgName"])
         inviter = user_service.get_user(data["inviterUsername"])
         email = data["email"]
+        if org_service.has_active_org_invite(org.org_id, email):
+            response["ERROR"] = "User already has an active invite to this org"
+            return response
         org_invite = org_service.create_org_invite(inviter, org, email)
         org_service.store_org_invite(org_invite)
-        response={"successful": True}
+        response = {"successful": True}
         return jsonify(response)    
+
+@main.route("/org/invite-response", methods=["POST"])
+    data = request.json
+    #org_name, #username, accepted
+    # query where org_name, username, and responded=False 
+
 
 # EXAMPLES
 @main.route("/org/member/", methods=["GET"])
