@@ -20,7 +20,7 @@ def get_active_received_org_invites(email):
     return OrgInvite.query.filter_by(email=email, responded=False).all()
 
 def populate_org_invites_client(org_invites):
-    return list(map(lambda invite: OrgInviteClient(invite.org.name, invite.inviter.username), org_invites))
+    return list(map(lambda invite: OrgInviteClient(invite.org.name, invite.inviter.username).__dict__, org_invites))
     
 def has_active_org_invite(org_id, email):
     return OrgInvite.query.filter_by(org_id=org_id, email=email, responded=False).scalar() is not None

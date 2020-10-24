@@ -19,9 +19,9 @@ def invite_to_org():
     DB tables: "org_invites"
     """
     response = {}
-    data = request.json    
+    data = request.json
     action = data["action"]
-    if action == "GET":        
+    if action == "GET":
         username = data["username"]
         if username is None: 
             response["ERROR"] = "Missing username in route"
@@ -58,9 +58,11 @@ def org_invite_response():
     org_service.mark_org_invite_responded(org_invite)
     if is_accepted:
         org.members.append(user)
-        for channel in org.channels:
+        # add to public channels in org
+        for channel in filter(lambda c: not c.is_private, org.channels):
             channel.members.append(user)
         # TODO: any socket events for adding to org / channel. will be addressed in near future after add to channel refactor
+        # TODO: assign channel member role and org member role (will come after refactor)
     db.session.commit()
     response = {"successful": True}
     return response
