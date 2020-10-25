@@ -7,6 +7,7 @@ class User(UserMixin, db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(), index=True, unique=True)
     password_hash = db.Column(db.String())
+    org = db.relationship("Org", backref="members", secondary="org_members", lazy=True)
 
     def __init__(self, username):
         self.username = username 
@@ -28,6 +29,7 @@ class User(UserMixin, db.Model):
 class UserSchema(ma.SQLAlchemyAutoSchema):
     # Uses the "exclude" argument to avoid infinite recursion 
     channels = ma.Nested("ChannelSchema", exclude=("users",), many=True)
+    orgs = ma.Nested("OrgSchema", exclude=("users", ), many=True)
 
     class Meta:
         model = User

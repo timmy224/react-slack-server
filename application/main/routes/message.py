@@ -77,7 +77,6 @@ def get_private_messages():
 
 @main.route("/message/private", methods=["POST"])
 def store_private_messages():
-    
         data = request.json
         sender_id, content = data["sender_id"], data["content"]
         sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M %p")

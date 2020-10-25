@@ -7,6 +7,7 @@ class Channel(db.Model):
     is_private = db.Column(db.Boolean(), default=False)
     admin_username = db.Column(db.String(),db.ForeignKey("users.username"))
     members = db.relationship("User", backref="channels", secondary="channel_members", lazy=True)
+    org = db.relationship("Org", backref="channels", secondary="org_channels", uselist=False, lazy=True)
 
     def __init__(self, name, admin_username, is_private):
         self.name = name

@@ -1,6 +1,8 @@
 import collections
 from ...models.OrgMemberPermission import org_member_permission_schema
 from ...models.ChannelMemberPermission import channel_member_permission_schema
+from . import client_service
+from ... import socketio 
 
 
 def gen_org_member_perms_map(org_member_perms):
@@ -31,4 +33,15 @@ def gen_channel_member_perms_map(channel_member_perms):
         channel_member_perm_json = channel_member_permission_schema.dump(channel_member_perm)
         channel_id_to_channel_member_perms[channel_id].append(channel_member_perm_json)
     return org_to_channel_member_perms
+
+def notify_permissions_updated(usernames):    
+    """
+    Send "permissions-updated" socket event to the subset of usernames that are currently connect clients
+    """
+    for username in filter(lambda username: client_service.get_client(username) is not None, usernames):
+        connected_client = client_service.get_client(username)
+        client_room = connected_client.room
+        socketio.emit("permissions-updated", room=client_room)
+
+
     
