@@ -2,10 +2,11 @@ from flask import request, jsonify
 import json
 from .. import main
 from ... import db
-from ..services import org_service, user_service
+from ..services import org_service, user_service, client_service
 from ...models.OrgMember import OrgMember, org_member_schema
 from ...models.OrgInvite import org_invite_schema
 from ...client_models.org_invite import OrgInviteClient
+from ... import socketio 
 
 @main.route("/org/invite", methods=["POST"])
 def invite_to_org():
@@ -32,7 +33,8 @@ def invite_to_org():
         return response
     elif action == "STORE":
         response = {}
-        org = org_service.get_org(data["orgName"])
+        org_name = data["orgName"]
+        org = org_service.get_org(org_name)
         inviter = user_service.get_user(data["inviterUsername"])
         email = data["email"]
         if org_service.has_active_org_invite(org.org_id, email):
@@ -40,6 +42,10 @@ def invite_to_org():
             return response
         org_invite = org_service.create_org_invite(inviter, org, email)
         org_service.store_org_invite(org_invite)
+        # 
+        client = client_service.get_client(email)
+        if client is not None: 
+            socketio.emit("invited-to-org", org_name, room=client.room)
         response["successful"] = True
         return response
 
