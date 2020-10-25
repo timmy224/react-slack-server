@@ -10,7 +10,7 @@ class ChannelMessageClient(MessageClient):
         self.channel_id = channel_id
 
     def __repr__(self):
-        return f'<Sender={self.sender} sent_dt={self.sent_dt} Content={self.content} channel_id={self.channel_id}>'
+        return f'<ChannelMessageClient sender={self.sender} sent_dt={self.sent_dt} content={self.content} channel_id={self.channel_id}>'
     
 class PrivateMessageClient(MessageClient):
     def __init__(self, sender, sent_dt, content, receiver):
@@ -18,4 +18,4 @@ class PrivateMessageClient(MessageClient):
         self.receiver = receiver
 
     def __repr__(self):
-        return f'<Sender={self.sender} sent_dt={self.sent_dt} Content={self.content} receiver={self.receiver}>'
+        return f'<PrivateMessageClient sender={self.sender} sent_dt={self.sent_dt} content={self.content} receiver={self.receiver}>'

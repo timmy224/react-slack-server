@@ -4,6 +4,7 @@ class Org(db.Model):
     __tablename__ = "orgs"
     org_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String())
+    invites = db.relationship("OrgInvite", backref="org", lazy=True)
 
     def __init__(self, name):
         self.name = name

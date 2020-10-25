@@ -8,6 +8,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(), index=True, unique=True)
     password_hash = db.Column(db.String())
     org = db.relationship("Org", backref="members", secondary="org_members", lazy=True)
+    sent_org_invites = db.relationship("OrgInvite", backref="inviter", lazy=True)
 
     def __init__(self, username):
         self.username = username 
