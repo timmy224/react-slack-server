@@ -38,8 +38,7 @@ def notify_permissions_updated(usernames):
     """
     Send "permissions-updated" socket event to the subset of usernames that are currently connect clients
     """
-    for username in filter(lambda username: client_service.get_client(username) is not None, usernames):
-        connected_client = client_service.get_client(username)
+    for connected_client in client_service.get_connected_clients(usernames):
         client_room = connected_client.room
         socketio.emit("permissions-updated", room=client_room)
 

@@ -44,7 +44,8 @@ def invite_to_org():
         org_service.store_org_invite(org_invite)
         # 
         client = client_service.get_client(email)
-        if client is not None: 
+        is_connected_client = client is not None
+        if is_connected_client: 
             socketio.emit("invited-to-org", org_name, room=client.room)
         response["successful"] = True
         return response
