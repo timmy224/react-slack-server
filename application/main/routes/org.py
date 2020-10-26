@@ -8,7 +8,6 @@ from ...models.OrgMember import OrgMember, org_member_schema
 from ...models.OrgInvite import org_invite_schema
 from ...client_models.org_invite import OrgInviteClient
 from ...constants.roles import org_roles, channel_roles
-from ... import socketio 
 
 @main.route("/org/invite", methods=["POST"])
 @login_required
