@@ -73,22 +73,34 @@ def get_num_members():
     response = {'num_members': num_members}
     return response
     
-@main.route("/channel/usernames/", methods=["GET"])
-def get_channel_members():
-    channel_id = request.args.get("channel_id")
-    username = request.args.get("username")
-    response = {}
-    if channel_id is None:
-        response["ERROR"] = "Missing channel_id in route"
-        return response
-    if username is None:
-        response["ERROR"] = "Missing username in route"
-        return response
-    channel_usernames = db.session.query(ChannelMember.username).filter_by(channel_id=channel_id).all()
-    username_role = db.session.query(ChannelMember.role_name).filter_by(channel_id=channel_id).filter_by(username=username).one()
-    response["channel_usernames"] = channel_member_schema.dumps(channel_usernames, many=True);
-    response["username_role"] = channel_member_schema.dumps(username_role)
-    return response
+@main.route("/channel/users/", methods=["GET", "POST", "DELETE"])
+def channel_members_info():
+     channel_id = request.args.get("channel_id" , None)
+     username = request.args.get("username", None)
+     response ={}
+     if channel_id is None:
+         response["ERROR"] = "Missing channel_id in route"
+         return jsonify(response)
+     if username is None:
+         response["ERROR"] = "Missing username in route"
+         return jsonify(response)
+
+     if request.method == "GET":
+         channel_usernames = db.session.query(ChannelMember.username).filter_by(channel_id = channel_id).all()
+         username_role = db.session.query(ChannelMember.role_name).filter_by(channel_id = channel_id).filter_by(username = username).one()
+         response["channel_usernames"] = channel_member_schema.dumps(channel_usernames, many=True);
+         response["username_role"] = channel_member_schema.dumps(username_role)
+         return response
+     
+     elif request.method == "DELETE":
+         channel_service.delete_channel_user(channel_id, username)
+         socketio.emit("user-deleted", username, broadcast=True)
+         socketio.emit("user-deleted", channel_id, broadcast=True)
+         response['successful'] = True
+         return jsonify(response)
+
+    #  Z
+
 
 # EXAMPLES #
 @main.route("/channel-subscription/", methods=["GET", "POST"])
