@@ -3,7 +3,7 @@ import json
 from flask_login import login_required, current_user
 from .. import main
 from ... import db
-from ..services import org_service, user_service, client_service, role_service, socket_service
+from ..services import org_service, user_service, client_service, role_service, socket_service, permission_service
 from ...models.OrgMember import OrgMember, org_member_schema
 from ...models.OrgInvite import org_invite_schema
 from ...client_models.org_invite import OrgInviteClient
@@ -62,7 +62,7 @@ def org_invite_response():
     org_service.mark_org_invite_responded(org_invite)
     if is_accepted:
         org.members.append(user)
-        public_channels = filter(lambda c: not c.is_private, org.channels)
+        public_channels = list(filter(lambda c: not c.is_private, org.channels))
         for channel in public_channels:
             channel.members.append(user)
         db.session.commit()
@@ -75,9 +75,11 @@ def org_invite_response():
         channel_ids = map(lambda channel: channel.channel_id, public_channels)
         statement = role_service.gen_channel_members_role_update_by_channel_ids(channel_ids, user.user_id, default_channel_role.role_id)
         db.session.execute(statement)
+        db.session.commit()
         # inform connected client that they've been added to a new org
         client = client_service.get_client(user.username)
-        socket_service.send(client, "added-to-org", org.org_id)
+        socket_service.send(client, "added-to-org", org.name)
+        permission_service.notify_permissions_updated(user.username)
     else:
         db.session.commit()
     response = {"successful": True}

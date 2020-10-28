@@ -20,5 +20,9 @@ def get_client(username):
     return clients.get(username)
 
 def get_connected_clients(usernames):
-    clients = [get_client(username) for username in usernames]
-    return filter(lambda client: client is not None, clients)
+    connected_clients = []
+    for username in usernames:
+        client = get_client(username)
+        if client is not None:
+            connected_clients.append(client)
+    return connected_clients

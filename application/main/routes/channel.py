@@ -57,8 +57,8 @@ def channels():
             db.session.commit()
             # notify that permissions were updated for these users
             usernames = map(lambda user: user.username, users)
-            permission_service.notify_permissions_updated(usernames)
-
+            for username in usernames:
+                permission_service.notify_permissions_updated(username)
             socketio.emit("channel-created", broadcast=True)
             socketio.emit("added-to-channel", channel_id, broadcast=True)
             response={"successful": True,}

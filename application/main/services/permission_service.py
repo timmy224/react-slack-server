@@ -34,12 +34,12 @@ def gen_channel_member_perms_map(channel_member_perms):
         channel_id_to_channel_member_perms[channel_id].append(channel_member_perm_json)
     return org_to_channel_member_perms
 
-def notify_permissions_updated(usernames):    
+def notify_permissions_updated(username):    
     """
-    Send "permissions-updated" socket event to the subset of usernames that are currently connect clients
+    Send "permissions-updated" socket event to the client informing them that their permissions have been updated
     """
-    for connected_client in client_service.get_connected_clients(usernames):
-        socket_service.send(connected_client, "permissions-updated");
+    client = client_service.get_client(username)
+    socket_service.send(client, "permissions-updated")
 
 
     
