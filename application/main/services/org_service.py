@@ -2,6 +2,7 @@ from ... import db
 from ...models.Org import Org
 from ...models.OrgInvite import OrgInvite
 from ...client_models.org_invite import OrgInviteClient
+from ...models.Channel import Channel
 
 def get_org(name):
     return Org.query.filter_by(name=name).one()
@@ -30,5 +31,9 @@ def get_active_org_invite(org_id, email):
 
 def mark_org_invite_responded(org_invite):
     org_invite.responded = True
+
+
+def get_channels():
+    return Channel.query.all()
 
 
