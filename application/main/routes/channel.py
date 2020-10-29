@@ -49,16 +49,16 @@ def channels():
             admin_user_id = current_user.user_id
             member_user_ids = map(lambda user: user.user_id, users)
             # members role update
-            statement = role_service.gen_channel_members_role_update(channel_id, member_user_ids, members_channel_role.role_id)
+            statement = role_service.gen_channel_members_role_update_by_member_ids(channel_id, member_user_ids, members_channel_role.role_id)
             db.session.execute(statement)
             # admin role update
-            statement = role_service.gen_channel_members_role_update(channel_id, [admin_user_id], admin_channel_role.role_id)
+            statement = role_service.gen_channel_members_role_update_by_member_ids(channel_id, [admin_user_id], admin_channel_role.role_id)
             db.session.execute(statement)
             db.session.commit()
             # notify that permissions were updated for these users
             usernames = map(lambda user: user.username, users)
-            permission_service.notify_permissions_updated(usernames)
-
+            for username in usernames:
+                permission_service.notify_permissions_updated(username)
             socketio.emit("channel-created", broadcast=True)
             socketio.emit("added-to-channel", channel_id, broadcast=True)
             response={"successful": True,}

@@ -18,3 +18,11 @@ def remove_client_by_room(room):
 
 def get_client(username):
     return clients.get(username)
+
+def get_connected_clients(usernames):
+    connected_clients = []
+    for username in usernames:
+        client = get_client(username)
+        if client is not None:
+            connected_clients.append(client)
+    return connected_clients
