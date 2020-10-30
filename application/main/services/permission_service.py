@@ -3,8 +3,6 @@ from ...models.OrgMemberPermission import org_member_permission_schema
 from ...models.ChannelMemberPermission import channel_member_permission_schema
 from . import client_service, socket_service
 
-
-
 def gen_org_member_perms_map(org_member_perms):
     """
     Takes in a list of a specific user's OrgMemberPermission and constructs a map with org_id as the key and a list of jsonified OrgMemberPermission as the value
