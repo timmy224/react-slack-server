@@ -3,12 +3,13 @@ import json
 from flask_login import login_required, current_user
 from .. import main
 from ... import db
-from ..services import org_service, user_service, client_service, role_service, socket_service, permission_service, channel_service
+from ..services import org_service, user_service, client_service, role_service, socket_service
 from ...models.OrgMember import OrgMember, org_member_schema
 from ...models.OrgInvite import org_invite_schema
 from ...client_models.org_invite import OrgInviteClient
 from ...constants.roles import org_roles, channel_roles
 from ...models.Org import OrgSchema, Org
+
 
 @main.route("/org/invite", methods=["POST"])
 @login_required
@@ -26,8 +27,10 @@ def invite_to_org():
     action = data["action"]
     if action == "GET":
         user = current_user
-        org_invites = org_service.get_active_received_org_invites(user.username)
-        org_invites_client = org_service.populate_org_invites_client(org_invites)
+        org_invites = org_service.get_active_received_org_invites(
+            user.username)
+        org_invites_client = org_service.populate_org_invites_client(
+            org_invites)
         response["org_invites"] = json.dumps(org_invites_client)
         return response
     elif action == "STORE":
@@ -42,10 +45,10 @@ def invite_to_org():
         org_invite = org_service.create_org_invite(inviter, org, email)
         org_service.store_org_invite(org_invite)
         # inform connected client that they've received an org invite
-        client = client_service.get_client(email)
-        socket_service.send(client, "invited-to-org", org_name)
+        socket_service.send(email, "invited-to-org", org_name)
         response["successful"] = True
         return response
+
 
 @main.route("/org/invite-response", methods=["POST"])
 @login_required
@@ -63,30 +66,35 @@ def org_invite_response():
     org_service.mark_org_invite_responded(org_invite)
     if is_accepted:
         org.members.append(user)
-        public_channels = list(filter(lambda c: not c.is_private, org.channels))
+        public_channels = list(
+            filter(lambda c: not c.is_private, org.channels))
         for channel in public_channels:
             channel.members.append(user)
         db.session.commit()
         # get roles
-        default_org_role, default_channel_role = role_service.get_role(org_roles.TADPOLE), role_service.get_role(channel_roles.TADPOLE)
-        # org members role update        
-        statement = role_service.gen_org_members_role_update(org.org_id, user.user_id, default_org_role.role_id)
+        default_org_role, default_channel_role = role_service.get_role(
+            org_roles.TADPOLE), role_service.get_role(channel_roles.TADPOLE)
+        # org members role update
+        statement = role_service.gen_org_members_role_update(
+            org.org_id, user.user_id, default_org_role.role_id)
         db.session.execute(statement)
         # channel members role update
         channel_ids = map(lambda channel: channel.channel_id, public_channels)
-        statement = role_service.gen_channel_members_role_update_by_channel_ids(channel_ids, user.user_id, default_channel_role.role_id)
+        statement = role_service.gen_channel_members_role_update_by_channel_ids(
+            channel_ids, user.user_id, default_channel_role.role_id)
         db.session.execute(statement)
         db.session.commit()
-        # inform connected client that they've been added to a new org
-        client = client_service.get_client(user.username)
-        socket_service.send(client, "added-to-org", org.name)
-        permission_service.notify_permissions_updated(user.username)
+        # inform connected client that they've been added to a new org and that permissions have been updated
+        socket_service.send(user.username, "added-to-org", org.name)
+        socket_service.send(user.username, "permissions-updated")
     else:
         db.session.commit()
     response = {"successful": True}
     return response
 
 # EXAMPLES
+
+
 @main.route("/org/member/", methods=["GET"])
 def get_org_members():
     """
@@ -103,7 +111,6 @@ def get_org_members():
     org_members = db.session.query(OrgMember).filter_by(org_id=org_id).all()
     response["org_members"] = org_member_schema.dumps(org_members, many=True)
     return response
-
 
 @main.route("/orgs", methods=[ "POST", "DELETE"])
 @login_required
