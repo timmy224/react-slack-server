@@ -36,13 +36,6 @@ def get_active_org_invite(org_id, email):
 def mark_org_invite_responded(org_invite):
     org_invite.responded = True
 
-
-def get_channels():
-    return Channel.query.all()
-
-def get_invites():
-    return OrgInvite.query.all()
-
 def create_org(name, members):
     org = Org_model(name)
     org.members = members
