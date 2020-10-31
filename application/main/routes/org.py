@@ -3,7 +3,7 @@ import json
 from flask_login import login_required, current_user
 from .. import main
 from ... import db
-from ..services import org_service, user_service, client_service, role_service, socket_service, permission_service
+from ..services import org_service, user_service, client_service, role_service, socket_service, permission_service, channel_service
 from ...models.OrgMember import OrgMember, org_member_schema
 from ...models.OrgInvite import org_invite_schema
 from ...client_models.org_invite import OrgInviteClient
@@ -27,9 +27,7 @@ def invite_to_org():
     if action == "GET":
         user = current_user
         org_invites = org_service.get_active_received_org_invites(user.username)
-        print('ORG_INVITES', org_invites)
         org_invites_client = org_service.populate_org_invites_client(org_invites)
-        print('ORG_INVITES_CLIENT', org_invites_client)
         response["org_invites"] = json.dumps(org_invites_client)
         return response
     elif action == "STORE":
@@ -114,124 +112,61 @@ def orgs():
     [action: GET] - retrieves all orgs that a user is subscribed to
     Request Body: "action"
     DB tables: "org_members"
-    """
-    response = {}
-    data = request.json
-    action = data["action"]
-    if action == "GET":
-        orgs = current_user.org
-        orgs_json = OrgSchema(exclude=["members","channels"]).dump(orgs, many=True)
-        response["orgs"] = orgs_json
-        return response
-    
-    """    
+
     [action: STORE] - store an org into the database if database name is not taken
-    Request Body: "action, orgName"
-    Info Needed: "orgName, invites, members, channels"
-    DB tables: "org_members"
+    Request Body: "action, orgName, invited_members"
+    Info Needed: "orgName, => provided by user needs to be checked for availability
+                invites, => create an invite for every invited_member
+                members, => should just be current_user
+                channels" => set default channel upon entering
+    DB tables: "org_members, org_invites, org_channels, org"
+
+    ["DELETE] - delete an org from the database
+    Request Body : "org_id"
+    DB tables: "org_members, org_invites, org_channels, org"
     """
-    elif action == "STORE":
-        # org_name = data["orgName"]
-        org_name = "React Slack"
-        org_is_available = db.session.query(Org.name).filter(name = org_name).scalar() is None
-        if channel_is_available:
-            users = channel_service.get_users()#for now add all users
-            channels = org_service.get_channels()#for now add all channels 
-            invites = org_service.get_invites()
+    if request.method == "POST":
+        response = {}
+        data = request.json
+        action = data["action"]
+        if action == "GET":
+            orgs = current_user.org
+            orgs_json = OrgSchema(exclude=["members","channels"]).dump(orgs, many=True)
+            response["orgs"] = orgs_json
             return response
 
+        elif action == "STORE":
+            org_name = data["org_name"]
+            org_is_available = db.session.query(Org.name).filter_by(name = org_name).scalar() is None
+            if org_is_available:
+                members = [current_user]
+                org = org_service.create_org(org_name, members) # inserting to database and retrieving org_id
+                org_id = org_service.store_org(org)
+                invited_members = data["invited_members"]
+                usersResult = org_service.get_users_by_email(invited_members) #get all invited users models
+                invited_users = usersResult["users"]#users that are found
+                inviter = current_user
+                org_service.create_invites_for_invited_users(inviter, invited_users, org)#create an invite for each user
+                admin_username = current_user.username
+                org_service.create_default_org_channel(admin_username, members, org)
+                for user in invited_users:
+                    client = client_service.get_client(user.username)
+                    socket_service.send(client, "invited-to-org", org_name)
+                response["successful"] = True
+                return response
+            else:
+                response["ERROR"] = "Org name is taken"
+                return jsonify(response)
+    
+    elif request.method == "DELETE":
+        data = request.json
+        org_id = data["org_id"]
+        org = Org.query.filter_by(org_id = org_id).one()
+        org_service.delete_org(org)
+        for user in org.members:
+            client = client_service.get_client(user.username)
+            socket_service.send(client, "org-deleted", org_id)
+        response = {}
+        response['successful'] = True
+        return jsonify(response)
 
-
-
-
-    # elif action == "STORE":
-    #     response = {}
-    #     org_name = data["orgName"]
-    #     org = org_service.get_org(org_name)
-    #     inviter = current_user
-    #     email = data["email"]
-    #     if org_service.has_active_org_invite(org.org_id, email):
-    #         response["ERROR"] = "User already has an active invite to this org"
-    #         return response
-    #     org_invite = org_service.create_org_invite(inviter, org, email)
-    #     org_service.store_org_invite(org_invite)
-    #     # inform connected client that they've received an org invite
-    #     client = client_service.get_client(email)
-    #     socket_service.send(client, "invited-to-org", org_name)
-    #     response["successful"] = True
-    #     return response
-
-    # elif request.method == "POST":
-    #     data = request.json
-    #     channel_info = data["channel_info"]
-    #     channel_name = channel_info["name"]
-    #     channel_is_available = db.session.query(
-    #         Channel.name).filter_by(name=channel_name).scalar() is None
-    #     if channel_is_available:
-    #         members = channel_info["members"]
-    #         is_private = channel_info["isPrivate"]
-    #         if is_private:
-    #             usersResult = channel_service.get_users_by_usernames(members)
-    #             if usersResult["usernames_not_found"]:
-    #                 response = {
-    #                     "ERROR": "Some users were not found",
-    #                     "users_not_found": usersResult["usernames_not_found"]
-    #                 }
-    #                 return response
-    #             users = usersResult["users"]
-    #         else:
-    #             users = channel_service.get_users()
-    #         admin_username = current_user.username
-    #         org = org_service.get_org(channel_info["orgName"])
-    #         channel = channel_service.create_channel(
-    #             channel_name, users, is_private, admin_username, org)
-    #         channel_id = channel_service.store_channel(channel)
-    #         # get roles
-    #         members_channel_role, admin_channel_role = role_service.get_role(
-    #             channel_roles.TADPOLE), role_service.get_role(channel_roles.ADMIN)
-    #         # member ids
-    #         admin_user_id = current_user.user_id
-    #         member_user_ids = map(lambda user: user.user_id, users)
-    #         # members role update
-    #         statement = role_service.gen_channel_members_role_update_by_member_ids(
-    #             channel_id, member_user_ids, members_channel_role.role_id)
-    #         db.session.execute(statement)
-    #         # admin role update
-    #         statement = role_service.gen_channel_members_role_update_by_member_ids(
-    #             channel_id, [admin_user_id], admin_channel_role.role_id)
-    #         db.session.execute(statement)
-    #         db.session.commit()
-    #         # notify that permissions were updated for these users
-    #         usernames = map(lambda user: user.username, users)
-    #         for username in usernames:
-    #             permission_service.notify_permissions_updated(username)
-    #         socketio.emit("channel-created", broadcast=True)
-    #         socketio.emit("added-to-channel", channel_id, broadcast=True)
-    #         response = {"successful": True, }
-    #         return jsonify(response)
-    #     else:
-    #         response = {}
-    #         response["ERROR"] = "Channel name is taken"
-    #         return jsonify(response)
-
-
-
-
-
-
-'''
-TODO
-1. GET ORG Route
-2. POST ORG Route
-3. DELETE ORG Route
-4. Check all org tables and see what I need
-5. Get an understanding of the data we need to commit
-6. Check channel services and see what kind of functions i will need to create
-7. work my way through every line of channels routes and make sure i understand what each is doing
-8. pick out what functions i will need
-
-flow
-1. look at all the tables that channels updates and see how we gather info and how we push changes
-2. pseudocode what each route will do, what tables it will update and what info it will need
-3. pseudocode helper function
-'''
