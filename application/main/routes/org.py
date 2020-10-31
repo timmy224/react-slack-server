@@ -121,7 +121,7 @@ def orgs():
                 channels" => set default channel upon entering
     DB tables: "org_members, org_invites, org_channels, org"
 
-    ["DELETE] - delete an org from the database
+    ["DELETE"] - delete an org from the database
     Request Body : "org_id"
     DB tables: "org_members, org_invites, org_channels, org"
     """
@@ -140,13 +140,13 @@ def orgs():
             org_is_available = db.session.query(Org.name).filter_by(name = org_name).scalar() is None
             if org_is_available:
                 members = [current_user]
-                org = org_service.create_org(org_name, members) # inserting to database and retrieving org_id
+                org = org_service.create_org(org_name, members) 
                 org_id = org_service.store_org(org)
                 invited_members = data["invited_members"]
-                usersResult = org_service.get_users_by_email(invited_members) #get all invited users models
-                invited_users = usersResult["users"]#users that are found
+                usersResult = org_service.get_users_by_email(invited_members)
+                invited_users = usersResult["users"]
                 inviter = current_user
-                org_service.create_invites_for_invited_users(inviter, invited_users, org)#create an invite for each user
+                org_service.create_invites_for_invited_users(inviter, invited_users, org)
                 admin_username = current_user.username
                 org_service.create_default_org_channel(admin_username, members, org)
                 for user in invited_users:
