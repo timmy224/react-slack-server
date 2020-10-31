@@ -171,8 +171,7 @@ def orgs():
         org = Org.query.filter_by(org_id = org_id).one()
         org_service.delete_org(org)
         for user in org.members:
-            client = client_service.get_client(user.username)
-            socket_service.send(client, "org-deleted", org_id)
+            socket_service.send(user.username, "org-deleted", org_id)
         response = {}
         response['successful'] = True
         return jsonify(response)
