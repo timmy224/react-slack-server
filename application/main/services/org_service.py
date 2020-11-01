@@ -68,7 +68,9 @@ def create_default_org_channel(admin_username, members, org):
 
 def delete_org(org):
     org.members = []
-    org.channels = []
+    for channel in org.channels:
+        channel.members = []
+        db.session.delete(channel)
     for invite in org.invites:
         db.session.delete(invite)
     db.session.commit()

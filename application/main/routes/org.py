@@ -166,7 +166,6 @@ def orgs():
                     default_channel.channel_id, [current_user.user_id], default_channel_role.role_id)
                 db.session.execute(statement)
                 db.session.commit()
-
                 for email in invited_emails:
                     user = user_service.get_user_by_email(email)
                     if user:
