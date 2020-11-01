@@ -7,8 +7,8 @@ def get_user(username):
 
 def get_user_by_email(email):
     try:
-            user = User.query.filter_by(username=email).one()
-            return user
+        user = User.query.filter_by(username=email).one()
+        return user
     except NoResultFound:
-            #TODO handle new users
-            return 
+        #TODO handle new users
+        return 

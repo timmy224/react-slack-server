@@ -126,7 +126,7 @@ def orgs():
                 invites, => create an invite for every invited_member
                 members, => should just be current_user
                 channels" => set default channel upon entering
-    DB tables: "org_members, org_invites, org_channels, org"
+    DB tables: "org_members, org_invites, org_channels, org, channel_members"
 
     ["DELETE"] - delete an org from the database
     Request Body : "org_id"
@@ -157,6 +157,16 @@ def orgs():
                 org_service.create_invites_for_invited_emails(inviter, invited_emails, org)
                 admin_username = current_user.username
                 default_channel = org_service.create_default_org_channel(admin_username, members, org)
+                default_org_role, default_channel_role = role_service.get_role(
+                    org_roles.ADMIN), role_service.get_role(channel_roles.ADMIN)
+                statement = role_service.gen_org_members_role_update(
+                    org.org_id, current_user.user_id, default_org_role.role_id)
+                db.session.execute(statement)
+                statement = role_service.gen_channel_members_role_update_by_member_ids(
+                    default_channel.channel_id, [current_user.user_id], default_channel_role.role_id)
+                db.session.execute(statement)
+                db.session.commit()
+
                 for email in invited_emails:
                     user = user_service.get_user_by_email(email)
                     if user:
@@ -165,8 +175,7 @@ def orgs():
                 socket_service.send(current_user.username, "added-to-channel", default_channel.name)
                 response["successful"] = True
                 return response
-                
-    
+
     elif request.method == "DELETE":
         data = request.json
         org_id = data["org_id"]
