@@ -112,7 +112,7 @@ def get_org_members():
     response["org_members"] = org_member_schema.dumps(org_members, many=True)
     return response
 
-@main.route("/orgs", methods=[ "POST", "DELETE"])
+@main.route("/org", methods=[ "POST", "DELETE"])
 @login_required
 def orgs():
     """    
@@ -120,8 +120,8 @@ def orgs():
     Request Body: "action"
     DB tables: "org_members"
 
-    [action: STORE] - store an org into the database if database name is not taken
-    Request Body: "action, orgName, invited_members"
+    [action: STORE] - store an org into the database if org name is not taken
+    Request Body: "action, orgName, invited_emails"
     Info Needed: "orgName, => provided by user needs to be checked for availability
                 invites, => create an invite for every invited_member
                 members, => should just be current_user
@@ -145,33 +145,36 @@ def orgs():
         elif action == "STORE":
             org_name = data["org_name"]
             org_is_available = db.session.query(Org.name).filter_by(name = org_name).scalar() is None
-            if org_is_available:
+            if not org_is_available:
+                response["ERROR"] = "Org name is taken"
+                return jsonify(response)
+            else:
                 members = [current_user]
                 org = org_service.create_org(org_name, members) 
                 org_id = org_service.store_org(org)
-                invited_members = data["invited_members"]
-                usersResult = org_service.get_users_by_email(invited_members)
-                invited_users = usersResult["users"]
+                invited_emails = data["invited_emails"]
                 inviter = current_user
-                org_service.create_invites_for_invited_users(inviter, invited_users, org)
+                org_service.create_invites_for_invited_emails(inviter, invited_emails, org)
                 admin_username = current_user.username
-                org_service.create_default_org_channel(admin_username, members, org)
-                for user in invited_users:
-                    client = client_service.get_client(user.username)
-                    socket_service.send(client, "invited-to-org", org_name)
+                default_channel = org_service.create_default_org_channel(admin_username, members, org)
+                for email in invited_emails:
+                    user = user_service.get_user_by_email(email)
+                    if user:
+                        socket_service.send(user.username, "invited-to-org", org_name)
+                socket_service.send(current_user.username, "added-to-org", org_name)
+                socket_service.send(current_user.username, "added-to-channel", default_channel.name)
                 response["successful"] = True
                 return response
-            else:
-                response["ERROR"] = "Org name is taken"
-                return jsonify(response)
+                
     
     elif request.method == "DELETE":
         data = request.json
         org_id = data["org_id"]
         org = Org.query.filter_by(org_id = org_id).one()
+        org_name = org.name
         org_service.delete_org(org)
         for user in org.members:
-            socket_service.send(user.username, "org-deleted", org_id)
+            socket_service.send(user.username, "org-deleted", org_name)
         response = {}
         response['successful'] = True
         return jsonify(response)
