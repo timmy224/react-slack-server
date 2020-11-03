@@ -157,13 +157,13 @@ def orgs():
                 org_service.create_invites_for_invited_emails(inviter, invited_emails, org)
                 admin_username = current_user.username
                 default_channel = org_service.create_default_org_channel(admin_username, members, org)
-                default_org_role, default_channel_role = role_service.get_role(
+                admin_org_role, admin_channel_role = role_service.get_role(
                     org_roles.ADMIN), role_service.get_role(channel_roles.ADMIN)
                 statement = role_service.gen_org_members_role_update(
-                    org.org_id, current_user.user_id, default_org_role.role_id)
+                    org.org_id, current_user.user_id, admin_org_role.role_id)
                 db.session.execute(statement)
                 statement = role_service.gen_channel_members_role_update_by_member_ids(
-                    default_channel.channel_id, [current_user.user_id], default_channel_role.role_id)
+                    default_channel.channel_id, [current_user.user_id], admin_channel_role.role_id)
                 db.session.execute(statement)
                 db.session.commit()
                 for email in invited_emails:
@@ -180,8 +180,9 @@ def orgs():
         org_id = data["org_id"]
         org = Org.query.filter_by(org_id = org_id).one()
         org_name = org.name
+        org_members = org.members
         org_service.delete_org(org)
-        for user in org.members:
+        for user in org_members:
             socket_service.send(user.username, "org-deleted", org_name)
         response = {}
         response['successful'] = True
