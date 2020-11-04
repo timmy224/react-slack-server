@@ -3,11 +3,6 @@ Client = namedtuple("Client", ["username", "room"])
 
 clients = {}
 
-def add_dummy_clients():
-    add_client("codeninja", None)
-    add_client("hacker", None)
-    add_client("bitboy", None)
-
 def on_client_connected(username, room):
     add_client(username, room)
 
@@ -21,4 +16,13 @@ def remove_client_by_room(room):
             del clients[username]
             break
 
-add_dummy_clients()
+def get_client(username):
+    return clients.get(username)
+
+def get_connected_clients(usernames):
+    connected_clients = []
+    for username in usernames:
+        client = get_client(username)
+        if client is not None:
+            connected_clients.append(client)
+    return connected_clients

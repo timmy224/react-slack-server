@@ -3,18 +3,21 @@ from flask_login import login_required, current_user
 import json
 from .. import main
 from ... import db
-from ..services import channel_service
+from ..services import channel_service, role_service, org_service, socket_service
 from ...models.Channel import Channel, ChannelSchema
 from ...models.ChannelMember import ChannelMember, channel_member_schema
+from ...constants.roles import channel_roles
 from flask_socketio import close_room
-from ... import socketio 
+from ... import socketio
 
-@main.route("/channel", methods=["GET","POST","DELETE"])
+
+@main.route("/channel", methods=["GET", "POST", "DELETE"])
 @login_required
 def channels():
     if request.method == "GET":
         channels = current_user.channels
-        channels_json = ChannelSchema(exclude=["members"]).dump(channels, many=True)
+        channels_json = ChannelSchema(
+            exclude=["members"]).dump(channels, many=True)
         response = {}
         response["channels"] = channels_json
         return response
@@ -23,7 +26,8 @@ def channels():
         data = request.json
         channel_info = data["channel_info"]
         channel_name = channel_info["name"]
-        channel_is_available = db.session.query(Channel.name).filter_by(name = channel_name).scalar() is None
+        channel_is_available = db.session.query(
+            Channel.name).filter_by(name=channel_name).scalar() is None
         if channel_is_available:
             members = channel_info["members"]
             is_private = channel_info["isPrivate"]
@@ -31,20 +35,39 @@ def channels():
                 usersResult = channel_service.get_users_by_usernames(members)
                 if usersResult["usernames_not_found"]:
                     response = {
-                        "ERROR":"Some users were not found",
+                        "ERROR": "Some users were not found",
                         "users_not_found": usersResult["usernames_not_found"]
-                        }
+                    }
                     return response
                 users = usersResult["users"]
             else:
                 users = channel_service.get_users()
             admin_username = current_user.username
-            channel = channel_service.create_channel(channel_name, users, is_private, admin_username)
+            org = org_service.get_org(channel_info["orgName"])
+            channel = channel_service.create_channel(
+                channel_name, users, is_private, admin_username, org)
             channel_id = channel_service.store_channel(channel)
-
-            socketio.emit("channel-created", broadcast=True)
-            socketio.emit("added-to-channel", channel_id, broadcast=True)
-            response={"successful": True,}
+            # get roles
+            members_channel_role, admin_channel_role = role_service.get_role(
+                channel_roles.TADPOLE), role_service.get_role(channel_roles.ADMIN)
+            # member ids
+            admin_user_id = current_user.user_id
+            member_user_ids = map(lambda user: user.user_id, users)
+            # members role update
+            statement = role_service.gen_channel_members_role_update_by_member_ids(
+                channel_id, member_user_ids, members_channel_role.role_id)
+            db.session.execute(statement)
+            # admin role update
+            statement = role_service.gen_channel_members_role_update_by_member_ids(
+                channel_id, [admin_user_id], admin_channel_role.role_id)
+            db.session.execute(statement)
+            db.session.commit()
+            # notify that permissions were updated for these users and that they've been added to a new channel
+            usernames = map(lambda user: user.username, users)
+            for username in usernames:
+                socket_service.send(username, "permissions-updated")
+                socket_service.send(username, "added-to-channel", channel_id)
+            response = {"successful": True, }
             return jsonify(response)
         else:
             response = {}
@@ -61,6 +84,7 @@ def channels():
         response = {}
         response['successful'] = True
         return jsonify(response)
+
 
 @main.route("/channel/members/", methods=["GET"])
 def get_num_members():
@@ -115,6 +139,8 @@ def channel_members_info():
 
 
 # EXAMPLES #
+
+
 @main.route("/channel-subscription/", methods=["GET", "POST"])
 def channel_subscription():
     """
@@ -124,7 +150,7 @@ def channel_subscription():
     Path: /channel-subscription/?user_id={user_id} OR 
     /channel-subscription/?channel_id={channel_id}
     Response Body: "channels" or "users"
-    
+
     [POST] - Inserts a channel subscription into the DB using JSON passed in as body
     Path: /channel-subscription
     Request Body: "user_id", "channel_id"
@@ -137,11 +163,11 @@ def channel_subscription():
         user_id = request.args.get("user_id", None)
         channel_id = request.args.get("channel_id", None)
         response = {}
-        if user_id is not None: # Going to return this user's channels
+        if user_id is not None:  # Going to return this user's channels
             user = User.query.filter_by(user_id=user_id).one()
             channels_json = channel_schema.dump(user.channels, many=True)
             response["channels"] = channels_json
-        elif channel_id is not None: # Going to return this channel's users
+        elif channel_id is not None:  # Going to return this channel's users
             channel = Channel.query.filter_by(channel_id=channel_id).one()
             users_json = user_schema.dump(channel.members, many=True)
             response["users"] = users_json
