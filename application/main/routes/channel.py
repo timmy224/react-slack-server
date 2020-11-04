@@ -94,10 +94,22 @@ def channel_members_info():
      
      elif request.method == "DELETE":
          channel_service.delete_channel_user(channel_id, username)
-         socketio.emit("user-deleted", username, broadcast=True)
+        #  waiting on specific SID socketio.emit("user-deleted", username, broadcast=True)
          socketio.emit("user-deleted", channel_id, broadcast=True)
          response['successful'] = True
          return jsonify(response)
+     
+     elif request.method =="POST":
+         usernames = request.args.get("usernames", None)
+         if usernames is None:
+              response["ERROR"] = "Missing usernames in route"
+              return jsonify(response)
+         channel_service.add_channel_users(channel_id, usernames)
+        #  waiting on specific SID socketio.emit("user-added", username, broadcast= True)
+         socketio.emit("user-added", channel_id, broadcast=True)
+         response['successful']= True
+         return jsonify(response)
+        
 
     #  Z
 
