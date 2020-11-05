@@ -1,11 +1,11 @@
 from datetime import datetime
 from .channel_service import get_ind_channel, add_message_channel
-from .message_class import ChannelMessageClient
+from ...client_models.message import ChannelMessageClient
 from ... import db
 from ...models.User import User
 from ...models.Channel import Channel
 from ...models.Message import Message as Message_model
-from ..services.message_class import ChannelMessageClient, PrivateMessageClient
+from ...client_models.message import ChannelMessageClient, PrivateMessageClient
 
 messages = []
 
@@ -60,8 +60,7 @@ def store_channel_message(clientMessage):
     db.session.commit()
 
 add_dummy_messages()
-def pop_channel_messages_client(messages):
-     chan_message = None
+def populate_channel_messages_client(messages):
      chan_messages_client = []
      for msg in messages:
          sender = msg.sender.username
@@ -74,8 +73,7 @@ def pop_channel_messages_client(messages):
      chan_messages_list = [chanmsg.__dict__ for chanmsg in chan_messages_client]
      return chan_messages_list
 
-def pop_private_messages_client(messages):
-     priv_message = None
+def populate_private_messages_client(messages):
      priv_messages_client = []
      for msg in messages:
          sender = msg.sender.username

@@ -7,20 +7,16 @@ class User(UserMixin, db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(), index=True, unique=True)
     password_hash = db.Column(db.String())
-
-    def set_password (self, password):
-        self.password_hash = generate_password_hash(password)
-        return self.password_hash
-    
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    org = db.relationship("Org", backref="members", secondary="org_members", lazy=True)
+    sent_org_invites = db.relationship("OrgInvite", backref="inviter", lazy=True)
 
     def __init__(self, username):
         self.username = username 
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-
+        return self.password_hash
+    
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
@@ -30,12 +26,11 @@ class User(UserMixin, db.Model):
     def __repr__(self):
         return f"<User user_id={self.user_id} username={self.username}>"
 
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
     
 class UserSchema(ma.SQLAlchemyAutoSchema):
     # Uses the "exclude" argument to avoid infinite recursion 
     channels = ma.Nested("ChannelSchema", exclude=("users",), many=True)
+    orgs = ma.Nested("OrgSchema", exclude=("users", ), many=True)
 
     class Meta:
         model = User
