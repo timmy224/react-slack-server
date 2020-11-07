@@ -2,6 +2,10 @@ from ... import db
 from ...models.Org import Org
 from ...models.OrgInvite import OrgInvite
 from ...client_models.org_invite import OrgInviteClient
+from ...models.Channel import Channel
+from ...models.OrgInvite import OrgInvite
+from ...models.Org import Org
+from ...models.User import User
 
 def get_org(name):
     return Org.query.filter_by(name=name).one()
@@ -31,4 +35,45 @@ def get_active_org_invite(org_id, email):
 def mark_org_invite_responded(org_invite):
     org_invite.responded = True
 
+def create_org(name, members):
+    org = Org(name)
+    org.members = members
+    return org
+
+def store_org(org):
+    db.session.add(org)
+    db.session.commit()
+    db.session.refresh(org)
+    org_id = org.org_id
+    return org_id
+
+def create_invites_for_invited_emails(inviter, invited_emails, org):
+    for email in invited_emails:
+        org_invite = OrgInvite(email)
+        org_invite.inviter = inviter
+        org_invite.org = org
+        db.session.add(org_invite)
+    db.session.commit()
+
+def create_default_org_channel(admin_username, members, org):
+    name = "General"
+    is_private = False
+    channel = Channel(name, admin_username, is_private)
+    channel.members = members
+    channel.org = org
+    db.session.add(channel)
+    db.session.commit()
+    db.session.refresh(channel)
+    return channel
+
+def delete_org(org):
+    org.members = []
+    for channel in org.channels:
+        channel.members = []
+        db.session.delete(channel)
+    for invite in org.invites:
+        db.session.delete(invite)
+    db.session.commit()
+    db.session.delete(org)
+    db.session.commit()
 

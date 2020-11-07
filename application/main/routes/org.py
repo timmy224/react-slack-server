@@ -8,6 +8,7 @@ from ...models.OrgMember import OrgMember, org_member_schema
 from ...models.OrgInvite import org_invite_schema
 from ...client_models.org_invite import OrgInviteClient
 from ...constants.roles import org_roles, channel_roles
+from ...models.Org import OrgSchema, Org
 
 
 @main.route("/org/invite", methods=["POST"])
@@ -110,3 +111,80 @@ def get_org_members():
     org_members = db.session.query(OrgMember).filter_by(org_id=org_id).all()
     response["org_members"] = org_member_schema.dumps(org_members, many=True)
     return response
+
+@main.route("/org", methods=[ "POST", "DELETE"])
+@login_required
+def orgs():
+    """    
+    [action: GET] - retrieves all orgs that a user is subscribed to
+    Request Body: "action"
+    DB tables: "org_members"
+
+    [action: STORE] - store an org into the database if org name is not taken
+    Request Body: "action, orgName, invited_emails"
+    Info Needed: "orgName, => provided by user needs to be checked for availability
+                invites, => create an invite for every invited_member
+                members, => should just be current_user
+                channels" => set default channel upon entering
+    DB tables: "org_members, org_invites, org_channels, org, channel_members"
+
+    ["DELETE"] - delete an org from the database
+    Request Body : "org_id"
+    DB tables: "org_members, org_invites, org_channels, org"
+    """
+    if request.method == "POST":
+        response = {}
+        data = request.json
+        action = data["action"]
+        if action == "GET":
+            orgs = current_user.org
+            orgs_json = OrgSchema(exclude=["members","channels"]).dump(orgs, many=True)
+            response["orgs"] = orgs_json
+            return response
+
+        elif action == "STORE":
+            org_name = data["org_name"]
+            org_is_available = db.session.query(Org.name).filter_by(name = org_name).scalar() is None
+            if not org_is_available:
+                response["ERROR"] = "Org name is taken"
+                return jsonify(response)
+            else:
+                members = [current_user]
+                org = org_service.create_org(org_name, members) 
+                org_id = org_service.store_org(org)
+                invited_emails = data["invited_emails"]
+                inviter = current_user
+                org_service.create_invites_for_invited_emails(inviter, invited_emails, org)
+                admin_username = current_user.username
+                default_channel = org_service.create_default_org_channel(admin_username, members, org)
+                admin_org_role, admin_channel_role = role_service.get_role(
+                    org_roles.ADMIN), role_service.get_role(channel_roles.ADMIN)
+                statement = role_service.gen_org_members_role_update(
+                    org.org_id, current_user.user_id, admin_org_role.role_id)
+                db.session.execute(statement)
+                statement = role_service.gen_channel_members_role_update_by_member_ids(
+                    default_channel.channel_id, [current_user.user_id], admin_channel_role.role_id)
+                db.session.execute(statement)
+                db.session.commit()
+                for email in invited_emails:
+                    user = user_service.get_user_by_email(email)
+                    if user:
+                        socket_service.send(user.username, "invited-to-org", org_name)
+                socket_service.send(current_user.username, "added-to-org", org_name)
+                socket_service.send(current_user.username, "added-to-channel", default_channel.name)
+                response["successful"] = True
+                return response
+
+    elif request.method == "DELETE":
+        data = request.json
+        org_id = data["org_id"]
+        org = Org.query.filter_by(org_id = org_id).one()
+        org_name = org.name
+        org_members = org.members
+        org_service.delete_org(org)
+        for user in org_members:
+            socket_service.send(user.username, "org-deleted", org_name)
+        response = {}
+        response['successful'] = True
+        return jsonify(response)
+
