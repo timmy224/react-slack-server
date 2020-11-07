@@ -20,6 +20,10 @@ def add_dummy_channels():
 def get_channel_ids(): # returns list of available channel ids
     return [*channels]
 
+def get_user_by_username(username):
+    user = User.query.filter_by(username=username).one()
+    return  user
+
 def get_users_by_usernames(usernames):
     users = []
     usernames_not_found = []
@@ -62,9 +66,9 @@ def delete_channel_user(channel_id, username):
     channel.members.remove(member)
     db.session.commit()
 
-def add_channel_users(channel_id, usernames):
+def add_channel_user(channel_id, new_member):
     channel = Channel_model.query.filter_by(channel_id=channel_id).one()
-    member = User.query.filter_by(username=usernames).one()
+    member = User.query.filter_by(username=new_member).one()
     channel.members.append(member)
     db.session.commit()
     

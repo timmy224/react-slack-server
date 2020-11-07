@@ -124,18 +124,29 @@ def channel_members_info():
          return jsonify(response)
      
      elif request.method =="POST":
-         usernames = request.args.get("usernames", None)
-         if usernames is None:
-              response["ERROR"] = "Missing usernames in route"
+         data = request.json
+         new_member = data["new_member"]
+         if new_member is None:
+              response["ERROR"] = "Missing add_member in route"
               return jsonify(response)
-         channel_service.add_channel_users(channel_id, usernames)
+         channel_service.add_channel_user(channel_id, new_member)
+         user = channel_service.get_user_by_username(new_member)
+         if user is None:
+               response["ERROR"] = "user does not exist"
+               return jsonify(response)
+         #Updating role to tadPole after added to channel
+         members_channel_role = role_service.get_role(
+         channel_roles.TADPOLE)
+         statement = role_service.gen_channel_member_role_update_by_member_id(
+         channel_id, user.user_id, members_channel_role.role_id)
+         db.session.execute(statement)
+         db.session.commit()
         #  waiting on specific SID socketio.emit("user-added", username, broadcast= True)
          socketio.emit("user-added", channel_id, broadcast=True)
          response['successful']= True
          return jsonify(response)
         
 
-    #  Z
 
 
 # EXAMPLES #
