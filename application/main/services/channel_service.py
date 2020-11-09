@@ -3,6 +3,8 @@ from ...models.Channel import Channel as Channel_model
 from ... import db
 from ...client_models.message import ChannelMessageClient
 from sqlalchemy.orm.exc import NoResultFound
+from ..services import role_service
+from ...constants.roles import channel_roles
 
 class Channel():
     def __init__(self, id, name, messages):
@@ -19,10 +21,6 @@ def add_dummy_channels():
 
 def get_channel_ids(): # returns list of available channel ids
     return [*channels]
-
-def get_user_by_username(username):
-    user = User.query.filter_by(username=username).one()
-    return  user
 
 def get_users_by_usernames(usernames):
     users = []
@@ -66,10 +64,18 @@ def delete_channel_user(channel_id, username):
     channel.members.remove(member)
     db.session.commit()
 
-def add_channel_user(channel_id, new_member):
+def add_channel_member(channel_id, new_member):
     channel = Channel_model.query.filter_by(channel_id=channel_id).one()
     member = User.query.filter_by(username=new_member).one()
     channel.members.append(member)
+    db.session.commit()
+
+def set_channel_member_role(channel_id, user):
+    members_channel_role = role_service.get_role(
+    channel_roles.TADPOLE)
+    statement = role_service.gen_channel_member_role_update_by_member_id(
+    channel_id, user.user_id, members_channel_role.role_id)
+    db.session.execute(statement)
     db.session.commit()
     
 

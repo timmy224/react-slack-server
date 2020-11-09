@@ -99,56 +99,55 @@ def get_num_members():
     
 @main.route("/channel/users/", methods=["GET", "POST", "DELETE"])
 def channel_members_info():
-     channel_id = request.args.get("channel_id" , None)
-     username = request.args.get("username", None)
-     response ={}
-     if channel_id is None:
-         response["ERROR"] = "Missing channel_id in route"
-         return jsonify(response)
-     if username is None:
-         response["ERROR"] = "Missing username in route"
-         return jsonify(response)
+    """  
+    Request method : POST:  
+    [action: GET] - retrives all users that are a part of the channel currently
+    Request Body: "action", "channel_id"
+    DB tables : " channel_members"
+    [action: STORE] - stores an user into the channel.members and the adds a channel role of tadpole (by default) to this user 
+    Request Body: "action", "new_member_username", "channel_id" 
+    DB tables: "channel_members"
 
-     if request.method == "GET":
-         channel_usernames = db.session.query(ChannelMember.username).filter_by(channel_id = channel_id).all()
-         username_role = db.session.query(ChannelMember.role_name).filter_by(channel_id = channel_id).filter_by(username = username).one()
-         response["channel_usernames"] = channel_member_schema.dumps(channel_usernames, many=True);
-         response["username_role"] = channel_member_schema.dumps(username_role)
-         return response
-     
-     elif request.method == "DELETE":
-         channel_service.delete_channel_user(channel_id, username)
+    Request method : "DELETE":
+    - Removes user from channel_members of the current channel
+    Request Body: "channel_id", "removed_username", "channel_name"
+    DB tables" channel_members"
+    """
+    response ={}
+    data = request.json
+    channel_id = data["channel_id"]
+    username = current_user.username
+    if request.method =="POST":
+        action = data["action"]
+        if action == "GET":
+             channel_members = db.session.query(ChannelMember.username).filter_by(channel_id = channel_id).all()
+             response["channel_members"] = channel_member_schema.dumps(channel_members, many=True)
+            #  user_role_name = db.session.query(ChannelMember.role_name).filter_by(channel_id = channel_id, username=username).one()
+            #  response["user_role_name"] = user_role_name
+             return response
+        elif action == "STORE":
+             new_member_username = data["new_member_username"]
+             channel_service.add_channel_member(channel_id, new_member_username)
+             user = current_user
+             #Updating role to tadPole after added to channel
+             channel_service.set_channel_member_role(channel_id, user)
+            #  waiting on specific SID socketio.emit("user-added", username, broadcast= True)
+             socketio.emit("user-added", channel_id, broadcast=True)
+             socket_service.send(username, "permissions-updated")
+             socket_service.send(username, "added-to-channel", channel_id)
+             response['successful']= True
+             return jsonify(response)
+
+    elif request.method == "DELETE":
+        removed_username = data["removed_username"]
+        channel_name = data["channel_name"]
+        channel_service.delete_channel_user(channel_id, removed_username)
         #  waiting on specific SID socketio.emit("user-deleted", username, broadcast=True)
-         socketio.emit("user-deleted", channel_id, broadcast=True)
-         response['successful'] = True
-         return jsonify(response)
-     
-     elif request.method =="POST":
-         data = request.json
-         new_member = data["new_member"]
-         if new_member is None:
-              response["ERROR"] = "Missing add_member in route"
-              return jsonify(response)
-         channel_service.add_channel_user(channel_id, new_member)
-         user = channel_service.get_user_by_username(new_member)
-         if user is None:
-               response["ERROR"] = "user does not exist"
-               return jsonify(response)
-         #Updating role to tadPole after added to channel
-         members_channel_role = role_service.get_role(
-         channel_roles.TADPOLE)
-         statement = role_service.gen_channel_member_role_update_by_member_id(
-         channel_id, user.user_id, members_channel_role.role_id)
-         db.session.execute(statement)
-         db.session.commit()
-        #  waiting on specific SID socketio.emit("user-added", username, broadcast= True)
-         socketio.emit("user-added", channel_id, broadcast=True)
-         response['successful']= True
-         return jsonify(response)
+        data_send ={"channel_name": channel_name, "removed_username": removed_username}
+        socketio.emit("user-removed", data_send, room=channel_id)
+        response['successful'] = True
+        return jsonify(response)
         
-
-
-
 # EXAMPLES #
 
 
