@@ -42,10 +42,9 @@ def create_channel(name, members, is_private, admin_username, org):
     channel.org = org
     return channel
 
-def get_channel_id(channel_name):
+def get_channel(channel_name):
     channel = Channel_model.query.filter_by(name=channel_name).one()
-    channel_id = channel.channel_id
-    return channel_id
+    return channel
 
 def store_channel(channel):
     db.session.add(channel)
