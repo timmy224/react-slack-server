@@ -102,15 +102,15 @@ def channel_members_info():
     """  
     Request method : POST:  
     [action: GET] - retrives all users that are a part of the channel currently
-    Request Body: "action", "channel_id"
+    Request Body: "action", "channel_name"
     DB tables : " channel_members"
     [action: STORE] - stores an user into the channel.members and the adds a channel role of tadpole (by default) to this user 
-    Request Body: "action", "new_member_username", "channel_id" 
+    Request Body: "action", "new_member_username", "channel_name" 
     DB tables: "channel_members"
 
     Request method : "DELETE":
     - Removes user from channel_members of the current channel
-    Request Body: "channel_id", "removed_username", "channel_name"
+    Request Body: "removed_username", "channel_name"
     DB tables" channel_members"
     """
     response ={}
@@ -141,7 +141,6 @@ def channel_members_info():
 
     elif request.method == "DELETE":
         removed_username = data["removed_username"]
-        channel_name = data["channel_name"]
         channel_service.delete_channel_user(channel_id, removed_username)
         #  waiting on specific SID socketio.emit("user-deleted", username, broadcast=True)
         data_send ={"channel_name": channel_name, "removed_username": removed_username}
