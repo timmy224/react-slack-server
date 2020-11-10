@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 import json
 from .. import main
 from ... import db
-from ..services import channel_service, role_service, org_service, socket_service
+from ..services import channel_service, role_service, org_service, socket_service, user_service
 from ...models.Channel import Channel, ChannelSchema
 from ...models.ChannelMember import ChannelMember, channel_member_schema
 from ...constants.roles import channel_roles
@@ -115,7 +115,8 @@ def channel_members_info():
     """
     response ={}
     data = request.json
-    channel_id = data["channel_id"]
+    channel_name = data["channel_name"]
+    channel_id = channel_service.get_channel_id(channel_name)
     username = current_user.username
     if request.method =="POST":
         action = data["action"]
@@ -127,14 +128,14 @@ def channel_members_info():
              return response
         elif action == "STORE":
              new_member_username = data["new_member_username"]
-             channel_service.add_channel_member(channel_id, new_member_username)
-             user = current_user
+             new_member = user_service.get_user(new_member_username)
+             channel_service.add_channel_member(channel_id, new_member)
              #Updating role to tadPole after added to channel
-             channel_service.set_channel_member_role(channel_id, user)
-            #  waiting on specific SID socketio.emit("user-added", username, broadcast= True)
-             socketio.emit("user-added", channel_id, broadcast=True)
-             socket_service.send(username, "permissions-updated")
-             socket_service.send(username, "added-to-channel", channel_id)
+             channel_service.set_channel_member_role(channel_id, new_member)
+             data_send ={"channel_name":channel_name, "added_username":new_member_username}
+             socketio.emit("user-added", data_send, room = channel_id)
+             socket_service.send(new_member_username, "permissions-updated")
+             socket_service.send(new_member_username, "added-to-channel", channel_id)
              response['successful']= True
              return jsonify(response)
 
@@ -144,7 +145,7 @@ def channel_members_info():
         channel_service.delete_channel_user(channel_id, removed_username)
         #  waiting on specific SID socketio.emit("user-deleted", username, broadcast=True)
         data_send ={"channel_name": channel_name, "removed_username": removed_username}
-        socketio.emit("user-removed", data_send, room=channel_id)
+        socketio.emit("channel-member-removed", data_send, room=channel_id)
         response['successful'] = True
         return jsonify(response)
         

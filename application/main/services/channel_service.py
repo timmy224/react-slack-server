@@ -42,6 +42,10 @@ def create_channel(name, members, is_private, admin_username, org):
     channel.org = org
     return channel
 
+def get_channel_id(channel_name):
+    channel = Channel_model.query.filter_by(name=channel_name).one()
+    channel_id = channel.channel_id
+    return channel_id
 
 def store_channel(channel):
     db.session.add(channel)
@@ -66,8 +70,7 @@ def delete_channel_user(channel_id, username):
 
 def add_channel_member(channel_id, new_member):
     channel = Channel_model.query.filter_by(channel_id=channel_id).one()
-    member = User.query.filter_by(username=new_member).one()
-    channel.members.append(member)
+    channel.members.append(new_member)
     db.session.commit()
 
 def set_channel_member_role(channel_id, user):
