@@ -67,8 +67,7 @@ def delete_channel_user(channel_id, username):
     channel.members.remove(member)
     db.session.commit()
 
-def add_channel_member(channel_id, new_member):
-    channel = Channel_model.query.filter_by(channel_id=channel_id).one()
+def add_channel_member(channel, new_member):
     channel.members.append(new_member)
     db.session.commit()
 

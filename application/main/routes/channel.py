@@ -128,10 +128,10 @@ def channel_members_info():
         elif action == "STORE":
              new_member_username = data["new_member_username"]
              new_member = user_service.get_user(new_member_username)
-             channel_service.add_channel_member(channel_id, new_member)
+             channel_service.add_channel_member(channel, new_member)
              #Updating role to tadPole after added to channel
              channel_service.set_channel_member_role(channel_id, new_member)
-             data_send = {"channel_name":channel_name, "added_username":new_member_username}
+             data_send = {"channel_name": channel_name, "added_username": new_member_username}
              socketio.emit("channel-member-added", data_send, room = channel_id)
              socket_service.send(new_member_username, "permissions-updated")
              socket_service.send(new_member_username, "added-to-channel", channel_id)
