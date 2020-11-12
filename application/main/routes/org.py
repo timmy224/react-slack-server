@@ -175,12 +175,12 @@ def orgs():
                 response["successful"] = True
                 return response
 
-            elif action == "GET INFO":
-                org_name = data["org_name"]
-                org = Org.query.filter_by(name = org_name).one()
-                org_client = org_service.populate_org_info_client(org)
-                response["org_info"] = json.dumps(org_client)
-                return response
+        elif action == "GET INFO":
+            org_name = data["org_name"]
+            org = Org.query.filter_by(name = org_name).one()
+            org_client = org_service.populate_org_info_client(org)
+            response["org_info"] = json.dumps(org_client)
+            return response
 
     elif request.method == "DELETE":
         data = request.json
