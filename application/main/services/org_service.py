@@ -6,6 +6,10 @@ from ...models.Channel import Channel
 from ...models.OrgInvite import OrgInvite
 from ...models.Org import Org
 from ...models.User import User
+from ...client_models.org import OrgClient
+from ...client_models.org_member import OrgMemberClient
+from ...models.Channel import ChannelSchema
+from . import client_service
 
 def get_org(name):
     return Org.query.filter_by(name=name).one()
@@ -77,3 +81,14 @@ def delete_org(org):
     db.session.delete(org)
     db.session.commit()
 
+def populate_org_info_client(org):
+    channels = org.channels
+    channels_json = ChannelSchema(exclude=["members"]).dump(channels, many=True)
+    members = []
+    for member in org.members:
+        username = member.username
+        client = client_service.get_client(username)
+        logged_in = True if client is not None else False
+        org_member_client = OrgMemberClient(username, logged_in)
+        members.append(org_member_client.__dict__)
+    return OrgClient(org.name, channels_json, members).__dict__

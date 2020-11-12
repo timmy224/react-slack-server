@@ -136,20 +136,10 @@ def orgs():
         response = {}
         data = request.json
         action = data["action"]
-        # if action == "GET":
-        #     orgs = current_user.org
-        #     orgs_json = OrgSchema(exclude=["members","channels"]).dump(orgs, many=True)
-        #     response["orgs"] = orgs_json
-        #     return response
         if action == "GET":
-            org_name = "Source Coders"
-            org = Org.query.filter_by(org_id = org_id).one()
-            org_channels = org.channels
-            org_members = org.members
-            org_dict = {}
-            org_dict["channels"] = org_channels
-            org_dict["members"] = org.members
-            print("DICT", org_dict)
+            orgs = current_user.org
+            orgs_json = OrgSchema(exclude=["members","channels"]).dump(orgs, many=True)
+            response["orgs"] = orgs_json
             return response
 
         elif action == "STORE":
@@ -183,6 +173,13 @@ def orgs():
                 socket_service.send(current_user.username, "added-to-org", org_name)
                 socket_service.send(current_user.username, "added-to-channel", default_channel.name)
                 response["successful"] = True
+                return response
+
+            elif action == "GET INFO":
+                org_name = data["org_name"]
+                org = Org.query.filter_by(name = org_name).one()
+                org_client = org_service.populate_org_info_client(org)
+                response["org_info"] = json.dumps(org_client)
                 return response
 
     elif request.method == "DELETE":
