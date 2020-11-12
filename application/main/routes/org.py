@@ -136,10 +136,20 @@ def orgs():
         response = {}
         data = request.json
         action = data["action"]
+        # if action == "GET":
+        #     orgs = current_user.org
+        #     orgs_json = OrgSchema(exclude=["members","channels"]).dump(orgs, many=True)
+        #     response["orgs"] = orgs_json
+        #     return response
         if action == "GET":
-            orgs = current_user.org
-            orgs_json = OrgSchema(exclude=["members","channels"]).dump(orgs, many=True)
-            response["orgs"] = orgs_json
+            org_name = "Source Coders"
+            org = Org.query.filter_by(org_id = org_id).one()
+            org_channels = org.channels
+            org_members = org.members
+            org_dict = {}
+            org_dict["channels"] = org_channels
+            org_dict["members"] = org.members
+            print("DICT", org_dict)
             return response
 
         elif action == "STORE":
