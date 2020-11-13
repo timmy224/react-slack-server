@@ -137,9 +137,12 @@ def orgs():
         data = request.json
         action = data["action"]
         if action == "GET":
+            org_clients = []
             orgs = current_user.org
-            orgs_json = OrgSchema(exclude=["members","channels"]).dump(orgs, many=True)
-            response["orgs"] = orgs_json
+            for org in orgs:
+                org_client = org_service.populate_org_client(org)
+                org_clients.append(org_client)
+            response["orgs"] = json.dumps(org_clients)
             return response
 
         elif action == "STORE":
@@ -174,6 +177,13 @@ def orgs():
                 socket_service.send(current_user.username, "added-to-channel", default_channel.name)
                 response["successful"] = True
                 return response
+
+        elif action == "GET ORG":
+            org_name = data["org_name"]
+            org = Org.query.filter_by(name = org_name).one()
+            org_client = org_service.populate_org_client(org)
+            response["org_info"] = json.dumps(org_client)
+            return response
 
     elif request.method == "DELETE":
         data = request.json
