@@ -30,6 +30,6 @@ def get_connected_clients(usernames):
 def get_username_by_room(room):
     for username, client in list(clients.items()):
         if client.room == room:
-            return username
+            return client.username
 
-def remove_client_by_room(room)
+
