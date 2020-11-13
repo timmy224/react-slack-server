@@ -1,6 +1,6 @@
 class OrgClient:
     def __init__(self, org_name, channels, members):
-        self.org_name = org_name
+        self.name = org_name
         self.channels = channels
         self.members = members
     

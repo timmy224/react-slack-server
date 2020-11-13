@@ -81,7 +81,7 @@ def delete_org(org):
     db.session.delete(org)
     db.session.commit()
 
-def populate_org_info_client(org):
+def populate_org_client(org):
     channels = org.channels
     channels_json = ChannelSchema(exclude=["members"]).dump(channels, many=True)
     members = []
