@@ -67,7 +67,6 @@ def on_disconnect():
     room = request.sid
     username = client_service.get_username_by_room(room)
     client_service.remove_client_by_room(room)
-    print("USERNAME", username)
     user = User.query.filter_by(username=username).one()
     for org in user.org:
         socketio.emit("org-member-offline", username, room=org.org_id)
