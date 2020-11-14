@@ -28,7 +28,7 @@ def get_connected_clients(usernames):
     return connected_clients
 
 def get_username_by_room(room):
-    for username, client in list(clients.items()):
+    for client in clients.values():
         if client.room == room:
             return client.username
 

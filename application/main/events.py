@@ -2,7 +2,7 @@ import json
 from flask import request
 from flask_socketio import emit, join_room, close_room 
 from .. import socketio
-from .services import client_service, socket_service, message_service
+from .services import client_service, socket_service, message_service, user_service
 import json
 from .. import db
 from .. models.User import User
@@ -21,7 +21,7 @@ def on_connect():
         channel_id = channel.channel_id
         join_room(channel_id)
     
-    for org in user.org:
+    for org in user.orgs:
         join_room(org.org_id)
 
     print(f"Client connected! username: {username}")
@@ -67,7 +67,7 @@ def on_disconnect():
     room = request.sid
     username = client_service.get_username_by_room(room)
     client_service.remove_client_by_room(room)
-    user = User.query.filter_by(username=username).one()
-    for org in user.org:
+    user = user_service.get_user(username)
+    for org in user.orgs:
         socketio.emit("org-member-offline", username, room=org.org_id)
 

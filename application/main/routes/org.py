@@ -138,7 +138,7 @@ def orgs():
         action = data["action"]
         if action == "GET":
             org_clients = []
-            orgs = current_user.org
+            orgs = current_user.orgs
             for org in orgs:
                 org_client = org_service.populate_org_client(org)
                 org_clients.append(org_client)
