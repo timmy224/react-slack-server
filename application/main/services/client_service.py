@@ -26,3 +26,10 @@ def get_connected_clients(usernames):
         if client is not None:
             connected_clients.append(client)
     return connected_clients
+
+def get_username_by_room(room):
+    for client in clients.values():
+        if client.room == room:
+            return client.username
+
+
