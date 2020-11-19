@@ -3,7 +3,8 @@ from ...models.User import User
 from sqlalchemy.orm.exc import NoResultFound
 
 def get_user(username):
-    return User.query.filter_by(username=username).one()
+    user = User.query.filter_by(username=username).one()
+    return user
 
 def get_user_by_email(email):
     try:

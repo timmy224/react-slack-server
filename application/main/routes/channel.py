@@ -86,18 +86,7 @@ def channels():
         return jsonify(response)
 
 
-@main.route("/channel/members/", methods=["GET"])
-def get_num_members():
-    channel_id = request.args.get("channel_id", None)
-    if channel_id is None:
-        response = {'ERROR': "Missing channel_id in route"}
-        return jsonify(response)
-    channel = Channel.query.filter_by(channel_id=channel_id).one()
-    num_members = len(channel.members)
-    response = {'num_members': num_members}
-    return response
-    
-@main.route("/channel/users/", methods=["GET", "POST", "DELETE"])
+@main.route("/channel/members/", methods=["GET", "POST", "DELETE"])
 def channel_members_info():
     """  
     Request method : POST:  
@@ -123,23 +112,33 @@ def channel_members_info():
         action = data["action"]
         if action == "GET":
              channel_members = db.session.query(ChannelMember.username).filter_by(channel_id = channel_id).all()
-             response["channel_members"] = channel_member_schema.dumps(channel_members, many =True)
+             channel_members_json = channel_member_schema.dumps(channel_members, many = True)
+             response["channel_members"] = channel_members_json
              return response
         elif action == "STORE":
              new_member_username = data["new_member_username"]
+             print("new_member_username: ", new_member_username)
+             print("ACTION & CHANNEL NAME :", action, channel_name)
              new_member = user_service.get_user(new_member_username)
+             print("new_member: ", new_member)
+             print("channel: ", channel)
              channel_service.add_channel_member(channel, new_member)
              #Updating role to tadPole after added to channel
              channel_service.set_channel_member_role(channel_id, new_member)
              data_send = {"channel_name": channel_name, "added_username": new_member_username}
              socketio.emit("channel-member-added", data_send, room = channel_id)
              socket_service.send(new_member_username, "permissions-updated")
-             socket_service.send(new_member_username, "added-to-channel", channel_id)
+             socket_service.send(new_member_username, "added-to-channel", channel_name)
              response['successful'] = True
              return jsonify(response)
-
+        elif action == "NUM GET":
+             num_members = len(channel.members)
+             response = {'num_members': num_members}
+             return response
+            
     elif request.method == "DELETE":
         removed_username = data["removed_username"]
+        print("removed_username: ", removed_username)
         channel_service.delete_channel_user(channel_id, removed_username)
         data_send = {"channel_name": channel_name, "removed_username": removed_username}
         socketio.emit("channel-member-removed", data_send, room=channel_id)
