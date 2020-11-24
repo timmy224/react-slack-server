@@ -2,7 +2,7 @@ import json
 from flask import request
 from flask_socketio import emit, join_room, close_room 
 from .. import socketio
-from .services import client_service, socket_service, message_service, user_service
+from .services import client_service, socket_service, message_service, user_service, event_service
 import json
 from .. import db
 from .. models.User import User
@@ -16,36 +16,25 @@ def on_connect():
     user = User.query.filter_by(username=username).one()
     channels = user.channels
     for channel in channels:
-        channel_id = channel.channel_id
-        join_room(channel_id)
+        org_name = channel.org.name
+        room = socket_service.compute_room(org_name, channel.name)
+        join_room(room)
     for org in user.orgs:
-        join_room(org.org_id)
+        join_room(org.name)
     room = request.sid
     client_service.on_client_connected(username, room)
     emit("user-joined-chat", {"username": username},
          broadcast=True, include_self=False)
 
 @socketio.on("send-message")
-def on_send_message(clientMessage):
-    print(clientMessage)
-    if clientMessage["type"] == "channel":
-        message_service.store_channel_message(clientMessage)
-        channel_room = clientMessage['channel_id']
-        emit("message-received", clientMessage, room=channel_room)
-    elif clientMessage["type"] == "private":
-        message_service.store_private_message(clientMessage)
-        receiver_username = clientMessage['receiver']
-        sender_username = clientMessage['sender']
-        receiver_client = client_service.get_client(receiver_username)
-        is_receiver_online = receiver_client is not None
-        if is_receiver_online:
-            receiver_room = receiver_client.room
-            emit("message-received", clientMessage, room=receiver_room)
-        sender_client = client_service.get_client(sender_username)
-        is_sender_online = sender_client is not None
-        if is_sender_online:
-            sender_room = sender_client.room
-            emit("message-received", clientMessage, room=sender_room)
+def on_send_message(message):
+    print(message)
+    if message["type"] == "channel":
+        message_service.store_channel_message(message)
+        event_service.send_channel_message_received(message)
+    elif message["type"] == "private":
+        message_service.store_private_message(message)
+        event_service.send_private_message_received(message)
 
 @socketio.on("join-channel")
 def on_join_channel(info):

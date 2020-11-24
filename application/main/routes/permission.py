@@ -12,7 +12,7 @@ from ..services import permission_service
 # @login_required
 def get_permissions():
     """
-    [GET] - grabs a user's OrgMemberPermissions and ChannelMemberPermissions from the DB. The returned JSON object contains two maps. org_member_perms organizes OrgMemberPermissions by key org_id (value is a list of OrgMemberPermission for that org). channel_member_perms organizes ChannelMemberPermissions by key org_id (value is another map where key is channel_id and value is a list of ChannelMemberPermission)
+    [GET] - grabs a user's OrgMemberPermissions and ChannelMemberPermissions from the DB. The returned JSON object contains two maps. org_member_perms organizes OrgMemberPermissions by key org_name (value is a list of OrgMemberPermission for that org). channel_member_perms organizes ChannelMemberPermissions by key org_name (value is another map where key is channel_name and value is a list of ChannelMemberPermission)
     Path: /permission/?username={username}
     Response Body: {org_member_perms, channel_member_perms}
     """
