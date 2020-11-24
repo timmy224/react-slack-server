@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 import json
 from .. import main
 from ... import db
-from ..services import channel_service, role_service, org_service, socket_service
+from ..services import channel_service, role_service, org_service, socket_service, event_service
 from ...models.Channel import Channel, ChannelSchema
 from ...models.ChannelMember import ChannelMember, channel_member_schema
 from ...constants.roles import channel_roles
@@ -25,7 +25,7 @@ def channels():
     elif request.method == "POST":
         data = request.json
         channel_info = data["channel_info"]
-        channel_name = channel_info["name"]
+        channel_name, org_name = channel_info["name"], channel_info["orgName"]
         channel_is_available = db.session.query(
             Channel.name).filter_by(name=channel_name).scalar() is None
         if channel_is_available:
@@ -43,7 +43,7 @@ def channels():
             else:
                 users = channel_service.get_users()
             admin_username = current_user.username
-            org = org_service.get_org(channel_info["orgName"])
+            org = org_service.get_org(org_name)
             channel = channel_service.create_channel(
                 channel_name, users, is_private, admin_username, org)
             channel_id = channel_service.store_channel(channel)
@@ -63,10 +63,10 @@ def channels():
             db.session.execute(statement)
             db.session.commit()
             # notify that permissions were updated for these users and that they've been added to a new channel
-            usernames = map(lambda user: user.username, users)
+            usernames = map(lambda user: user.username, users) 
             for username in usernames:
-                socket_service.send(username, "permissions-updated")
-                socket_service.send(username, "added-to-channel", channel_id)
+                socket_service.send_user(username, "permissions-updated")
+                event_service.send_added_to_channel(username, channel)
             response = {"successful": True, }
             return jsonify(response)
         else:
@@ -76,11 +76,11 @@ def channels():
 
     elif request.method == "DELETE":
         data = request.json
-        channel_id = data["channel_id"]
-        channel_service.delete_channel(channel_id)
-        socketio.close_room(channel_id)
-
-        socketio.emit("channel-deleted", channel_id, broadcast=True)
+        org_name, channel_name = data["org_name"], data["channel_name"]        
+        channel = channel_service.get_channel(org_name, channel_name)
+        channel_service.delete_channel(channel)
+        event_service.send_channel_deleted(channel)
+        socket_service.close_channel_room(org_name, channel_name)
         response = {}
         response['successful'] = True
         return jsonify(response)

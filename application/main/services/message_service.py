@@ -1,33 +1,11 @@
 from datetime import datetime
-from .channel_service import get_ind_channel, add_message_channel
 from ...client_models.message import ChannelMessageClient
 from ... import db
 from ...models.User import User
 from ...models.Channel import Channel
-from ...models.Message import Message as Message_model
+from ...models.Message import Message
 from ...client_models.message import ChannelMessageClient, PrivateMessageClient
-
-messages = []
-
-def add_dummy_messages():
-    for i in range(1, 25):
-        username = "user" + str(i+1)
-        time_sent = "12:01"
-        content = f"My name is {username} and my favorite number is {i+1}"
-        dummy_id = 1
-        message = ChannelMessageClient(username, time_sent, content, dummy_id)
-        add_message_channel(message, dummy_id)
-        messages.append(message)
-
-def on_send_message(clientMessage):
-    message = ChannelMessageClient(clientMessage["sender"], 
-                      clientMessage["time_sent"], 
-                      clientMessage["content"],
-                      clientMessage["channel_id"]
-                      )
-    add_message_channel(message, int(clientMessage["channel_id"]))
-    messages.append(message)                                                                                   
-
+                                                                               
 def store_private_message(clientMessage):
     """
     Use the User model to query for the person sending and the person receiving.
@@ -37,7 +15,7 @@ def store_private_message(clientMessage):
     sender_id = db.session.query(User.user_id).filter_by(username=clientMessage["sender"])
     sent_dt = datetime.strptime(clientMessage["sent_dt"],  "%m/%d/%Y %I:%M %p")
     content = clientMessage['content']
-    message = Message_model(sender_id, sent_dt, content)
+    message = Message(sender_id, sent_dt, content)
     
     receiver = User.query.filter_by(username=clientMessage["receiver"]).one()
     message.receiver = receiver
@@ -52,14 +30,13 @@ def store_channel_message(clientMessage):
 
     sender = clientMessage['sender']
     channel = Channel.query.filter_by(channel_id=clientMessage["channel_id"]).one()
-    message = Message_model(sender_id, sent_dt, content)
+    message = Message(sender_id, sent_dt, content)
 
     message.channel = channel
     
     db.session.add(message)
     db.session.commit()
 
-add_dummy_messages()
 def populate_channel_messages_client(messages):
      chan_messages_client = []
      for msg in messages:

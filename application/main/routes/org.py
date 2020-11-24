@@ -45,7 +45,7 @@ def invite_to_org():
         org_invite = org_service.create_org_invite(inviter, org, email)
         org_service.store_org_invite(org_invite)
         # inform connected client that they've received an org invite
-        socket_service.send(email, "invited-to-org", org_name)
+        socket_service.send_user(email, "invited-to-org", org_name)
         response["successful"] = True
         return response
 
@@ -85,8 +85,8 @@ def org_invite_response():
         db.session.execute(statement)
         db.session.commit()
         # inform connected client that they've been added to a new org and that permissions have been updated
-        socket_service.send(user.username, "added-to-org", org.name)
-        socket_service.send(user.username, "permissions-updated")
+        socket_service.send_user(user.username, "added-to-org", org.name)
+        socket_service.send_user(user.username, "permissions-updated")
     else:
         db.session.commit()
     response = {"successful": True}
@@ -172,9 +172,9 @@ def orgs():
                 for email in invited_emails:
                     user = user_service.get_user_by_email(email)
                     if user:
-                        socket_service.send(user.username, "invited-to-org", org_name)
-                socket_service.send(current_user.username, "added-to-org", org_name)
-                socket_service.send(current_user.username, "added-to-channel", default_channel.name)
+                        socket_service.send_user(user.username, "invited-to-org", org_name)
+                socket_service.send_user(current_user.username, "added-to-org", org_name)
+                socket_service.send_user(current_user.username, "added-to-channel", default_channel.name)
                 response["successful"] = True
                 return response
 
@@ -193,7 +193,7 @@ def orgs():
         org_members = org.members
         org_service.delete_org(org)
         for user in org_members:
-            socket_service.send(user.username, "org-deleted", org_name)
+            socket_service.send_user(user.username, "org-deleted", org_name)
         response = {}
         response['successful'] = True
         return jsonify(response)

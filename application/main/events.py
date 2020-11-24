@@ -6,30 +6,22 @@ from .services import client_service, socket_service, message_service, user_serv
 import json
 from .. import db
 from .. models.User import User
-
 from ..models.Message import Message, MessageSchema, message_schema
 from ..models.ChannelMessages import channel_messages
 
 @socketio.on("connect")
 def on_connect():
     username = request.args.get("username")
-    print("Onconnect:", username)
+    print(f"Client connected! username: {username}")
     user = User.query.filter_by(username=username).one()
-    
     channels = user.channels
     for channel in channels:
         channel_id = channel.channel_id
         join_room(channel_id)
-    
     for org in user.orgs:
         join_room(org.org_id)
-
-    print(f"Client connected! username: {username}")
-    # All clients are assigned a personal room by Flask SocketIO when they connect, named with the session ID of the connection. We want to store this so that we can relay messages to individual clients in the future using send/emit(..., room=room)
     room = request.sid
     client_service.on_client_connected(username, room)
-
-    # Broadcast to all other clients that a new client connected
     emit("user-joined-chat", {"username": username},
          broadcast=True, include_self=False)
 
@@ -55,11 +47,12 @@ def on_send_message(clientMessage):
             sender_room = sender_client.room
             emit("message-received", clientMessage, room=sender_room)
 
-        
 @socketio.on("join-channel")
-def on_join_channel(channel_id):
-    print("join_channel:", channel_id)
-    join_room(channel_id) 
+def on_join_channel(info):
+    org_name, channel_name = info["org_name"], info["channel_name"]
+    room = socket_service.compute_room(org_name, channel_name)
+    print("join_channel:", room)
+    join_room(room) 
 
 @socketio.on("disconnect")
 def on_disconnect():
