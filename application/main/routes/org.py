@@ -49,7 +49,7 @@ def invite_to_org():
         if user:
             socket_service.send(email, "invited-to-org", org_name)
         else:
-            user_service.send_email_invite(email)
+            user_service.send_email_invite(inviter.username, org_name, email)
         socket_service.send(email, "invited-to-org", org_name)
         response["successful"] = True
         return response
