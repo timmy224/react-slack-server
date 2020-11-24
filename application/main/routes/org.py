@@ -45,6 +45,11 @@ def invite_to_org():
         org_invite = org_service.create_org_invite(inviter, org, email)
         org_service.store_org_invite(org_invite)
         # inform connected client that they've received an org invite
+        user = user_service.get_user_by_email(email)
+        if user:
+            socket_service.send(email, "invited-to-org", org_name)
+        else:
+            user_service.send_email_invite(email)
         socket_service.send(email, "invited-to-org", org_name)
         response["successful"] = True
         return response
