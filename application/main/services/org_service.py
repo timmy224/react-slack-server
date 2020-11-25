@@ -93,7 +93,7 @@ def populate_org_client(org):
         members.append(org_member_client.__dict__)
     return OrgClient(org.name, channels_json, members).__dict__
 
-def notify_invitees(invited_email_addresses):
+def notify_invitees(invited_email_addresses, org_name, sender):
     for email_address in invited_email_addresses:
         user = user_service.get_user_by_email_address(email_address)
         if user:
@@ -101,4 +101,4 @@ def notify_invitees(invited_email_addresses):
                 user.username, "invited-to-org", org_name)
         else:
             user_service.send_org_invite_email(
-                inviter.username, org_name, email_address)
+                sender, org_name, email_address)

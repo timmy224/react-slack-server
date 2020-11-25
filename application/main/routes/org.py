@@ -45,11 +45,7 @@ def invite_to_org():
         org_invite = org_service.create_org_invite(inviter, org, email_address)
         org_service.store_org_invite(org_invite)
         # inform connected client that they've received an org invite
-        user = user_service.get_user_by_email_address(email_address)
-        if user:
-            socket_service.send(user.username, "invited-to-org", org_name)
-        else:
-            user_service.send_org_invite_email(inviter.username, org_name, email_address)
+        org_service.notify_invitees([email_address], org_name, inviter.username)
         response["successful"] = True
         return response
 
@@ -173,7 +169,7 @@ def orgs():
                     default_channel.channel_id, [current_user.user_id], admin_channel_role.role_id)
                 db.session.execute(statement)
                 db.session.commit()
-                org_service.notify_invitees(invited_email_addresses)
+                org_service.notify_invitees(invited_email_addresses, org_name, inviter.username )
                 socket_service.send(current_user.username, "added-to-org", org_name)
                 socket_service.send(current_user.username, "added-to-channel", default_channel.name)
                 response["successful"] = True
