@@ -38,19 +38,18 @@ def invite_to_org():
         org_name = data["orgName"]
         org = org_service.get_org(org_name)
         inviter = current_user
-        email = data["email"]
-        if org_service.has_active_org_invite(org.org_id, email):
+        email_address = data["email"]
+        if org_service.has_active_org_invite(org.org_id, email_address):
             response["ERROR"] = "User already has an active invite to this org"
             return response
-        org_invite = org_service.create_org_invite(inviter, org, email)
+        org_invite = org_service.create_org_invite(inviter, org, email_address)
         org_service.store_org_invite(org_invite)
         # inform connected client that they've received an org invite
-        user = user_service.get_user_by_email(email)
+        user = user_service.get_user_by_email_address(email_address)
         if user:
             socket_service.send(user.username, "invited-to-org", org_name)
         else:
-            user_service.send_new_user_email(inviter.username, org_name, email)
-        socket_service.send(email, "invited-to-org", org_name)
+            user_service.send_new_user_email(inviter.username, org_name, email_address)
         response["successful"] = True
         return response
 
@@ -160,9 +159,9 @@ def orgs():
                 members = [current_user]
                 org = org_service.create_org(org_name, members) 
                 org_id = org_service.store_org(org)
-                invited_emails = data["invited_emails"]
+                invited_email_addresses = data["invited_emails"]
                 inviter = current_user
-                org_service.create_invites_for_invited_emails(inviter, invited_emails, org)
+                org_service.create_invites_for_invited_email_addresses(inviter, invited_email_addresses, org)
                 admin_username = current_user.username
                 default_channel = org_service.create_default_org_channel(admin_username, members, org)
                 admin_org_role, admin_channel_role = role_service.get_role(
@@ -174,12 +173,12 @@ def orgs():
                     default_channel.channel_id, [current_user.user_id], admin_channel_role.role_id)
                 db.session.execute(statement)
                 db.session.commit()
-                for email in invited_emails:
-                    user = user_service.get_user_by_email(email)
+                for email_address in invited_email_addresses:
+                    user = user_service.get_user_by_email_address(email_address)
                     if user:
                         socket_service.send(user.username, "invited-to-org", org_name)
                     else:
-                        user_service.send_new_user_email(inviter.username, org_name, email)
+                        user_service.send_new_user_email(inviter.username, org_name, email_address)
                 socket_service.send(current_user.username, "added-to-org", org_name)
                 socket_service.send(current_user.username, "added-to-channel", default_channel.name)
                 response["successful"] = True

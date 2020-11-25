@@ -8,9 +8,9 @@ from . import email_service
 def get_user(username):
     return User.query.filter_by(username=username).one()
 
-def get_user_by_email(email):
+def get_user_by_email_address(email_address):
     try:
-        user = User.query.filter_by(username=email).one()
+        user = User.query.filter_by(username=email_address).one()
         return user
     except NoResultFound:
         return
