@@ -2,6 +2,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from ...constants.email import email_settings
 import smtplib, ssl
+# from .config import config
+# app.config.from_object(config.getConfig())
 
 def create_email(sender, receiver_email, text, html, subject):
     email = MIMEMultipart("alternative")
