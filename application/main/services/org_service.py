@@ -9,7 +9,7 @@ from ...models.User import User
 from ...client_models.org import OrgClient
 from ...client_models.org_member import OrgMemberClient
 from ...models.Channel import ChannelSchema
-from . import client_service
+from . import client_service, user_service, socket_service
 
 def get_org(name):
     return Org.query.filter_by(name=name).one()
@@ -92,3 +92,13 @@ def populate_org_client(org):
         org_member_client = OrgMemberClient(username, logged_in)
         members.append(org_member_client.__dict__)
     return OrgClient(org.name, channels_json, members).__dict__
+
+def notify_invitees(invited_email_addresses):
+    for email_address in invited_email_addresses:
+        user = user_service.get_user_by_email_address(email_address)
+        if user:
+            socket_service.send(
+                user.username, "invited-to-org", org_name)
+        else:
+            user_service.send_org_invite_email(
+                inviter.username, org_name, email_address)

@@ -1,7 +1,6 @@
 from ... import db
 from ...models.User import User
 from sqlalchemy.orm.exc import NoResultFound
-import smtplib, ssl
 from ...constants.email import email_settings
 from . import email_service
 
@@ -15,15 +14,25 @@ def get_user_by_email_address(email_address):
     except NoResultFound:
         return
 
-def send_new_user_email(sender, org_name, receiver_email):
-    text = email_service.create_text_email_new_user(sender, org_name)
-    html = email_service.create_html_email_new_user(sender, org_name)
-    header = email_service.create_email_subject_new_user(sender)
-    message = email_service.create_email(sender, receiver_email, text, html, header)
+def send_org_invite_email(sender, org_name, receiver_email):
+    text = f"""
+            Hello!
+            Join {org_name} on React Slack
+            {sender} has invited you to join the React Slack workspace {org_name} 
+            www.reactslack.com
+            """
+    html = f"""
+            <html>
+                <body>
+                    <p>Hello!</p>
+                    <h1>Join {org_name} on React Slack</h1>
+                    <p>{sender} has invited you to join the React Slack workspace {org_name}</p>
+                    <a href="http://www.reactslack.com">React Slack</a> 
+                </body>
+            </html>
+            """
+    header = f"{sender}, has invited you to join a react_slack workspace"
 
-    context = ssl.create_default_context()
-
-    with smtplib.SMTP(email_settings.SMPT_SERVER, email_settings.PORT) as server:
-        server.starttls(context=context)
-        server.login(email_settings.SENDER_EMAIL, email_settings.PASSWORD)
-        server.sendmail(email_settings.SENDER_EMAIL, receiver_email, message.as_string())
+    email = email_service.create_email(sender, receiver_email, text, html, header)
+    email_service.send_email(receiver_email, email)
+    
