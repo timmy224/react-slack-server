@@ -1,6 +1,6 @@
 import json
 from flask import request
-from flask_socketio import emit, join_room, close_room 
+from flask_socketio import emit, join_room, close_room, leave_room
 from .. import socketio
 from .services import client_service
 from .services import message_service
@@ -57,7 +57,17 @@ def on_send_message(clientMessage):
 @socketio.on("join-channel")
 def on_join_channel(channel_id):
     print("join_channel:", channel_id)
-    join_room(channel_id) 
+    join_room(channel_id)
+
+@socketio.on('leave-channel')
+def on_leave_channel(data):
+    removed_username = data["removed_username"]
+    channel_id = data['channel_id']
+    print("removed_username ", removed_username, "has left channel_id", channel_id)
+    client = client_service.get_client(removed_username)
+    sid = client.room
+    leave_room(channel_id, sid=sid) 
+    socketio.send(removed_username, "removed-from-channel", channel_id)
 
 @socketio.on("disconnect")
 def on_disconnect():

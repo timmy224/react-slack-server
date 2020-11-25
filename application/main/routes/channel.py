@@ -3,11 +3,11 @@ from flask_login import login_required, current_user
 import json
 from .. import main
 from ... import db
-from ..services import channel_service, role_service, org_service, socket_service, user_service
+from ..services import channel_service, role_service, org_service, socket_service, user_service, client_service
 from ...models.Channel import Channel, ChannelSchema
 from ...models.ChannelMember import ChannelMember, channel_member_schema
 from ...constants.roles import channel_roles
-from flask_socketio import close_room
+from flask_socketio import close_room, leave_room
 from ... import socketio
 
 
@@ -140,7 +140,8 @@ def channel_members_info():
         removed_username = data["removed_username"]
         print("removed_username: ", removed_username)
         channel_service.delete_channel_user(channel_id, removed_username)
-        data_send = {"channel_name": channel_name, "removed_username": removed_username}
+        data_send = {"channel_name": channel_name, "removed_username": removed_username, "channel_id":channel_id}
+        socket_service.send(removed_username, "removed-from-channel", channel_id)
         socketio.emit("channel-member-removed", data_send, room=channel_id)
         response['successful'] = True
         return jsonify(response)
