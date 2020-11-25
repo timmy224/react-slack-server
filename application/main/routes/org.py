@@ -49,7 +49,7 @@ def invite_to_org():
         if user:
             socket_service.send(email, "invited-to-org", org_name)
         else:
-            user_service.send_email_invite(inviter.username, org_name, email)
+            user_service.send_new_user_email(inviter.username, org_name, email)
         socket_service.send(email, "invited-to-org", org_name)
         response["successful"] = True
         return response
@@ -178,6 +178,8 @@ def orgs():
                     user = user_service.get_user_by_email(email)
                     if user:
                         socket_service.send(user.username, "invited-to-org", org_name)
+                    else:
+                        user_service.send_new_user_email(inviter.username, org_name, email)
                 socket_service.send(current_user.username, "added-to-org", org_name)
                 socket_service.send(current_user.username, "added-to-channel", default_channel.name)
                 response["successful"] = True
