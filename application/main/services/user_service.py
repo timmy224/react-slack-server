@@ -15,10 +15,11 @@ def get_user_by_email_address(email_address):
     except NoResultFound:
         return
 
-def send_new_user_email(inviter, org_name, receiver_email):
-    text = email_service.create_text_email(inviter, org_name)
-    html = email_service.create_html_email(inviter, org_name)
-    message = email_service.create_email_body(inviter, receiver_email, text, html)
+def send_new_user_email(sender, org_name, receiver_email):
+    text = email_service.create_text_email_new_user(sender, org_name)
+    html = email_service.create_html_email_new_user(sender, org_name)
+    header = email_service.create_email_subject_new_user(sender)
+    message = email_service.create_email(sender, receiver_email, text, html, header)
 
     context = ssl.create_default_context()
 
