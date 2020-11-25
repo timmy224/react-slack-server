@@ -1,14 +1,14 @@
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from ...constants.email import email_settings
 import smtplib, ssl
-# from .config import config
-# app.config.from_object(config.getConfig())
+
+from ...config import config
+email_config = config.Config.email
 
 def create_email(sender, receiver_email, text, html, subject):
     email = MIMEMultipart("alternative")
     email["subject"] = subject
-    email["From"] = email_settings.SENDER_EMAIL
+    email["From"] = email_config.SENDER_EMAIL
     email["To"] = receiver_email
 
     part1 = MIMEText(text, "plain")
@@ -22,8 +22,8 @@ def create_email(sender, receiver_email, text, html, subject):
 def send_email(receiver_email, email):
     context = ssl.create_default_context()
 
-    with smtplib.SMTP(email_settings.SMPT_SERVER, email_settings.PORT) as server:
+    with smtplib.SMTP(email_config.SMPT_SERVER, email_config.PORT) as server:
         server.starttls(context=context)
-        server.login(email_settings.SENDER_EMAIL, email_settings.PASSWORD)
-        server.sendmail(email_settings.SENDER_EMAIL,
+        server.login(email_config.SENDER_EMAIL, email_config.PASSWORD)
+        server.sendmail(email_config.SENDER_EMAIL,
                         receiver_email, email.as_string())

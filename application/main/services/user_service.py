@@ -1,7 +1,6 @@
 from ... import db
 from ...models.User import User
 from sqlalchemy.orm.exc import NoResultFound
-from ...constants.email import email_settings
 from . import email_service
 
 def get_user(username):
