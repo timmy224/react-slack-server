@@ -36,8 +36,13 @@ ActionAlias = select([
     Action.name.label("name_a_action")
 ]).alias()
 
+OrgAlias = select([
+    Org.org_id.label("org_id_a"),
+    Org.name.label("name_a_org")
+]).alias()
+
 org_member_permission_join = db.join(org_members, role_permissions_alias, org_members.c.role_id == role_permissions_alias.c.role_id_a)\
-    .join(Org, org_members.c.org_id == Org.org_id)\
+    .join(OrgAlias, org_members.c.org_id == OrgAlias.c.org_id_a)\
     .join(User_alias, org_members.c.user_id == User_alias.c.user_id_a)\
     .join(permissions_alias, role_permissions_alias.c.permission_id == permissions_alias.c.permission_id_a)\
     .join(ResourceAlias, permissions_alias.c.resource_id == ResourceAlias.c.resource_id_a)\
@@ -48,7 +53,7 @@ class OrgMemberPermission(db.Model):
     user_id = org_members.c.user_id
     username = User_alias.c.username
     org_id = org_members.c.org_id
-    org_name = Org.name
+    org_name = OrgAlias.c.name_a_org
     resource = ResourceAlias.c.name_a_resource
     action = ActionAlias.c.name_a_action
 

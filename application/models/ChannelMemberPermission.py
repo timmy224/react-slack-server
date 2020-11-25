@@ -56,7 +56,7 @@ channel_member_permission_join = db.join(channel_members, role_permissions_alias
     .join(Org, org_channels_alias.c.org_id_a == Org.org_id)\
     .join(permissions_alias, role_permissions_alias.c.permission_id == permissions_alias.c.permission_id_a)\
     .join(ResourceAlias, permissions_alias.c.resource_id == ResourceAlias.c.resource_id_a)\
-    .join(ActionAlias, permissions_alias.c.action_id == ActionAlias.c.action_id_a)
+    .join(ActionAlias, permissions_alias.c.action_id == ActionAlias.c.action_id_a)\
     .join(ChannelAlias, channel_members.c.channel_id == ChannelAlias.c.channel_id_a_channel)
 
 class ChannelMemberPermission(db.Model):
