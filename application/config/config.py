@@ -10,6 +10,13 @@ class Config:
     SESSION_COOKIE_SAMESITE = None # Flask session cookie configuration setting
     WTF_CSRF_TIME_LIMIT = None # Flask-WTF csrf cookie configuration setting
 
+class Email(Config):
+    def __init__(self):
+        self.SENDER_EMAIL = "react.slack2020@gmail.com"
+        self.PASSWORD = os.getenv("SECRET")
+        self.PORT = 587
+        self.SMPT_SERVER = "smtp.gmail.com"
+
 class DevelopmentConfig(Config):
     def __init__(self):
         self.SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL_DEV")
