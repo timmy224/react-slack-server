@@ -51,7 +51,7 @@ def store_org(org):
     org_id = org.org_id
     return org_id
 
-def create_invites_for_invited_email_addresses(inviter, invited_email_addresses, org):
+def store_org_invites(inviter, invited_email_addresses, org):
     for email_address in invited_email_addresses:
         org_invite = OrgInvite(email_address)
         org_invite.inviter = inviter

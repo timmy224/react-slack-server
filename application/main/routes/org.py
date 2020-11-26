@@ -157,7 +157,7 @@ def orgs():
                 org_id = org_service.store_org(org)
                 invited_email_addresses = data["invited_emails"]
                 inviter = current_user
-                org_service.create_invites_for_invited_email_addresses(inviter, invited_email_addresses, org)
+                org_service.store_org_invites(inviter, invited_email_addresses, org)
                 admin_username = current_user.username
                 default_channel = org_service.create_default_org_channel(admin_username, members, org)
                 admin_org_role, admin_channel_role = role_service.get_role(
