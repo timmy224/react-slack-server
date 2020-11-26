@@ -32,6 +32,6 @@ def send_org_invite_email(sender, org_name, receiver_email):
             """
     header = f"{sender}, has invited you to join a react_slack workspace"
 
-    email = email_service.create_email(sender, receiver_email, text, html, header)
+    email = email_service.create_email(receiver_email, text, html, header)
     email_service.send_email(receiver_email, email)
     
