@@ -13,18 +13,17 @@ from ..models.ChannelMessages import channel_messages
 def on_connect():
     username = request.args.get("username")
     print(f"Client connected! username: {username}")
-    user = User.query.filter_by(username=username).one()
+    user = user_service.get_user(username)
     channels = user.channels
     for channel in channels:
         org_name = channel.org.name
-        room = socket_service.compute_room(org_name, channel.name)
+        room = socket_service.compute_channel_room(org_name, channel.name)
         join_room(room)
     for org in user.orgs:
         join_room(org.name)
+        event_service.send_org_member_online(org.name, username)
     room = request.sid
     client_service.on_client_connected(username, room)
-    emit("user-joined-chat", {"username": username},
-         broadcast=True, include_self=False)
 
 @socketio.on("send-message")
 def on_send_message(message):
@@ -38,7 +37,7 @@ def on_send_message(message):
 @socketio.on("join-channel")
 def on_join_channel(info):
     org_name, channel_name = info["org_name"], info["channel_name"]
-    room = socket_service.compute_room(org_name, channel_name)
+    room = socket_service.compute_channel_room(org_name, channel_name)
     join_room(room) 
 
 @socketio.on("disconnect")
@@ -49,5 +48,5 @@ def on_disconnect():
     client_service.remove_client_by_room(room)
     user = user_service.get_user(username)
     for org in user.orgs:
-        socketio.emit("org-member-offline", username, room=org.org_id)
+        event_service.send_org_member_offline(org.name, username)
 

@@ -87,7 +87,8 @@ def populate_org_client(org):
     for member in org.members:
         logged_in = True if client_service.get_client(member.username) else False
         org_member_client = OrgMemberClient(member.username, logged_in)
-        members.append(org_member_client.__dict__)
+        members.append(org_member_client)
+    members = {member.username : member.__dict__ for member in members}
     return OrgClient(org.name, members).__dict__
 
 def get_users_by_usernames(org, usernames):
