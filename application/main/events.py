@@ -28,7 +28,6 @@ def on_connect():
 
 @socketio.on("send-message")
 def on_send_message(message):
-    print(message)
     if message["type"] == "channel":
         message_service.store_channel_message(message)
         event_service.send_channel_message_received(message)
@@ -40,7 +39,6 @@ def on_send_message(message):
 def on_join_channel(info):
     org_name, channel_name = info["org_name"], info["channel_name"]
     room = socket_service.compute_room(org_name, channel_name)
-    print("join_channel:", room)
     join_room(room) 
 
 @socketio.on("disconnect")

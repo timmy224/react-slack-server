@@ -9,9 +9,10 @@ from ...models.Message import Message
 from ...models.ChannelMessages import channel_messages
 from ...models.PrivateMessages import private_messages
 from ...client_models.message import ChannelMessageClient, PrivateMessageClient
-from . import channel_service, user_service
+from . import channel_service, user_service, org_service
                                                                                
 def store_private_message(message):
+    org = org_service.get_org(message["org_name"])
     sender = user_service.get_user(message["sender"])
     receiver = user_service.get_user(message["receiver"])
     sent_dt = datetime.strptime(message["sent_dt"],  "%m/%d/%Y %I:%M %p")
@@ -19,10 +20,12 @@ def store_private_message(message):
     message_db = Message(sent_dt, content)
     message_db.sender = sender
     message_db.receiver = receiver    
+    message_db.org = org
     db.session.add(message_db)
     db.session.commit()
 
 def store_channel_message(message):
+    org = org_service.get_org(message["org_name"])
     sender = user_service.get_user(message["sender"])
     sent_dt = datetime.strptime(message["sent_dt"],  "%m/%d/%Y %I:%M %p")
     content = message['content']
@@ -31,6 +34,7 @@ def store_channel_message(message):
     message_db = Message(sent_dt, content)
     message_db.sender = sender
     message_db.channel = channel
+    message_db.org = org
     db.session.add(message_db)
     db.session.commit()
 
@@ -61,6 +65,7 @@ def get_channel_messages(channel):
         .all()
 
 def get_private_messages(org_name, username1, username2):
+    org = org_service.get_org(org_name)
     SendingUser = aliased(User)
     ReceivingUser = aliased(User)
     return Message.query\
@@ -71,7 +76,7 @@ def get_private_messages(org_name, username1, username2):
         ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
         ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
         ))\
-        .filter(Message.org.name==org_name)\
+        .filter(Message.org_id==org.org_id)\
         .order_by(Message.sent_dt)\
         .limit(25)\
         .all()

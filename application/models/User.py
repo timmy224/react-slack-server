@@ -34,5 +34,6 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
 
     class Meta:
         model = User
+        exclude = ("user_id", "password_hash",)
 
 user_schema = UserSchema()

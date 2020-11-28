@@ -10,19 +10,8 @@ def get_channel(org_name, channel_name):
     channel = next(filter(lambda c: c.name == channel_name, org.channels))
     return channel
 
-def get_users_by_usernames(usernames):
-    users = []
-    usernames_not_found = []
-    for username in usernames:
-        try:
-            user = User.query.filter_by(username=username).one()
-            users.append(user)
-        except NoResultFound:
-            usernames_not_found.append(username)
-    return {"users": users, "usernames_not_found": usernames_not_found}
-
-def get_users():
-    return User.query.all()
+def get_users_channels(user, org_name):
+    return list(filter(lambda channel: channel.org.name == org_name, user.channels))
 
 def create_channel(name, members, is_private, admin_username, org):
     channel = Channel(name, admin_username, is_private)
@@ -43,5 +32,13 @@ def delete_channel(channel):
     db.session.delete(channel)
     db.session.commit()
 
+def populate_channel_client(channel):
+    channels_json = channel_schema.dump(org.channels, many=True)
+    members = []
+    for member in org.members:
+        logged_in = True if client_service.get_client(member.username) else False
+        org_member_client = OrgMemberClient(member.username, logged_in)
+        members.append(org_member_client.__dict__)
+    return OrgClient(org.name, members).__dict__
 
 

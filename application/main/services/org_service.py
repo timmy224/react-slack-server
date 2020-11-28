@@ -8,7 +8,7 @@ from ...models.Org import Org
 from ...models.User import User
 from ...client_models.org import OrgClient
 from ...client_models.org_member import OrgMemberClient
-from ...models.Channel import ChannelSchema
+from ...models.Channel import channel_schema
 from . import client_service
 
 def get_org(name):
@@ -82,13 +82,22 @@ def delete_org(org):
     db.session.commit()
 
 def populate_org_client(org):
-    channels = org.channels
-    channels_json = ChannelSchema(exclude=["members"]).dump(channels, many=True)
+    channels_json = channel_schema.dump(org.channels, many=True)
     members = []
     for member in org.members:
-        username = member.username
-        client = client_service.get_client(username)
-        logged_in = True if client is not None else False
-        org_member_client = OrgMemberClient(username, logged_in)
+        logged_in = True if client_service.get_client(member.username) else False
+        org_member_client = OrgMemberClient(member.username, logged_in)
         members.append(org_member_client.__dict__)
-    return OrgClient(org.name, channels_json, members).__dict__
+    return OrgClient(org.name, members).__dict__
+
+def get_users_by_usernames(org, usernames):
+    users = []
+    usernames_not_found = []
+    for username in usernames:
+        try:
+            user = next(filter(lambda user: user.username == username, org.members))
+            users.append(user)
+        except StopIteration:
+            usernames_not_found.append(username)
+    return {"users": users, "usernames_not_found": usernames_not_found}
+

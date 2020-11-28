@@ -14,7 +14,7 @@ def send_channel_deleted(channel):
 
 # MESSAGES
 def send_channel_message_received(message):
-    org_name, channel_name = message["org_name"], message["destination"]
+    org_name, channel_name = message["org_name"], message["channel_name"]
     socket_service.send_channel(org_name, channel_name, "message-received", message)
 
 def send_private_message_received(message):
