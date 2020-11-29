@@ -85,19 +85,7 @@ def channels():
         response['successful'] = True
         return jsonify(response)
 
-
-@main.route("/channel/members", methods=["POST"])
-def get_num_members():
-    data = request.json
-    org_name, channel_name = data["org_name"], data["channel_name"]
-    channel = channel_service.get_channel(org_name, channel_name)
-    num_members = len(channel.members)
-    response = {'num_members': num_members}
-    return response
-
 # EXAMPLES #
-
-
 @main.route("/channel-subscription/", methods=["GET", "POST"])
 def channel_subscription():
     """
