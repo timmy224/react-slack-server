@@ -1,6 +1,9 @@
 from ... import socketio
 from . import client_service
 
+def compute_org_room(org_name):
+    return org_name
+
 def compute_channel_room(org_name, channel_name):
     return f"{org_name}:{channel_name}"
 

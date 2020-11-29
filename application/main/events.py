@@ -20,7 +20,8 @@ def on_connect():
         room = socket_service.compute_channel_room(org_name, channel.name)
         join_room(room)
     for org in user.orgs:
-        join_room(org.name)
+        room = socket_service.compute_org_room(org.name)
+        join_room(room)
         event_service.send_org_member_online(org.name, username)
     room = request.sid
     client_service.on_client_connected(username, room)
@@ -39,6 +40,11 @@ def on_join_channel(info):
     org_name, channel_name = info["org_name"], info["channel_name"]
     room = socket_service.compute_channel_room(org_name, channel_name)
     join_room(room) 
+
+@socketio.on("join-org")
+def on_join_org(org_name):
+    room = socket_service.compute_org_room(org_name)
+    join_room(room)
 
 @socketio.on("disconnect")
 def on_disconnect():

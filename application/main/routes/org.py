@@ -67,7 +67,7 @@ def org_invite_response():
     if is_accepted:
         org.members.append(user)
         public_channels = list(
-            filter(lambda c: not c.is_private, org.channels))
+            filter(lambda c: c.is_private == "false", org.channels))
         for channel in public_channels:
             channel.members.append(user)
         db.session.commit()
@@ -86,8 +86,10 @@ def org_invite_response():
         db.session.commit()
         # inform org that a new member has joined 
         event_service.send_new_org_member(org.name, user.username)
-        # inform user that they've been added to a new org 
+        # inform user that they've been added to a new org and org's channels
         socket_service.send_user(user.username, "added-to-org", org.name)
+        for channel in public_channels:
+            event_service.send_added_to_channel(user.username, channel)
         # inform user that their permissions have been updated
         socket_service.send_user(user.username, "permissions-updated")
     else:
@@ -184,7 +186,7 @@ def orgs():
                     if user:
                         socket_service.send_user(user.username, "invited-to-org", org_name)
                 socket_service.send_user(current_user.username, "added-to-org", org_name)
-                socket_service.send_user(current_user.username, "added-to-channel", default_channel.name)
+                event_service.send_added_to_channel(inviter.username, default_channel)
                 response["successful"] = True
                 return response
 
