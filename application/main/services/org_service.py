@@ -8,13 +8,8 @@ from ...models.Org import Org
 from ...models.User import User
 from ...client_models.org import OrgClient
 from ...client_models.org_member import OrgMemberClient
-<<<<<<< HEAD
 from ...models.Channel import channel_schema
-from . import client_service
-=======
-from ...models.Channel import ChannelSchema
 from . import client_service, user_service, socket_service
->>>>>>> week-6
 
 def get_org(name):
     return Org.query.filter_by(name=name).one()
