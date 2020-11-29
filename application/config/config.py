@@ -1,5 +1,11 @@
 import os
 
+class EmailConfig:
+    SENDER_EMAIL = os.getenv("EMAIL")
+    PASSWORD = os.getenv("SECRET")
+    PORT = 587
+    SMPT_SERVER = "smtp.gmail.com"
+
 class Config:
     SQLALCHEMY_DATABASE_URI = None # SQLAlchemy configuration setting
     SECURE_COOKIES = None # Cookies manually created by us configuration setting
@@ -9,6 +15,7 @@ class Config:
     REMEMBER_COOKIE_HTTPONLY = None # Flask-Login remember cookie configuration setting
     SESSION_COOKIE_SAMESITE = None # Flask session cookie configuration setting
     WTF_CSRF_TIME_LIMIT = None # Flask-WTF csrf cookie configuration setting
+    email = EmailConfig()
 
 class DevelopmentConfig(Config):
     def __init__(self):
