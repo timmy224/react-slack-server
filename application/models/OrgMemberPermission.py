@@ -7,6 +7,7 @@ from .RolePermissions import role_permissions
 from .Permissions import permissions
 from .Resource import Resource
 from .Action import Action
+from .Org import Org
 
 role_permissions_alias = select([
     role_permissions.c.role_id.label("role_id_a"),
@@ -27,15 +28,21 @@ permissions_alias = select([
 
 ResourceAlias = select([
     Resource.resource_id.label("resource_id_a"),
-    Resource.name.label("name_a")
+    Resource.name.label("name_a_resource")
 ]).alias()
 
 ActionAlias = select([
     Action.action_id.label("action_id_a"),
-    Action.name.label("name")
+    Action.name.label("name_a_action")
+]).alias()
+
+OrgAlias = select([
+    Org.org_id.label("org_id_a"),
+    Org.name.label("name_a_org")
 ]).alias()
 
 org_member_permission_join = db.join(org_members, role_permissions_alias, org_members.c.role_id == role_permissions_alias.c.role_id_a)\
+    .join(OrgAlias, org_members.c.org_id == OrgAlias.c.org_id_a)\
     .join(User_alias, org_members.c.user_id == User_alias.c.user_id_a)\
     .join(permissions_alias, role_permissions_alias.c.permission_id == permissions_alias.c.permission_id_a)\
     .join(ResourceAlias, permissions_alias.c.resource_id == ResourceAlias.c.resource_id_a)\
@@ -46,8 +53,9 @@ class OrgMemberPermission(db.Model):
     user_id = org_members.c.user_id
     username = User_alias.c.username
     org_id = org_members.c.org_id
-    resource = ResourceAlias.c.name_a
-    action = ActionAlias.c.name
+    org_name = OrgAlias.c.name_a_org
+    resource = ResourceAlias.c.name_a_resource
+    action = ActionAlias.c.name_a_action
 
 class OrgMemberPermissionSchema(ma.SQLAlchemySchema):
     class Meta:
@@ -55,6 +63,7 @@ class OrgMemberPermissionSchema(ma.SQLAlchemySchema):
     user_id = ma.auto_field()
     username = ma.auto_field()
     org_id = ma.auto_field()
+    org_name = ma.auto_field()
     resource = ma.auto_field()
     action = ma.auto_field()
 

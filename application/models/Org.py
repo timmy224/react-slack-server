@@ -13,11 +13,12 @@ class Org(db.Model):
         return f"<Org org_id={self.org_id} name={self.name}>"
 
 class OrgSchema(ma.SQLAlchemyAutoSchema):
-    members = ma.Nested("UserSchema", exclude=("orgs",), many=True)
-    channels = ma.Nested("ChannelSchema", exclude=("org",))
+    members = ma.Nested("UserSchema", exclude=("channels", "orgs", "user_id", "password_hash"), many=True)
+    channels = ma.Nested("ChannelSchema", exclude=("org", "channel_id"))
 
     class Meta:
         model = Org
+        exclude = ("org_id",)
 
 org_schema = OrgSchema()
 

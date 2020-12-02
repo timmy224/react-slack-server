@@ -27,10 +27,6 @@ def register_user():
         user = User(username)
         user.set_password(password)
 
-        #TODO query for all channels, add all channels to user model before adding to database
-        channels = Channel.query.all()
-        user.channels = channels
-
         db.session.add(user)
         db.session.commit()  
                

@@ -1,45 +1,23 @@
 from ...models.User import User
-from ...models.Channel import Channel as Channel_model
+from ...models.Channel import Channel
+from ...models.Org import Org
 from ... import db
 from ...client_models.message import ChannelMessageClient
 from sqlalchemy.orm.exc import NoResultFound
 
-class Channel():
-    def __init__(self, id, name, messages):
-        self.id = id
-        self.name = name
-        self.messages = messages 
+def get_channel(org_name, channel_name):
+    org = Org.query.filter_by(name=org_name).one()
+    channel = next(filter(lambda c: c.name == channel_name, org.channels))
+    return channel
 
-channels = {}
-
-def add_dummy_channels():
-    for i in range(1, 5):
-        channel = Channel(i, f"Channel #{i}", [])
-        channels[i] = channel
-
-def get_channel_ids(): # returns list of available channel ids
-    return [*channels]
-
-def get_users_by_usernames(usernames):
-    users = []
-    usernames_not_found = []
-    for username in usernames:
-        try:
-            user = User.query.filter_by(username=username).one()
-            users.append(user)
-        except NoResultFound:
-            usernames_not_found.append(username)
-    return {"users": users, "usernames_not_found": usernames_not_found}
-
-def get_users():
-    return User.query.all()
+def get_users_channels(user, org_name):
+    return list(filter(lambda channel: channel.org.name == org_name, user.channels))
 
 def create_channel(name, members, is_private, admin_username, org):
-    channel = Channel_model(name, admin_username, is_private)
+    channel = Channel(name, admin_username, is_private)
     channel.members = members
     channel.org = org
     return channel
-
 
 def store_channel(channel):
     db.session.add(channel)
@@ -48,30 +26,20 @@ def store_channel(channel):
     channel_id = channel.channel_id
     return channel_id
 
-def delete_channel(channel_id):
-    channel = Channel_model.query.filter_by(channel_id=channel_id).one()
+def delete_channel(channel):
     channel.members = []
-
     db.session.commit()
     db.session.delete(channel)
     db.session.commit()
 
-def get_ind_channel(channel_id):
-    return channels[channel_id]
+def populate_channel_client(channel):
+    channels_json = channel_schema.dump(org.channels, many=True)
+    members = []
+    for member in org.members:
+        logged_in = True if client_service.get_client(member.username) else False
+        org_member_client = OrgMemberClient(member.username, logged_in)
+        members.append(org_member_client.__dict__)
+    return OrgClient(org.name, members).__dict__
 
-def add_message_channel(new_message, channel_id):
-    channels[channel_id].messages.append(new_message)
-
-def add_dummy_messages():
-    for j in range(1, 5):
-        dummy_id = j
-
-        for i in range(1, 25):
-            username = "user" + str(i+1)
-            time_sent = "12:01"
-            content = f"Channel #{dummy_id}: My name is {username} and my favorite number is {i+1}"
-            message = ChannelMessageClient(username, time_sent, content, dummy_id)
-            add_message_channel(message, dummy_id)
-
-add_dummy_channels()
-add_dummy_messages()
+def is_channel_name_available(org, channel_name):
+    return not any(channel.name == channel_name for channel in org.channels)

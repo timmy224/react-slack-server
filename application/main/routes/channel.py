@@ -3,103 +3,88 @@ from flask_login import login_required, current_user
 import json
 from .. import main
 from ... import db
-from ..services import channel_service, role_service, org_service, socket_service
-from ...models.Channel import Channel, ChannelSchema
+from ..services import channel_service, role_service, org_service, socket_service, event_service
+from ...models.Channel import Channel, channel_schema
 from ...models.ChannelMember import ChannelMember, channel_member_schema
 from ...constants.roles import channel_roles
 from flask_socketio import close_room
 from ... import socketio
 
-
-@main.route("/channel", methods=["GET", "POST", "DELETE"])
+@main.route("/channel", methods=["POST", "DELETE"])
 @login_required
 def channels():
-    if request.method == "GET":
-        channels = current_user.channels
-        channels_json = ChannelSchema(
-            exclude=["members"]).dump(channels, many=True)
-        response = {}
-        response["channels"] = channels_json
-        return response
-
-    elif request.method == "POST":
+    if request.method == "POST":
         data = request.json
-        channel_info = data["channel_info"]
-        channel_name = channel_info["name"]
-        channel_is_available = db.session.query(
-            Channel.name).filter_by(name=channel_name).scalar() is None
-        if channel_is_available:
-            members = channel_info["members"]
-            is_private = channel_info["isPrivate"]
-            if is_private:
-                usersResult = channel_service.get_users_by_usernames(members)
-                if usersResult["usernames_not_found"]:
-                    response = {
-                        "ERROR": "Some users were not found",
-                        "users_not_found": usersResult["usernames_not_found"]
-                    }
-                    return response
-                users = usersResult["users"]
-            else:
-                users = channel_service.get_users()
-            admin_username = current_user.username
-            org = org_service.get_org(channel_info["orgName"])
-            channel = channel_service.create_channel(
-                channel_name, users, is_private, admin_username, org)
-            channel_id = channel_service.store_channel(channel)
-            # get roles
-            members_channel_role, admin_channel_role = role_service.get_role(
-                channel_roles.TADPOLE), role_service.get_role(channel_roles.ADMIN)
-            # member ids
-            admin_user_id = current_user.user_id
-            member_user_ids = map(lambda user: user.user_id, users)
-            # members role update
-            statement = role_service.gen_channel_members_role_update_by_member_ids(
-                channel_id, member_user_ids, members_channel_role.role_id)
-            db.session.execute(statement)
-            # admin role update
-            statement = role_service.gen_channel_members_role_update_by_member_ids(
-                channel_id, [admin_user_id], admin_channel_role.role_id)
-            db.session.execute(statement)
-            db.session.commit()
-            # notify that permissions were updated for these users and that they've been added to a new channel
-            usernames = map(lambda user: user.username, users)
-            for username in usernames:
-                socket_service.send(username, "permissions-updated")
-                socket_service.send(username, "added-to-channel", channel_id)
-            response = {"successful": True, }
-            return jsonify(response)
-        else:
+        action = data["action"]
+        if action == "GET":
+            org_name = data["org_name"]
+            channels = channel_service.get_users_channels(current_user, org_name)
+            channels_json = channel_schema.dump(channels, many=True)
             response = {}
-            response["ERROR"] = "Channel name is taken"
-            return jsonify(response)
+            response["channels"] = channels_json
+            return response
+        elif action == "STORE":
+            channel_info = data["channel_info"]
+            channel_name, org_name = channel_info["name"], channel_info["orgName"]
+            org = org_service.get_org(org_name)
+            channel_is_available = channel_service.is_channel_name_available(org, channel_name)
+            if channel_is_available:
+                added_usernames = channel_info["members"]
+                is_private = channel_info["isPrivate"]
+                if is_private:
+                    usersResult = org_service.get_users_by_usernames(org, added_usernames)
+                    if usersResult["usernames_not_found"]:
+                        response = {
+                            "ERROR": "Some users were not found",
+                            "users_not_found": usersResult["usernames_not_found"]
+                        }
+                        return response
+                    users = usersResult["users"]
+                else:
+                    users = org.members
+                admin_username = current_user.username
+                channel = channel_service.create_channel(
+                    channel_name, users, is_private, admin_username, org)
+                channel_id = channel_service.store_channel(channel)                                
+                # get roles
+                members_channel_role, admin_channel_role = role_service.get_role(
+                    channel_roles.TADPOLE), role_service.get_role(channel_roles.ADMIN)
+                # member ids
+                admin_user_id = current_user.user_id
+                member_user_ids = map(lambda user: user.user_id, users)
+                # members role update
+                statement = role_service.gen_channel_members_role_update_by_member_ids(
+                    channel_id, member_user_ids, members_channel_role.role_id)
+                db.session.execute(statement)
+                # admin role update
+                statement = role_service.gen_channel_members_role_update_by_member_ids(
+                    channel_id, [admin_user_id], admin_channel_role.role_id)
+                db.session.execute(statement)
+                db.session.commit()
+                # notify that permissions were updated for these users and that they've been added to a new channel
+                usernames = map(lambda user: user.username, users) 
+                for username in usernames:
+                    socket_service.send_user(username, "permissions-updated")
+                    event_service.send_added_to_channel(username, channel)
+                response = {"successful": True, }
+                return jsonify(response)
+            else:
+                response = {}
+                response["ERROR"] = "Channel name is taken"
+                return jsonify(response)
 
     elif request.method == "DELETE":
         data = request.json
-        channel_id = data["channel_id"]
-        channel_service.delete_channel(channel_id)
-        socketio.close_room(channel_id)
-
-        socketio.emit("channel-deleted", channel_id, broadcast=True)
+        org_name, channel_name = data["org_name"], data["channel_name"]        
+        channel = channel_service.get_channel(org_name, channel_name)
+        channel_service.delete_channel(channel)
+        event_service.send_channel_deleted(channel)
+        socket_service.close_channel_room(org_name, channel_name)
         response = {}
         response['successful'] = True
         return jsonify(response)
 
-
-@main.route("/channel/members/", methods=["GET"])
-def get_num_members():
-    channel_id = request.args.get("channel_id", None)
-    if channel_id is None:
-        response = {'ERROR': "Missing channel_id in route"}
-        return jsonify(response)
-    channel = Channel.query.filter_by(channel_id=channel_id).one()
-    num_members = len(channel.members)
-    response = {'num_members': num_members}
-    return response
-
 # EXAMPLES #
-
-
 @main.route("/channel-subscription/", methods=["GET", "POST"])
 def channel_subscription():
     """
