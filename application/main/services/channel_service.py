@@ -41,4 +41,5 @@ def populate_channel_client(channel):
         members.append(org_member_client.__dict__)
     return OrgClient(org.name, members).__dict__
 
-
+def is_channel_name_available(org, channel_name):
+    return not any(channel.name == channel_name for channel in org.channels)

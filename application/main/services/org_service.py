@@ -106,6 +106,6 @@ def notify_invitees(invited_email_addresses, org_name, sender):
     for email_address in invited_email_addresses:
         user = user_service.get_user_by_email_address(email_address)
         if user:
-            socket_service.send(user.username, "invited-to-org", org_name)
+            socket_service.send_user(user.username, "invited-to-org", org_name)
         else:
             user_service.send_org_invite_email(sender, org_name, email_address)

@@ -26,10 +26,9 @@ def channels():
         elif action == "STORE":
             channel_info = data["channel_info"]
             channel_name, org_name = channel_info["name"], channel_info["orgName"]
-            channel_is_available = db.session.query(
-                Channel.name).filter_by(name=channel_name).scalar() is None
+            org = org_service.get_org(org_name)
+            channel_is_available = channel_service.is_channel_name_available(org, channel_name)
             if channel_is_available:
-                org = org_service.get_org(org_name)
                 added_usernames = channel_info["members"]
                 is_private = channel_info["isPrivate"]
                 if is_private:
@@ -69,10 +68,10 @@ def channels():
                     event_service.send_added_to_channel(username, channel)
                 response = {"successful": True, }
                 return jsonify(response)
-        else:
-            response = {}
-            response["ERROR"] = "Channel name is taken"
-            return jsonify(response)
+            else:
+                response = {}
+                response["ERROR"] = "Channel name is taken"
+                return jsonify(response)
 
     elif request.method == "DELETE":
         data = request.json
