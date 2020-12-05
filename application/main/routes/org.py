@@ -3,7 +3,7 @@ import json
 from flask_login import login_required, current_user
 from .. import main
 from ... import db
-from ..services import org_service, user_service, client_service, role_service, socket_service
+from ..services import org_service, user_service, client_service, role_service, socket_service, event_service
 from ...models.OrgMember import OrgMember, org_member_schema
 from ...models.OrgInvite import org_invite_schema
 from ...client_models.org_invite import OrgInviteClient
@@ -38,14 +38,14 @@ def invite_to_org():
         org_name = data["orgName"]
         org = org_service.get_org(org_name)
         inviter = current_user
-        email = data["email"]
-        if org_service.has_active_org_invite(org.org_id, email):
+        email_address = data["email"]
+        if org_service.has_active_org_invite(org.org_id, email_address):
             response["ERROR"] = "User already has an active invite to this org"
             return response
-        org_invite = org_service.create_org_invite(inviter, org, email)
+        org_invite = org_service.create_org_invite(inviter, org, email_address)
         org_service.store_org_invite(org_invite)
         # inform connected client that they've received an org invite
-        socket_service.send(email, "invited-to-org", org_name)
+        org_service.notify_invitees([email_address], org_name, inviter.username)
         response["successful"] = True
         return response
 
@@ -58,16 +58,16 @@ def org_invite_response():
     Request Body: "orgName", "isAccepted"
     DB tables: "org_invites", "org_members", "channel_members"
     """
-    data = request.json
-    org = org_service.get_org(data["orgName"])
     user = current_user
-    is_accepted = data["isAccepted"]
+    data = request.json
+    org_name, is_accepted = data["org_name"], data["is_accepted"]
+    org = org_service.get_org(org_name)    
     org_invite = org_service.get_active_org_invite(org.org_id, user.username)
     org_service.mark_org_invite_responded(org_invite)
     if is_accepted:
         org.members.append(user)
         public_channels = list(
-            filter(lambda c: not c.is_private, org.channels))
+            filter(lambda c: c.is_private == "false", org.channels))
         for channel in public_channels:
             channel.members.append(user)
         db.session.commit()
@@ -84,9 +84,14 @@ def org_invite_response():
             channel_ids, user.user_id, default_channel_role.role_id)
         db.session.execute(statement)
         db.session.commit()
-        # inform connected client that they've been added to a new org and that permissions have been updated
-        socket_service.send(user.username, "added-to-org", org.name)
-        socket_service.send(user.username, "permissions-updated")
+        # inform org that a new member has joined 
+        event_service.send_new_org_member(org.name, user.username)
+        # inform user that they've been added to a new org and org's channels
+        socket_service.send_user(user.username, "added-to-org", org.name)
+        for channel in public_channels:
+            event_service.send_added_to_channel(user.username, channel)
+        # inform user that their permissions have been updated
+        socket_service.send_user(user.username, "permissions-updated")
     else:
         db.session.commit()
     response = {"successful": True}
@@ -137,10 +142,20 @@ def orgs():
         data = request.json
         action = data["action"]
         if action == "GET":
-            orgs = current_user.org
-            orgs_json = OrgSchema(exclude=["members","channels"]).dump(orgs, many=True)
-            response["orgs"] = orgs_json
-            return response
+            is_single_org_get = data.get("org_name")
+            if is_single_org_get:
+                org = next(filter(lambda org: org.name == data["org_name"], current_user.orgs))
+                org_client = org_service.populate_org_client(org)
+                response["org"] = json.dumps(org_client)
+                return response
+            else:
+                org_clients = []
+                orgs = current_user.orgs
+                for org in orgs:
+                    org_client = org_service.populate_org_client(org)
+                    org_clients.append(org_client)
+                response["orgs"] = json.dumps(org_clients)
+                return response
 
         elif action == "STORE":
             org_name = data["org_name"]
@@ -152,9 +167,9 @@ def orgs():
                 members = [current_user]
                 org = org_service.create_org(org_name, members) 
                 org_id = org_service.store_org(org)
-                invited_emails = data["invited_emails"]
+                invited_email_addresses = data["invited_emails"]
                 inviter = current_user
-                org_service.create_invites_for_invited_emails(inviter, invited_emails, org)
+                org_service.store_org_invites(inviter, invited_email_addresses, org)
                 admin_username = current_user.username
                 default_channel = org_service.create_default_org_channel(admin_username, members, org)
                 admin_org_role, admin_channel_role = role_service.get_role(
@@ -166,14 +181,19 @@ def orgs():
                     default_channel.channel_id, [current_user.user_id], admin_channel_role.role_id)
                 db.session.execute(statement)
                 db.session.commit()
-                for email in invited_emails:
-                    user = user_service.get_user_by_email(email)
-                    if user:
-                        socket_service.send(user.username, "invited-to-org", org_name)
-                socket_service.send(current_user.username, "added-to-org", org_name)
-                socket_service.send(current_user.username, "added-to-channel", default_channel.name)
+                
+                org_service.notify_invitees(invited_email_addresses, org_name, inviter.username)
+                socket_service.send_user(current_user.username, "added-to-org", org_name)
+                event_service.send_added_to_channel(inviter.username, default_channel)
                 response["successful"] = True
                 return response
+
+        elif action == "GET ORG":
+            org_name = data["org_name"]
+            org = Org.query.filter_by(name = org_name).one()
+            org_client = org_service.populate_org_client(org)
+            response["org_info"] = json.dumps(org_client)
+            return response
 
     elif request.method == "DELETE":
         data = request.json
@@ -183,7 +203,7 @@ def orgs():
         org_members = org.members
         org_service.delete_org(org)
         for user in org_members:
-            socket_service.send(user.username, "org-deleted", org_name)
+            socket_service.send_user(user.username, "org-deleted", org_name)
         response = {}
         response['successful'] = True
         return jsonify(response)

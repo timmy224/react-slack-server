@@ -18,9 +18,11 @@ class Channel(db.Model):
         return f"<Channel channel_id={self.channel_id} name={self.name} admin_username = {self.admin_username} is_private={self.is_private}>"
 
 class ChannelSchema(ma.SQLAlchemyAutoSchema):
-    members = ma.Nested("UserSchema", exclude=("channels",), many=True)
+    members = ma.Nested("UserSchema", exclude=("channels", "orgs", "user_id", "password_hash"), many=True)
+    org = ma.Nested("OrgSchema", exclude=("channels", "members", "org_id"))
 
     class Meta:
         model = Channel
+        exclude = ("channel_id",)
 
 channel_schema = ChannelSchema()

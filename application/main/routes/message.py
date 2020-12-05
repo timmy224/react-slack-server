@@ -1,95 +1,38 @@
 from flask import request, jsonify
 from flask_login import login_required, current_user
-from sqlalchemy import or_
-from sqlalchemy.orm import aliased
 from datetime import datetime
 import json
 from .. import main
 from ... import db
-from ..services import message_service
+from ..services import message_service, channel_service
 from ...models.User import User
 from ...models.Message import Message
 from ...models.Channel import Channel
-from ...models.PrivateMessages import private_messages
-from ...models.ChannelMessages import channel_messages
-
-
-@main.route("/message/channel/", methods=["GET"])
-# @login_required
-def get_channel_messages():
-        response = {}
-        sel_channel = request.args.get("channel_id", None)
-        sel_channel_messages = Message.query\
-                                .join(channel_messages, Message.message_id == channel_messages.c.message_id)\
-                                .filter_by(channel_id = sel_channel)\
-                                .order_by(Message.sent_dt)\
-                                .limit(25)\
-                                .all()
-
-        chan_messages_list = message_service.populate_channel_messages_client(sel_channel_messages)
-        response['messages'] = json.dumps(chan_messages_list)
-        return response
 
 @main.route("/message/channel", methods=["POST"])
-def store_channel_messages():
-        data = request.json
-        sender_id, content = data["sender_id"], data["content"]
-        sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M %p")
-        message = Message(sender_id, sent_dt, content)
-        channel = Channel.query.filter_by(channel_id=data["channel_id"]).one()
-
-        message.channel = channel
-        db.session.add(message)
-        db.session.commit()
-
-        print("SUCCESS: channel_message inserted into db")
-        response = {}
-        response["successful"] = True
-        return jsonify(response)
-
-
-@main.route("/message/private/", methods=["GET"])
 # @login_required
-def get_private_messages():
+def get_channel_messages():
+        data = request.json
+        org_name, channel_name = data["org_name"], data["channel_name"]
+        channel = channel_service.get_channel(org_name, channel_name)        
+        messages = message_service.get_channel_messages(channel)
+        client_messages = message_service.populate_channel_messages_client(messages)
         response = {}
-        username1 = current_user.username
-        username2 =  request.args.get("username2", None)
-        if username1 is None or username2 is None:
-            response["ERROR"] = "Two user ids are required in this route"
-            return jsonify(response)
-
-        SendingUser = aliased(User)
-        ReceivingUser = aliased(User)
-        messages = Message.query\
-            .join(SendingUser)\
-            .join(private_messages, Message.message_id==private_messages.c.message_id)\
-            .join(ReceivingUser)\
-            .filter(or_(\
-            ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
-            ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
-            )).order_by(Message.sent_dt)\
-            .limit(25)\
-            .all()
-
-        priv_messages_list = message_service.populate_private_messages_client(messages)
-        response['messages'] = json.dumps(priv_messages_list)
+        response['messages'] = json.dumps(client_messages)
         return response
 
+
 @main.route("/message/private", methods=["POST"])
-def store_private_messages():
+# @login_required
+def get_private_messages():
         data = request.json
-        sender_id, content = data["sender_id"], data["content"]
-        sent_dt = datetime.strptime(data["sent_dt"],  "%m/%d/%Y %I:%M %p")
-        message = Message(sender_id, sent_dt, content)
-        receiver = User.query.filter_by(user_id=data["receiver_id"]).one()
-
-        message.receiver = receiver
-        db.session.add(message)
-        db.session.commit()
-
-        print("SUCCESS: private_message inserted into db")
         response = {}
-        response["successful"] = True
-        return jsonify(response)
+        username = current_user.username
+        org_name, partner_username =  data["org_name"], data["partner_username"]
+        messages = message_service.get_private_messages(org_name, username, partner_username)
+        client_messages = message_service.populate_private_messages_client(messages)
+        response['messages'] = json.dumps(client_messages)
+        return response
+
 
 
