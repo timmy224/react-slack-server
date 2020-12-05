@@ -107,9 +107,10 @@ def channel_members_info():
     """
     response = {}
     data = request.json
+    print(data)
     channel_name = data["channel_name"]
-    if channel_name:
-        channel = channel_service.get_channel(channel_name)
+    org_name = data["org_name"]
+    channel = channel_service.get_channel(org_name, channel_name)
     channel_id = channel.channel_id
     username = current_user.username
     if request.method == "POST":
@@ -143,11 +144,11 @@ def channel_members_info():
     elif request.method == "DELETE":
         removed_username = data["removed_username"]
         print("removed_username: ", removed_username)
-        channel_service.delete_channel_user(channel_id, removed_username)
+        channel_service.delete_channel_user(channel, removed_username)
         data_send = {"channel_name": channel_name,
                      "removed_username": removed_username, "channel_id": channel_id}
-        socket_service.send(
-            removed_username, "removed-from-channel", channel_id)
+        socket_service.send_channel(
+            org_name, channel_name, "removed-from-channel", channel_id)
         socketio.emit("channel-member-removed", data_send, room=channel_id)
         response['successful'] = True
         return jsonify(response)

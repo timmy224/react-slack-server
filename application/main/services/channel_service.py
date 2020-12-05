@@ -40,8 +40,7 @@ def delete_channel(channel):
     db.session.commit()
 
 
-def delete_channel_user(channel_id, username):
-    channel = Channel_model.query.filter_by(channel_id=channel_id).one()
+def delete_channel_user(channel, username):
     member = User.query.filter_by(username=username).one()
     channel.members.remove(member)
     db.session.commit()
