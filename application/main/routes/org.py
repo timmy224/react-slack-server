@@ -90,8 +90,8 @@ def org_invite_response():
         socket_service.send_user(user.username, "added-to-org", org.name)
         for channel in public_channels:
             event_service.send_added_to_channel(user.username, channel)
-        # inform user that their permissions have been updated
-        socket_service.send_user(user.username, "permissions-updated")
+        # inform user that their permissions have been updated        
+        event_service.send_permissions_updated(user.username)
     else:
         db.session.commit()
     response = {"successful": True}
@@ -183,7 +183,8 @@ def orgs():
                 db.session.commit()
                 
                 org_service.notify_invitees(invited_email_addresses, org_name, inviter.username)
-                socket_service.send_user(current_user.username, "added-to-org", org_name)
+                event_service.send_permissions_updated(inviter.username)
+                event_service.send_added_to_org(inviter.username, org_name)
                 event_service.send_added_to_channel(inviter.username, default_channel)
                 response["successful"] = True
                 return response
