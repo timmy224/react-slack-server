@@ -197,15 +197,11 @@ def orgs():
             return response
 
     elif request.method == "DELETE":
-        data = request.json
-        org_id = data["org_id"]
-        org = Org.query.filter_by(org_id = org_id).one()
-        org_name = org.name
+        org_name = request.json
+        org = org_service.get_org(org_name)
         org_members = org.members
         org_service.delete_org(org)
-        for user in org_members:
-            socket_service.send_user(user.username, "org-deleted", org_name)
-        response = {}
-        response['successful'] = True
+        event_service.send_org_deleted(org_name)
+        response = { "successful": True}
         return jsonify(response)
 
