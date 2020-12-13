@@ -13,9 +13,9 @@ from ...models.Channel import Channel
 # @login_required
 def get_channel_messages():
         data = request.json
-        org_name, channel_name = data["org_name"], data["channel_name"]
+        org_name, channel_name, before_date_time = data["org_name"], data["channel_name"], data.get("before_date_time")
         channel = channel_service.get_channel(org_name, channel_name)        
-        messages = message_service.get_channel_messages(channel)
+        messages = message_service.get_channel_messages(channel, before_date_time)
         client_messages = message_service.populate_channel_messages_client(messages)
         response = {}
         response['messages'] = json.dumps(client_messages)
@@ -28,8 +28,8 @@ def get_private_messages():
         data = request.json
         response = {}
         username = current_user.username
-        org_name, partner_username =  data["org_name"], data["partner_username"]
-        messages = message_service.get_private_messages(org_name, username, partner_username)
+        org_name, partner_username, before_date_time =  data["org_name"], data["partner_username"], data.get("before_date_time")
+        messages = message_service.get_private_messages(org_name, username, partner_username, before_date_time)
         client_messages = message_service.populate_private_messages_client(messages)
         response['messages'] = json.dumps(client_messages)
         return response

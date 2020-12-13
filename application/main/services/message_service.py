@@ -9,13 +9,13 @@ from ...models.Message import Message
 from ...models.ChannelMessages import channel_messages
 from ...models.PrivateMessages import private_messages
 from ...client_models.message import ChannelMessageClient, PrivateMessageClient
-from . import channel_service, user_service, org_service
+from . import channel_service, user_service, org_service, datetime_service
                                                                                
 def store_private_message(message):
     org = org_service.get_org(message["org_name"])
     sender = user_service.get_user(message["sender"])
     receiver = user_service.get_user(message["receiver"])
-    sent_dt = datetime.strptime(message["sent_dt"],  "%m/%d/%Y %I:%M %p")
+    sent_dt = datetime_service.dt(message["sent_dt"])
     content = message['content']
     message_db = Message(sent_dt, content)
     message_db.sender = sender
@@ -27,7 +27,7 @@ def store_private_message(message):
 def store_channel_message(message):
     org = org_service.get_org(message["org_name"])
     sender = user_service.get_user(message["sender"])
-    sent_dt = datetime.strptime(message["sent_dt"],  "%m/%d/%Y %I:%M %p")
+    sent_dt = datetime_service.dt(message["sent_dt"])
     content = message['content']
     org_name, channel_name = message["org_name"], message["channel_name"]
     channel = channel_service.get_channel(org_name, channel_name)
@@ -42,6 +42,7 @@ def populate_channel_messages_client(messages):
      client_messages = []
      for msg in messages:
          sender, sent_dt, content, channel_id = msg.sender.username, msg.sent_dt, msg.content, msg.channel.channel_id
+         sent_dt = datetime_service.string(sent_dt)
          chan_message = ChannelMessageClient(sender, sent_dt, content, channel_id)
          client_messages.append(chan_message)
      client_messages = [chanmsg.__dict__ for chanmsg in client_messages]
@@ -51,24 +52,27 @@ def populate_private_messages_client(messages):
      client_messages = []
      for msg in messages:
          sender, sent_dt, content, receiver = msg.sender.username, msg.sent_dt, msg.content, msg.receiver.username
+         sent_dt = datetime_service.string(sent_dt)
          priv_message = PrivateMessageClient(sender, sent_dt, content, receiver)
          client_messages.append(priv_message)
      client_messages = [privmsg.__dict__ for privmsg in client_messages]
      return client_messages
 
-def get_channel_messages(channel):
-    return Message.query\
+def get_channel_messages(channel, before_date_time):
+    base_query =  Message.query\
         .join(channel_messages, Message.message_id == channel_messages.c.message_id)\
-        .filter_by(channel_id = channel.channel_id)\
-        .order_by(Message.sent_dt)\
-        .limit(25)\
-        .all()
+        .filter_by(channel_id = channel.channel_id)
+    if before_date_time:
+        before_dt = datetime_service.dt(before_date_time)
+        base_query = base_query.filter(Message.sent_dt < before_dt)
+    messages = base_query.order_by(Message.sent_dt.desc()).limit(25).all()
+    return messages[::-1]
 
-def get_private_messages(org_name, username1, username2):
+def get_private_messages(org_name, username1, username2, before_date_time):
     org = org_service.get_org(org_name)
     SendingUser = aliased(User)
     ReceivingUser = aliased(User)
-    return Message.query\
+    base_query = Message.query\
         .join(SendingUser)\
         .join(private_messages, Message.message_id==private_messages.c.message_id)\
         .join(ReceivingUser)\
@@ -76,7 +80,9 @@ def get_private_messages(org_name, username1, username2):
         ((SendingUser.username==username1) & (ReceivingUser.username==username2)),\
         ((SendingUser.username==username2) & (ReceivingUser.username==username1))\
         ))\
-        .filter(Message.org_id==org.org_id)\
-        .order_by(Message.sent_dt)\
-        .limit(25)\
-        .all()
+        .filter(Message.org_id==org.org_id)
+    if before_date_time:
+        before_dt = datetime_service.dt(before_date_time)
+        base_query = base_query.filter(Message.sent_dt < before_dt)
+    messages = base_query.order_by(Message.sent_dt.desc()).limit(25).all()
+    return messages[::-1]
