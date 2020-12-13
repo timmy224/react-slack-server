@@ -12,6 +12,10 @@ def send_new_org_member(org_name, username):
 def send_added_to_org(username, org_name):
     socket_service.send_user(username, "added-to-org", org_name)
 
+
+def send_org_deleted(org_name):
+    socket_service.send_org(org_name,"org-deleted", org_name)
+
 # ORG MEMBER ONLINE STATUS 
 def send_org_member_online(org_name, username):
     info = {"org_name": org_name, "username": username}
