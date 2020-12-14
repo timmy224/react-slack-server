@@ -197,7 +197,8 @@ def orgs():
             return response
 
     elif request.method == "DELETE":
-        org_name = request.json
+        data = request.json
+        org_name = data["org_name"]
         org = org_service.get_org(org_name)
         org_members = org.members
         org_service.delete_org(org)
