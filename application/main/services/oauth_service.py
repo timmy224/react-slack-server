@@ -11,7 +11,7 @@ def get_google_provider_cfg():
 def get_request_uri(auth_endpoint):
     request_uri =  client.prepare_request_uri(
             auth_endpoint,
-            redirect_uri="http://localhost:5000/login-google/callback",
+            redirect_uri="http://localhost:3000/auth/login-google/callback",
             scope=["email"],
         )
     return request_uri

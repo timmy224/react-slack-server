@@ -46,7 +46,7 @@ def create_app():
     # CSRF
     csrf = CSRFProtect(app)
     # CORS
-    CORS(app, origins=["http://localhost:3000", "https://react-slack-client.herokuapp.com"], supports_credentials=True, expose_headers=["csrf-token"])
+    CORS(app, origins=["http://localhost:3000", "https://react-slack-client.herokuapp.com"], supports_credentials=True, expose_headers=["csrf-token"], automatic_options=True)
 
     # Register blueprints
     from .main import main as main_blueprint

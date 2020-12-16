@@ -5,6 +5,7 @@ import json
 from .. import main
 from ...models.User import User
 from sqlalchemy.orm.exc import NoResultFound
+from ..services import oauth_service
 
 import os
 from ... import client
@@ -44,7 +45,7 @@ def login():
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-@main.route("/login-google", methods=["GET"])
+@main.route("/auth/login-google", methods=["GET"])
 def google_login():
     # URL needed forGoogle login
     google_provider_cfg = oauth_service.get_google_provider_cfg()
@@ -53,7 +54,7 @@ def google_login():
     request_uri = oauth_service.get_request_uri(auth_endpoint)
     return redirect(request_uri)
 
-@main.route("/login-google/callback")
+@main.route("/auth/login-google/callback")
 def callback():
     # Get authorization code from Google
     code = request.args.get("code")
