@@ -46,3 +46,6 @@ urllib3==1.25.9
 Werkzeug==1.0.1
 wrapt==1.12.1
 WTForms==2.3.1
+requests==2.25.0
+oauthlib==3.1.0
+pyOpenSSL==20.0.1

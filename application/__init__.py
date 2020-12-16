@@ -6,12 +6,30 @@ from flask_wtf.csrf import CSRFProtect
 from flask_socketio import SocketIO
 from .models import configure_db, configure_marshmallow, configure_migrate, configure_login
 
+# Python standard libraries
+import json
+
+# Third-party libraries
+from flask import redirect, request, url_for
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
+from oauthlib.oauth2 import WebApplicationClient
+
+
 load_dotenv()
 from .config import config
 
 socketio = SocketIO(cors_allowed_origins="*")
 db = None
 ma = None
+
+# OAuth 2 client setup
+client = WebApplicationClient(os.getenv("GOOGLE_CLIENT_ID"))
 
 def create_app():
     global db, ma
