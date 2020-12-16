@@ -45,13 +45,15 @@ def login():
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-@main.route("/auth/login-google", methods=["GET"])
+@main.route("/auth/login-google", methods=["POST"])
 def google_login():
+    print("INNNNN")
     # URL needed forGoogle login
     google_provider_cfg = oauth_service.get_google_provider_cfg()
     auth_endpoint = google_provider_cfg["authorization_endpoint"]
     # init oauth flow with google and scope / user info request
     request_uri = oauth_service.get_request_uri(auth_endpoint)
+    print("URI", request_uri)
     return redirect(request_uri)
 
 @main.route("/auth/login-google/callback")
