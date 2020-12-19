@@ -68,7 +68,7 @@ def channels():
                 # notify that permissions were updated for these users and that they've been added to a new channel
                 usernames = map(lambda user: user.username, users)
                 for username in usernames:
-                    socket_service.send_user(username, "permissions-updated")
+                    event_service.send_permissions_updated(username)
                     event_service.send_added_to_channel(username, channel)
                 response = {"successful": True, }
                 return jsonify(response)

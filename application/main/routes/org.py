@@ -90,8 +90,8 @@ def org_invite_response():
         socket_service.send_user(user.username, "added-to-org", org.name)
         for channel in public_channels:
             event_service.send_added_to_channel(user.username, channel)
-        # inform user that their permissions have been updated
-        socket_service.send_user(user.username, "permissions-updated")
+        # inform user that their permissions have been updated        
+        event_service.send_permissions_updated(user.username)
     else:
         db.session.commit()
     response = {"successful": True}
@@ -183,7 +183,8 @@ def orgs():
                 db.session.commit()
                 
                 org_service.notify_invitees(invited_email_addresses, org_name, inviter.username)
-                socket_service.send_user(current_user.username, "added-to-org", org_name)
+                event_service.send_permissions_updated(inviter.username)
+                event_service.send_added_to_org(inviter.username, org_name)
                 event_service.send_added_to_channel(inviter.username, default_channel)
                 response["successful"] = True
                 return response
@@ -197,14 +198,11 @@ def orgs():
 
     elif request.method == "DELETE":
         data = request.json
-        org_id = data["org_id"]
-        org = Org.query.filter_by(org_id = org_id).one()
-        org_name = org.name
+        org_name = data["org_name"]
+        org = org_service.get_org(org_name)
         org_members = org.members
         org_service.delete_org(org)
-        for user in org_members:
-            socket_service.send_user(user.username, "org-deleted", org_name)
-        response = {}
-        response['successful'] = True
+        event_service.send_org_deleted(org_name)
+        response = { "successful": True}
         return jsonify(response)
 

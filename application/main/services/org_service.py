@@ -77,6 +77,8 @@ def delete_org(org):
         db.session.delete(channel)
     for invite in org.invites:
         db.session.delete(invite)
+    for message in org.messages:
+        db.session.delete(message)
     db.session.commit()
     db.session.delete(org)
     db.session.commit()

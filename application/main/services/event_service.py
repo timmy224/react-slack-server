@@ -9,6 +9,13 @@ def send_new_org_member(org_name, username):
     info = {"org_name": org_name, "org_member": org_member_client.__dict__}
     socket_service.send_org(org_name, "new-org-member", info) 
 
+def send_added_to_org(username, org_name):
+    socket_service.send_user(username, "added-to-org", org_name)
+
+
+def send_org_deleted(org_name):
+    socket_service.send_org(org_name,"org-deleted", org_name)
+
 # ORG MEMBER ONLINE STATUS 
 def send_org_member_online(org_name, username):
     info = {"org_name": org_name, "username": username}
@@ -38,3 +45,7 @@ def send_private_message_received(message):
     receiver_username, sender_username = message["receiver"], message["sender"]
     socket_service.send_user(receiver_username, "message-received", message)
     socket_service.send_user(sender_username, "message-received", message)
+
+# PERMISSIONS
+def send_permissions_updated(username):
+    socket_service.send_user(username, "permissions-updated")

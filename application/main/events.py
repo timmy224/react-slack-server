@@ -63,10 +63,12 @@ def on_join_org(org_name):
 
 @socketio.on("disconnect")
 def on_disconnect():
-    print("Client disconnected")
     room = request.sid
     username = client_service.get_username_by_room(room)
-    client_service.remove_client_by_room(room)
-    user = user_service.get_user(username)
-    for org in user.orgs:
-        event_service.send_org_member_offline(org.name, username)
+    if username: 
+        print("Client disconnected:", username)
+        client_service.remove_client_by_room(room)
+        user = user_service.get_user(username)
+        for org in user.orgs:
+            event_service.send_org_member_offline(org.name, username)
+

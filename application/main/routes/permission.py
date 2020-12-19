@@ -8,21 +8,17 @@ from ...models.OrgMemberPermission import OrgMemberPermission, org_member_permis
 from ...models.ChannelMemberPermission import ChannelMemberPermission, channel_member_permission_schema
 from ..services import permission_service
 
-@main.route("/permission/", methods=["GET"])
+@main.route("/permission", methods=["POST"])
 # @login_required
 def get_permissions():
     """
-    [GET] - grabs a user's OrgMemberPermissions and ChannelMemberPermissions from the DB. The returned JSON object contains two maps. org_member_perms organizes OrgMemberPermissions by key org_name (value is a list of OrgMemberPermission for that org). channel_member_perms organizes ChannelMemberPermissions by key org_name (value is another map where key is channel_name and value is a list of ChannelMemberPermission)
-    Path: /permission/?username={username}
+    [POST] - grabs a user's OrgMemberPermissions and ChannelMemberPermissions from the DB. The returned JSON object contains two maps. org_member_perms organizes OrgMemberPermissions by key org_name (value is a list of OrgMemberPermission for that org). channel_member_perms organizes ChannelMemberPermissions by key org_name (value is another map where key is channel_name and value is a list of ChannelMemberPermission)
     Response Body: {org_member_perms, channel_member_perms}
     """
-    # username = current_user.username
-    username = request.args.get("username")
-    org_member_perms = db.session.query(OrgMemberPermission).filter_by(username=username).all()
-    channel_member_perms = db.session.query(ChannelMemberPermission).filter_by(username=username).all()
+    username = current_user.username
     response = {}
-    response["org_member_perms"] = permission_service.gen_org_member_perms_map(org_member_perms)
-    response["channel_member_perms"] = permission_service.gen_channel_member_perms_map(channel_member_perms)
+    response["org_member_perms"] = permission_service.get_org_member_perms(username)
+    response["channel_member_perms"] = permission_service.get_channel_member_perms(username)
     return jsonify(response)
 
 # EXAMPLES
