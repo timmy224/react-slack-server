@@ -45,7 +45,8 @@ def on_leave_channel(data):
     client = client_service.get_client(removed_username)
     sid = client.room
     leave_room(channel_id, sid=sid)
-    socketio.send(removed_username, "removed-from-channel", channel_id)
+    socket_service.send_user(
+            removed_username, "removed-from-channel", data)
 
 
 def on_join_channel(info):
