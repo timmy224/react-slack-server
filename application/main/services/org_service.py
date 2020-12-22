@@ -102,7 +102,7 @@ def get_users_by_usernames(org, usernames):
             user = next(filter(lambda user: user.username == username, org.members))
             users.append(user)
         except StopIteration:
-            usernames_not_found.append(username)
+            usernames_not_found.append(f" {username}")
     return {"users": users, "usernames_not_found": usernames_not_found}
 
 def notify_invitees(invited_email_addresses, org_name, sender):
