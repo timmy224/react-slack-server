@@ -18,11 +18,7 @@ def get_csrf_token():
 def login():
     
     data = request.json
-    username = data["username"]
-    password = data["password"]
-    if username is None or password is None:
-        response["ERROR"] = "Missing username"
-        return jsonify(response)
+    username, password = data["username"], data["password"]
     try: 
         user = User.query.filter_by(username=username).one()
         is_correct_password = user.check_password(password)
