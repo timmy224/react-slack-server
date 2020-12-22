@@ -134,7 +134,7 @@ def channel_members_info():
             # socketio.emit("channel-member-added", data_send, room=channel_id)
             socket_service.send_user(new_member_username, "permissions-updated")
             socket_service.send_user(new_member_username,
-                                "added-to-channel", data_send)
+                                "member-added-to-channel", data_send)
             response['successful'] = True
             return jsonify(response)
 
