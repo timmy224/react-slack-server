@@ -54,9 +54,7 @@ def store_org(org):
 def store_org_invites(inviter, invited_email_addresses, org):
     for email_address in invited_email_addresses:
         if not has_active_org_invite(org.org_id, email_address):
-            org_invite = OrgInvite(email_address)
-            org_invite.inviter = inviter
-            org_invite.org = org
+            org_invite = create_org_invite(inviter, org, email_address)
             db.session.add(org_invite)
     db.session.commit()
 
@@ -102,7 +100,7 @@ def get_users_by_usernames(org, usernames):
             user = next(filter(lambda user: user.username == username, org.members))
             users.append(user)
         except StopIteration:
-            usernames_not_found.append(f" {username}")
+            usernames_not_found.append(username)
     return {"users": users, "usernames_not_found": usernames_not_found}
 
 def notify_invitees(invited_email_addresses, org_name, sender):
