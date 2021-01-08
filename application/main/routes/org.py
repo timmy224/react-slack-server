@@ -35,17 +35,14 @@ def invite_to_org():
         return response
     elif action == "STORE":
         response = {}
-        org_name = data["orgName"]
+        org_name = data["org_name"]
         org = org_service.get_org(org_name)
+        invited_email_addresses = data["invited_emails"]
         inviter = current_user
-        email_address = data["email"]
-        if org_service.has_active_org_invite(org.org_id, email_address):
-            response["ERROR"] = "User already has an active invite to this org"
-            return response
-        org_invite = org_service.create_org_invite(inviter, org, email_address)
-        org_service.store_org_invite(org_invite)
+        org_service.store_org_invites(inviter, invited_email_addresses, org)
         # inform connected client that they've received an org invite
-        org_service.notify_invitees([email_address], org_name, inviter.username)
+        org_service.notify_invitees(
+            invited_email_addresses, org_name, inviter.username)
         response["successful"] = True
         return response
 

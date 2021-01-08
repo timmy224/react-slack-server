@@ -53,10 +53,9 @@ def store_org(org):
 
 def store_org_invites(inviter, invited_email_addresses, org):
     for email_address in invited_email_addresses:
-        org_invite = OrgInvite(email_address)
-        org_invite.inviter = inviter
-        org_invite.org = org
-        db.session.add(org_invite)
+        if not has_active_org_invite(org.org_id, email_address):
+            org_invite = create_org_invite(inviter, org, email_address)
+            db.session.add(org_invite)
     db.session.commit()
 
 def create_default_org_channel(admin_username, members, org):
