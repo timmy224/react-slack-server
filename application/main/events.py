@@ -2,7 +2,7 @@ import json
 from flask import request
 from flask_socketio import emit, join_room, close_room 
 from .. import socketio
-from .services import client_service, socket_service, message_service, user_service, event_service
+from .services import client_service, socket_service, message_service, user_service, event_service, status_service
 import json
 from .. import db
 from .. models.User import User
@@ -57,3 +57,15 @@ def on_disconnect():
         for org in user.orgs:
             event_service.send_org_member_offline(org.name, username)
 
+@socketio.on("read_status")
+def on_read_status(read_status):
+    """ updates private or channel read status """
+    user_id = user_service.get_user(username).user_id
+    if read_status["type"] == "private":
+        receiver_id = read_status["receiver_id"]
+        read_dt = read_status["read_dt"]
+        status_service.set_read_private_status(user_id, receiver_id, read_dt)
+    elif read_status["type"] == "channel":
+        channel_id = read_status["channel_id"]
+        read_dt = read_status["read_dt"]
+        status_service.set_read_channel_status(user_id, channel_id, read_dt)
