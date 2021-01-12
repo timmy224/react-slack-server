@@ -6,7 +6,7 @@ from . import permission
 from . import cookie
 from . import auth
 from .. import main
-from . import status
+from . import read_status
 
 __all__ = [
     "user", 
@@ -16,7 +16,7 @@ __all__ = [
     "permission", 
     "cookie", 
     "auth", 
-    "status",
+    "read_status",
 ]
 
 @main.route("/")

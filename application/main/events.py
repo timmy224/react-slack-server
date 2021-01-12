@@ -2,7 +2,7 @@ import json
 from flask import request
 from flask_socketio import emit, join_room, close_room 
 from .. import socketio
-from .services import client_service, socket_service, message_service, user_service, event_service, status_service
+from .services import client_service, socket_service, message_service, user_service, event_service, read_status_service
 import json
 from .. import db
 from .. models.User import User
@@ -60,12 +60,9 @@ def on_disconnect():
 @socketio.on("read_status")
 def on_read_status(read_status):
     """ updates private or channel read status """
-    user_id = user_service.get_user(username).user_id
+    username = client_service.get_username_by_room(room)
     if read_status["type"] == "private":
-        receiver_id = read_status["receiver_id"]
-        read_dt = read_status["read_dt"]
-        status_service.set_read_private_status(user_id, receiver_id, read_dt)
+        read_status_service.set_read_status_private(read_status)
     elif read_status["type"] == "channel":
-        channel_id = read_status["channel_id"]
-        read_dt = read_status["read_dt"]
-        status_service.set_read_channel_status(user_id, channel_id, read_dt)
+        read_status_service.set_read_status_channel(read_status)
+    # TODO revisit refactoring set_read_(...)_status functions (take in second param)
