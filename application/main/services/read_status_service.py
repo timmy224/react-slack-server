@@ -27,7 +27,7 @@ def set_read_status_channel(read_status):
             org_id=org_id,
             user_id=user_id,
             channel_id=channel_id
-        )).first()
+        ).first()
     if not channel_status:      # channel does not exist
         new_channel_status = ReadStatus(user_id = user_id, org_id = org_id, channel_id = channel_id, read_dt = read_dt)
         db.session.add(new_channel_status)
@@ -47,7 +47,7 @@ def set_read_status_private(read_status):
             org_id=org_id,
             user_id=user_id,
             receiver_id=receiver_id
-        )).first()
+        ).first()
     if not private_status:
         new_private_status = ReadStatusPrivate(user_id = user_id, org_id = org_id, receiver_id = receiver_id, read_dt = read_dt)
         db.session.add(new_private_status)
