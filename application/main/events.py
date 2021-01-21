@@ -2,7 +2,7 @@ import json
 from flask import request
 from flask_socketio import emit, join_room, close_room 
 from .. import socketio
-from .services import client_service, socket_service, message_service, user_service, event_service
+from .services import client_service, socket_service, message_service, user_service, event_service, read_status_service
 import json
 from .. import db
 from .. models.User import User
@@ -57,3 +57,12 @@ def on_disconnect():
         for org in user.orgs:
             event_service.send_org_member_offline(org.name, username)
 
+@socketio.on("read_status")
+def on_read_status(read_status):
+    """ updates private or channel read status """
+    username = client_service.get_username_by_room(room)
+    if read_status["type"] == "private":
+        read_status_service.set_read_status_private(read_status)
+    elif read_status["type"] == "channel":
+        read_status_service.set_read_status_channel(read_status)
+    # TODO revisit refactoring set_read_(...)_status functions (take in second param)

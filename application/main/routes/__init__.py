@@ -6,8 +6,18 @@ from . import permission
 from . import cookie
 from . import auth
 from .. import main
+from . import read_status
 
-__all__ = ["user", "message", "channel", "org", "permission", "cookie", "auth"]
+__all__ = [
+    "user", 
+    "message", 
+    "channel", 
+    "org", 
+    "permission", 
+    "cookie", 
+    "auth", 
+    "read_status",
+]
 
 @main.route("/")
 def index():
