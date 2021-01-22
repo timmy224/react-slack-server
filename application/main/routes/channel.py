@@ -113,7 +113,7 @@ def channel_members_info():
     channel = channel_service.get_channel(org_name, channel_name)
     channel_id = channel.channel_id
     username = current_user.username
-    if request.method == "POST":
+    if request.method == "POST":    
         action = data["action"]
         if action == "GET":
             channel_members = db.session.query(
@@ -140,7 +140,6 @@ def channel_members_info():
 
     elif request.method == "DELETE":
         removed_username = data["removed_username"]
-        print("removed_username: ", removed_username)
         channel_service.delete_channel_user(channel, removed_username)
         data_send = {"channel_name": channel_name,
                      "removed_username": removed_username, "channel_id": channel_id, "org_name": org_name}
