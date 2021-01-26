@@ -110,8 +110,8 @@ def channel_members_info():
     print(data)
     channel_name = data["channel_name"]
     org_name = data["org_name"]
-    channel = channel_service.get_channel(org_name, channel_name)
-    channel_id = channel.channel_id
+    server_channel = channel_service.get_channel(org_name, channel_name)
+    channel_id = server_channel.channel_id
     username = current_user.username
     if request.method == "POST":    
         action = data["action"]
@@ -124,28 +124,30 @@ def channel_members_info():
             return response
         elif action == "STORE":
             new_member_username = data["new_member_username"]
+            channel = data["channel"]
             new_member = user_service.get_user(new_member_username)
-            channel_service.add_channel_member(channel, new_member)
+            channel_service.add_channel_member(server_channel, new_member)
             # Updating role to tadPole after added to channel
             channel_service.set_channel_member_role(channel_id, new_member)
             data_send = {"channel_name": channel_name,
                          "added_username": new_member_username,
-                         "org_name": org_name}
+                         "org_name": org_name,
+                         "channel": channel,
+                         }
             # socketio.emit("channel-member-added", data_send, room=channel_id)
             socket_service.send_user(new_member_username, "permissions-updated")
             socket_service.send_user(new_member_username,"member-added-to-channel", data_send)
-            socket_service.send_channel(org_name, channel_name, "member-added-to-channel", data_send)
+            socket_service.send_channel(org_name, channel_name, "new-member-added-to-channel", data_send)
             response['successful'] = True
             return jsonify(response)
 
     elif request.method == "DELETE":
         removed_username = data["removed_username"]
-        channel_service.delete_channel_user(channel, removed_username)
+        channel_service.delete_channel_user(server_channel, removed_username)
         data_send = {"channel_name": channel_name,
                      "removed_username": removed_username, "channel_id": channel_id, "org_name": org_name}
         socket_service.send_channel(
             org_name, channel_name, "channel-member-removed", data_send)
-        # socketio.emit("channel-member-removed", data_send, room=channel_id)
         response['successful'] = True
         return jsonify(response)
 
