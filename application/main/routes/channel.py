@@ -128,13 +128,12 @@ def channel_members_info():
             channel_service.add_channel_member(channel, new_member)
             # Updating role to tadPole after added to channel
             channel_service.set_channel_member_role(channel_id, new_member)
-            data_send = {"channel_name": channel_name,
-                         "added_username": new_member_username,
-                         "org_name": org_name}
-            # socketio.emit("channel-member-added", data_send, room=channel_id)
-            socket_service.send_user(new_member_username, "permissions-updated")
-            socket_service.send_user(new_member_username,
-                                "member-added-to-channel", data_send)
+            
+            event_service.send_permissions_updated(new_member_username)
+            #inform channel that new member was added
+            event_service.send_new_channel_member()
+            #inform user that hes been added to channel
+            event_service.send_added_to_channel(new_member_username, channel)
             response['successful'] = True
             return jsonify(response)
 

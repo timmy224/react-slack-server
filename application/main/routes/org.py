@@ -84,7 +84,7 @@ def org_invite_response():
         # inform org that a new member has joined 
         event_service.send_new_org_member(org.name, user.username)
         # inform user that they've been added to a new org and org's channels
-        socket_service.send_user(user.username, "added-to-org", org.name)
+        event_service.send_added_to_org(user.username, org.name)
         for channel in public_channels:
             event_service.send_added_to_channel(user.username, channel)
         # inform user that their permissions have been updated        
