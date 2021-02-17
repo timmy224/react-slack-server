@@ -42,10 +42,15 @@ def send_new_channel_members(org_name, channel_name, members):
 
 
 # Below channel events have yet to be tested
-def send_removed_from_channel(username, channel):
-    channel_json = channel_schema.dump(channel)
-    info = {"org_name": channel.org.name, "channel": channel_json}
+def send_removed_from_channel(org_name, channel_name, username):
+    info = {"org_name": org_name, "channel_name": channel_name, "username": username}
     socket_service.send_user(username, "removed-from-channel", info)
+    
+
+def send_channel_member_removed(org_name, channel_name, username):
+    info = {"org_name": org_name, "channel_name": channel_name, "username": username}
+    socket_service.send_channel(org_name, channel_name, "channel-member-removed", info)
+
 
 
 # MESSAGES

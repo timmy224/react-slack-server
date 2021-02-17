@@ -108,7 +108,7 @@ def channel_members_info():
 
     response = {}
     data = request.json
-    channel_name, org_name = data["channel_name"], data["org_name"]
+    channel_name, org_name, members = data["channel_name"], data["org_name"], data["members"]
     channel = channel_service.get_channel(org_name, channel_name)
     org = org_service.get_org(org_name) 
     channel_id = channel.channel_id
@@ -125,8 +125,6 @@ def channel_members_info():
             return response
 
         elif action == "STORE":
-            members = data["members"]
-
             for username in members:
                 member_user = user_service.get_user(username)
                 channel_service.add_channel_member(channel, member_user)
@@ -135,19 +133,19 @@ def channel_members_info():
             
                 event_service.send_permissions_updated(username)
                 event_service.send_added_to_channel(username, channel)
+
             event_service.send_new_channel_members(org.name, channel.name, members)
 
             response['successful'] = True
             return jsonify(response)
 
     elif request.method == "DELETE":
-        removed_username = data["removed_username"]
+        removed_username = members[0]
         channel_service.delete_channel_user(channel, removed_username)
-        data_send = {"channel_name": channel.name,
-                     "removed_username": removed_username, "channel_id": channel_id, "org_name": org.name}
-        socket_service.send_channel(
-            org_name, channel_name, "channel-member-removed", data_send)
-        # socketio.emit("channel-member-removed", data_send, room=channel_id)
+
+        event_service.send_removed_from_channel(org.name, channel.name, removed_username)
+        event_service.send_channel_member_removed(org.name, channel.name, removed_username)
+
         response['successful'] = True
         return jsonify(response)
 
