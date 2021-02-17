@@ -3,8 +3,12 @@ from ...models.User import User
 from sqlalchemy.orm.exc import NoResultFound
 from . import email_service
 
+
 def get_user(username):
-    return User.query.filter_by(username=username).one()
+    print(username)
+    user = User.query.filter_by(username=username).one()
+    return user
+
 
 def get_user_by_email_address(email_address):
     try:
@@ -12,6 +16,7 @@ def get_user_by_email_address(email_address):
         return user
     except NoResultFound:
         return
+
 
 def send_org_invite_email(sender, org_name, receiver_email):
     text = f"""
@@ -43,4 +48,3 @@ def send_org_invite_email(sender, org_name, receiver_email):
 
     email = email_service.create_email(receiver_email, text, html, header)
     email_service.send_email(receiver_email, email)
-    
