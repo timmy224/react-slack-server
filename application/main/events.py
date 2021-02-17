@@ -39,7 +39,7 @@ def on_send_message(message):
 
 
 @socketio.on('leave-channel')
-def on_leave_channel(data):
+def on_leave_channel(info):
     org_name, channel_name = info["org_name"], info["channel_name"]
     room = socket_service.compute_channel_room(org_name, channel_name)
     leave_room(room)

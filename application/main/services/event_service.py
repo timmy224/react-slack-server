@@ -44,10 +44,10 @@ def send_channel_member_removed(org_name, channel_name, username):
     info = {"org_name": org_name, "channel_name": channel_name, "username": username}
     socket_service.send_channel(org_name, channel_name, "channel-member-removed", info)
 
-def send_removed_from_channel(channel):
+def send_removed_from_channel(username, channel):
     org_name, channel_name = channel.org.name, channel.name
     info = {"org_name": org_name, "channel_name": channel_name}
-    socket_service.send_user(username, "channel-deleted", info)
+    socket_service.send_user( username, "channel-deleted", info)
     
 # MESSAGES
 def send_channel_message_received(message):

@@ -143,7 +143,7 @@ def channel_members_info():
         removed_username = members[0]
         channel_service.delete_channel_user(channel, removed_username)
 
-        event_service.send_removed_from_channel(org.name, channel.name, removed_username)
+        event_service.send_removed_from_channel(removed_username, channel)
         event_service.send_channel_member_removed(org.name, channel.name, removed_username)
 
         response['successful'] = True
