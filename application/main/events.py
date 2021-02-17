@@ -40,13 +40,9 @@ def on_send_message(message):
 
 @socketio.on('leave-channel')
 def on_leave_channel(data):
-    removed_username = data["removed_username"]
-    channel_id = data['channel_id']
-    client = client_service.get_client(removed_username)
-    sid = client.room
-    leave_room(channel_id, sid=sid)
-    socket_service.send_user(
-            removed_username, "removed-from-channel", data)
+    org_name, channel_name = info["org_name"], info["channel_name"]
+    room = socket_service.compute_channel_room(org_name, channel_name)
+    leave_room(room)
 
 @socketio.on('join-channel')
 def on_join_channel(info):
