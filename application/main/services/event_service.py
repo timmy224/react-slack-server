@@ -31,18 +31,21 @@ def send_added_to_channel(username, channel):
     info = {"org_name": channel.org.name, "channel": channel_json}
     socket_service.send_user(username, "added-to-channel", info)
 
+def send_channel_deleted(channel):
+    org_name, channel_name = channel.org.name, channel.name
+    info = {"org_name": org_name, "channel_name": channel_name}
+    socket_service.send_channel(org_name, channel_name, "channel-deleted", info)
+
+def send_new_channel_member(org_name, channel_name, username):
+    info = {"org_name": org_name, "channel_name": channel_name, "new_member": username}
+    socket_service.send_channel(org_name, channel_name, "new-channel-member", info)
+
+# Below channel events have yet to be tested
 def send_removed_from_channel(username, channel):
     channel_json = channel_schema.dump(channel)
     info = {"org_name": channel.org.name, "channel": channel_json}
     socket_service.send_user(username, "removed-from-channel", info)
 
-def send_new_channel_member():
-    
-
-def send_channel_deleted(channel):
-    org_name, channel_name = channel.org.name, channel.name
-    info = {"org_name": org_name, "channel_name": channel_name}
-    socket_service.send_channel(org_name, channel_name, "channel-deleted", info)
 
 # MESSAGES
 def send_channel_message_received(message):
