@@ -125,15 +125,17 @@ def channel_members_info():
             return response
 
         elif action == "STORE":
-            new_member_username = data["new_member_username"]
-            new_member = user_service.get_user(new_member_username)
-            channel_service.add_channel_member(channel, new_member)
+            members = data["members"]
+
+            for username in members:
+                member_user = user_service.get_user(username)
+                channel_service.add_channel_member(channel, member_user)
             
-            channel_service.set_channel_member_role(channel_id, new_member)
+                channel_service.set_channel_member_role(channel_id, member_user)
             
-            event_service.send_permissions_updated(new_member_username)
-            event_service.send_new_channel_member(org.name, channel.name, new_member_username)
-            event_service.send_added_to_channel(new_member_username, channel)
+                event_service.send_permissions_updated(username)
+                event_service.send_added_to_channel(username, channel)
+            event_service.send_new_channel_members(org.name, channel.name, members)
 
             response['successful'] = True
             return jsonify(response)
