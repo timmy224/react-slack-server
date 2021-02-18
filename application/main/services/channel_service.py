@@ -59,15 +59,6 @@ def set_channel_member_role(channel_id, user):
     db.session.execute(statement)
     db.session.commit()
 
-
-def get_ind_channel(channel_id):
-    return channels[channel_id]
-
-
-def add_message_channel(new_message, channel_id):
-    channels[channel_id].messages.append(new_message)
-
-
 # def add_dummy_messages():
 #     for j in range(1, 5):
 #         dummy_id = j

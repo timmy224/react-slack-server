@@ -5,9 +5,8 @@ from . import email_service
 
 
 def get_user(username):
-    print(username)
-    user = User.query.filter_by(username=username).one()
-    return user
+    return User.query.filter_by(username=username).one()
+
 
 
 def get_user_by_email_address(email_address):
